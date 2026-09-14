@@ -6,14 +6,18 @@
   try { state=normalize(JSON.parse(localStorage.getItem(KEY)),C); } catch {state=blank();storageOK=false;}
   if(location.hash==='#learn')state.mode='learn';if(location.hash==='#review')state.mode='review';
   let route=parseRoute();
-  let exportURL=null;
+  let exportURL=null, reviewReturn='review', focusTarget=null, renderedKey=null;
+  const pagePositions=new Map();
+  if('scrollRestoration' in history)history.scrollRestoration='manual';
+  const routeKey=()=>state.mode+':'+(route.view==='stage'?'stage/'+route.stage+'/'+route.tab:route.view==='film'?'film/'+(route.scene||''):route.view);
   function parseRoute(){
     const hash=location.hash.slice(1)||state.lastRoute||'start',parts=hash.split('/');
     if(parts[0]==='learn')return {view:'start'};
     if(['start','review','notebook','materials','glossary','result'].includes(parts[0]))return {view:parts[0]};
     if(parts[0]==='film')return {view:'film',scene:C.scenes.find(x=>x.id===parts[1])?.id||null};
     const n=Number(parts[1]);
-    return {view:'stage',stage:Number.isInteger(n)&&n>=0&&n<6?n:0,tab:['read','practice','plan'].includes(parts[2])?parts[2]:'read'};
+    if(parts[0]==='stage'&&Number.isInteger(n)&&n>=0&&n<6)return {view:'stage',stage:n,tab:['read','practice','plan'].includes(parts[2])?parts[2]:'read'};
+    return {view:isReview()?'review':'start'};
   }
   function isReview(){return state.mode==='review';}
   function nextRoute(){
@@ -30,7 +34,22 @@
     const warning=document.getElementById('storage-warning');if(warning)warning.hidden=storageOK;
   }
   function go(hash){ if(location.hash==='#'+hash){route=parseRoute();render(true);}else location.hash=hash; }
-  window.addEventListener('hashchange',()=>{if(route.view==='stage'&&location.hash.startsWith('#film'))state.filmReturn='stage/'+route.stage+'/'+route.tab;if(location.hash==='#learn')state.mode='learn';if(location.hash==='#review')state.mode='review';route=parseRoute();if(!isReview()){state.lastRoute=location.hash.slice(1)||'start';save();}render(true);});
+  window.addEventListener('hashchange',()=>{
+    const wasFilm=route.view==='film', previousMode=renderedKey?.split(':')[0]||state.mode;
+    if(renderedKey)pagePositions.set(renderedKey,window.scrollY);
+    if(route.view==='stage'){
+      const origin='stage/'+route.stage+'/'+route.tab;
+      if(previousMode==='review')reviewReturn=origin;else state.lessonReturn=origin;
+    }else if(route.view==='start'&&previousMode==='learn')state.lessonReturn='start';
+    if(location.hash==='#learn')state.mode='learn';
+    if(location.hash==='#review'){state.mode='review';reviewReturn='review';}
+    route=parseRoute();
+    if(!isReview()){state.lastRoute=location.hash.slice(1)||'start';save();}
+    else if(previousMode!==state.mode)save();
+    for(const id of ['source-dialog','reset-dialog']){const dialog=document.getElementById(id);if(dialog.open)dialog.close();}
+    if(wasFilm&&route.view==='film'&&previousMode===state.mode){updateFilmScene();renderedKey=routeKey();return;}
+    render(true);
+  });
   const stageURL=(i,tab='read')=>'#stage/'+i+'/'+tab;
   const tick='<span aria-hidden="true">✓</span>';
   const icon=(kind)=>({book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 5v15M12 5C8 2 4 3 2 4v15c4-2 7-1 10 1 3-2 6-3 10-1V4c-2-1-6-2-10 1Z"/></svg>',file:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M14 3H5v18h14V8ZM14 3v5h5M8 12h8M8 16h8"/></svg>',terms:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m3 20 6-16 6 16M5 15h8M17 7h4M19 7v13"/></svg>'}[kind]);
@@ -45,16 +64,43 @@
       <div class="local-note">Прогресс и записи хранятся в этом браузере.</div></div></details><div class="sidebar-bottom">Учебный прототип · один модуль</div></aside>
       <div class="workspace"><header class="topbar"><span>Мастерская педагога <span class="divider">/</span> <strong>Справедливость</strong></span><button class="mode-switch" data-mode="${isReview()?'learn':'review'}">${isReview()?'Перейти к обучению':'Режим рецензирования'}</button></header>
       <div id="storage-warning" role="status" class="storage-warning" ${storageOK?'hidden':''}>Браузер не сохраняет записи. Перед закрытием скачайте рабочую тетрадь.</div>
-      <main id="main" tabindex="-1">${isReview()?'<div class="review-banner"><strong>Режим рецензирования</strong><span>Все материалы и разборы доступны. Учебные ответы и прогресс не меняются.</span><a href="#review">Обзор этапов</a></div>':''}${route.view==='start'?renderStart():route.view==='film'?renderFilm():route.view==='review'?renderReview():route.view==='result'?renderResult():route.view==='stage'?renderStage():route.view==='notebook'?renderNotebook():route.view==='materials'?renderMaterials():renderGlossary()}</main>
-      <footer class="page-footer"><span>Курс для педагогов · «Великий»</span><span>Авторская методика · фильм · практика педагога</span></footer></div>`;
+      <main id="main" tabindex="-1">${pageNavigation()}${isReview()?'<div class="review-banner"><strong>Режим рецензирования</strong><span>Все материалы и разборы доступны. Учебные ответы и прогресс не меняются.</span><a href="#review">Обзор этапов</a></div>':''}${route.view==='start'?renderStart():route.view==='film'?renderFilm():route.view==='review'?renderReview():route.view==='result'?renderResult():route.view==='stage'?renderStage():route.view==='notebook'?renderNotebook():route.view==='materials'?renderMaterials():renderGlossary()}</main>
+      <footer class="page-footer"><span>Курс для педагогов · «Великий»</span><span>Авторская методика · фильм · практика педагога</span></footer><nav class="mobile-tools" aria-label="Быстрая навигация"><button data-open-nav>Разделы</button><a href="${isReview()?'#review':'#start'}">Маршрут</a><button data-top>Наверх ↑</button></nav></div>`;
   }
-  function render(focus=false){app.innerHTML=shell();if(isReview())app.querySelectorAll('[data-note],[data-answer],[data-read],[data-review],[data-preparation],[data-move],[data-complete]').forEach(el=>{el.disabled=true;});if(focus){document.getElementById('main').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});} }
+  function render(focus=false){
+    const key=routeKey(), samePage=renderedKey===key, y=window.scrollY;
+    const expanded=samePage?Array.from(app.querySelectorAll('details'),el=>el.open):null;
+    app.innerHTML=shell();
+    if(expanded)app.querySelectorAll('details').forEach((el,i)=>{if(i<expanded.length)el.open=expanded[i];});
+    if(isReview())app.querySelectorAll('[data-note],[data-answer],[data-read],[data-review],[data-preparation],[data-move],[data-complete],[data-reset]').forEach(el=>{el.disabled=true;});
+    renderedKey=key;
+    if(focus){document.getElementById('main').focus({preventScroll:true});window.scrollTo({top:pagePositions.get(key)||0,behavior:'instant'});}
+    else if(samePage)window.scrollTo(0,y);
+    if(focusTarget){const target=document.getElementById(focusTarget);target?.focus({preventScroll:true});target?.scrollIntoView({block:'start'});focusTarget=null;}
+  }
+  function returnLink(){
+    const target=isReview()?reviewReturn:state.lessonReturn;
+    const parts=(target||'start').split('/'), stage=C.stages[Number(parts[1])];
+    const label=parts[0]==='stage'&&stage?stage.name+' · '+({read:'Изучить',practice:'Практикум',plan:'Мой план'}[parts[2]]):isReview()?'Обзор рецензирования':'Подготовка и маршрут';
+    return `<a class="context-return" href="#${e(target||'start')}">← ${e(label)}</a>`;
+  }
+  function pageNavigation(){
+    if(['film','materials','glossary','notebook','result'].includes(route.view))return `<nav class="context-nav" aria-label="Возврат к занятию">${returnLink()}</nav>`;
+    if(route.view==='stage')return `<nav class="context-nav" aria-label="Возврат к маршруту"><a href="${isReview()?'#review':'#start'}">← ${isReview()?'Обзор рецензирования':'Все этапы курса'}</a></nav>`;
+    return '';
+  }
+  function stagePager(){
+    const i=route.stage,tab=route.tab;
+    const prev=tab==='plan'?stageURL(i,'practice'):tab==='practice'?stageURL(i):i?stageURL(i-1,'plan'):isReview()?'#review':'#start';
+    const label=tab==='plan'?'Назад к практикуму':tab==='practice'?'Назад к изучению':i?'Предыдущий этап: '+C.stages[i-1].name:isReview()?'К обзору':'К подготовке';
+    return `<nav class="step-navigation" aria-label="Переходы по курсу"><a class="button ghost" href="${prev}">← ${e(label)}</a><a class="text-link" href="${isReview()?'#review':'#start'}">${isReview()?'Обзор рецензирования':'Все этапы'}</a></nav>`;
+  }
   function renderStage(){
     const i=route.stage,s=C.stages[i];
     return `<div class="section-kicker">МЕТОДИКА КИНОУРОКА <span>ЭТАП ${String(i+1).padStart(2,'0')} / 06</span></div>
       <div class="title-row"><div><h1>${e(s.name)}</h1><p class="subtitle">${e(s.subtitle)}</p></div><div class="stage-stamp ${state.completed.includes(i)?'complete':''}">${state.completed.includes(i)?'✓ Пройден':'Этап '+(i+1)}</div></div>
-      <nav class="tabs" aria-label="Разделы этапа">${[['read','Изучить'],['practice','Практикум'],['plan','Мой план']].map(([tab,label])=>`<a href="${stageURL(i,tab)}" ${route.tab===tab?'aria-current="page"':''}>${label}${tab==='read'&&state.read.includes(i)?'<span class="tab-check">✓</span>':''}${tab==='practice'&&stagePassed(i)?'<span class="tab-check">✓</span>':''}</a>`).join('')}</nav>
-      ${!isReview()&&(!state.preparation.film||!state.preparation.sources)?'<div class="preparation-reminder">Перед завершением этапа посмотрите полный фильм и ознакомьтесь с комплектом. <a href="#start">К подготовке</a></div>':''}${route.tab==='read'?readStage(s,i):route.tab==='practice'?practiceStage(s,i):planStage(s,i)}`;
+      <nav class="tabs" aria-label="Разделы этапа">${[['read','Изучить'],['practice','Практикум'],['plan','Мой план']].map(([tab,label])=>`<a href="${stageURL(i,tab)}" ${route.tab===tab?'aria-current="page"':''}>${label}${tab==='read'&&state.read.includes(i)?'<span class="tab-check" aria-hidden="true">✓</span>':''}${tab==='practice'&&stagePassed(i)?'<span class="tab-check" aria-hidden="true">✓</span>':''}</a>`).join('')}</nav>
+      ${!isReview()&&(!state.preparation.film||!state.preparation.sources)?'<div class="preparation-reminder">Перед завершением этапа посмотрите полный фильм и ознакомьтесь с комплектом. <a href="#start">К подготовке</a></div>':''}${route.tab==='read'?readStage(s,i):route.tab==='practice'?practiceStage(s,i):planStage(s,i)}${stagePager()}`;
   }
   function sourceButton(label,doc='workbook',pages=null,section=null){return `<button type="button" class="source-link" data-source="${e(doc)}" ${section?'data-section="'+e(section)+'"':''} ${pages?'data-pages="'+pages.join(',')+'"':''}>${icon('file')}<span>${e(label)}</span><span aria-hidden="true">↗</span></button>`;}
   function materialAside(s){return `<aside class="reading-aside"><div class="aside-label">К ЭТОМУ ЭТАПУ</div><h3>Откройте первоисточник</h3><p>Сопоставьте пояснения с авторским комплектом.</p>${s.refs.map(r=>sourceButton(r.label,'workbook',r.pages)).join('')}${sourceButton('Паспорт · этот этап','passport',null,'5.'+(C.stages.indexOf(s)+1)+'.')}${sourceButton('Обоснование · задача этапа','rationale',null,'2.2.'+(C.stages.indexOf(s)+2)+'.')}<div class="duration"><b>${s.minutes} минут</b><span>Ориентир этапа в паспорте киноурока. Время обучения педагога индивидуально.</span></div></aside>`;}
@@ -96,7 +142,7 @@
   function renderMaterials(){return `${pageHeader('АВТОРСКИЙ КОМПЛЕКТ','Материалы курса','Основной комплект новой методики и дополнительные материалы к фильму.')}<div class="material-list">${[['passport','01','Паспорт методического пособия','Цели, этапы, структура, определения и условия проведения.'],['rationale','02','Методическое обоснование','Логика построения этапов и пояснение методических решений.'],['workbook','03','Сводная рабочая тетрадь','Авторские задания, формы и последовательность работы на киноуроке.']].map(([id,n,title,desc])=>`<article class="material-row"><div class="document-number">${n}</div><div><h2>${title}</h2><p>${desc}</p><div class="actions wrap"><button class="button ghost" data-source="${id}">Читать внутри курса</button><a class="text-link" href="./materials/${id}.docx" download>Скачать DOCX ↓</a></div></div></article>`).join('')}</div>
     <section class="film-panel"><div><span class="eyebrow">ПОЛНЫЙ ФИЛЬМ · 23:40</span><h2>«Великий»</h2><p>Смотрите целиком, затем возвращайтесь к семи эпизодам в практикумах.</p></div><a class="button primary" href="#film">Фильм и сцены →</a></section>
     <h2>Дополнительные материалы</h2><div class="supplement-grid"><article><h3>Оригинальный рассказ</h3><p>Литературная версия, 7 страниц. Отдельные детали и финал отличаются от фильма.</p><a class="button ghost" href="./materials/story.pdf" target="_blank" rel="noopener">Открыть PDF</a></article><article><h3>Рекомендации 2023 года</h3><p>17 страниц. Дополнительный материал для 5–9 классов; основной маршрут курса строится по новому паспорту.</p><a class="button ghost" href="./materials/recommendations-2023.pdf" target="_blank" rel="noopener">Открыть PDF</a></article></div>
-    <section class="about-module"><h2>Как устроен электронный модуль</h2><p>Раздел «Изучить» соединяет авторские цели и термины с пояснениями для подготовки педагога. «Практикум» помогает проверить понимание. «Мой план» собирает ваши решения для проведения киноурока.</p><p>Исходные DOCX доступны без редактирования. Во встроенном читателе текст и таблицы представлены в экранном формате; исходное оформление сохранено в файлах. Это первый модуль по одному качеству. Другие качества требуют своих авторских комплектов.</p></section>`;}
+    <section class="about-module"><h2>Как устроен электронный модуль</h2><p>Раздел «Изучить» соединяет авторские цели и термины с пояснениями для подготовки педагога. «Практикум» помогает проверить понимание. «Мой план» собирает ваши решения для проведения киноурока.</p><p>Исходные DOCX доступны без редактирования. Во встроенном читателе текст и таблицы представлены в экранном формате; исходное оформление сохранено в файлах. Это первый модуль по одному качеству. Другие качества требуют своих авторских комплектов.</p><a class="text-link" href="https://lk.kinouroki.org/films/18" target="_blank" rel="noopener noreferrer">Карточка киноурока в личном кабинете ↗</a></section>`;}
   function glossaryRows(){
     if(!sources)return `<div class="empty-state"><p>${sourceFailure?'Не удалось загрузить словарь. Попробуйте снова или откройте исходный паспорт.':'Загружаем авторский словарь…'}</p>${sourceFailure?'<button class="button ghost" data-retry-sources>Повторить загрузку</button>':''}</div>`;
     const list=sources.glossary.filter(([t,d])=>(t+' '+d).toLocaleLowerCase('ru').includes(glossaryQuery.toLocaleLowerCase('ru')));
@@ -108,7 +154,7 @@
   app.addEventListener('change',event=>{
     const el=event.target;
     if(isReview())return;
-    if(el.matches('[data-preparation]')){state.preparation[el.dataset.preparation]=el.checked;if(!el.checked)state.completed=[];save();render();return;}
+    if(el.matches('[data-preparation]')){state.preparation[el.dataset.preparation]=el.checked;if(!el.checked)state.completed=[];save();if(route.view==='film'){refreshPlanControls();}else render();return;}
     if(el.matches('[data-review]')){const i=Number(el.dataset.review);state.reviews[i]=el.checked;if(!el.checked)state.completed=state.completed.filter(n=>n!==i);save();render();app.querySelector('[data-review=\"'+i+'\"]')?.focus({preventScroll:true});}
     if(el.matches('[data-read]')){const n=Number(el.dataset.read);state.read=state.read.filter(x=>x!==n);if(el.checked)state.read.push(n);else state.completed=state.completed.filter(x=>x!==n);save();render();const checkbox=app.querySelector('[data-read]');checkbox?.focus({preventScroll:true});}
     if(el.matches('[data-answer]')){const q=getQuiz(el.dataset.answer);if(!q)return;const n=Number(el.value);if(q.type==='single')state.answers[q.id]=n;else{const a=[...quizValue(q)];a[Number(el.dataset.index)]=n;state.answers[q.id]=a;}invalidate(q);save();const selector=el.tagName==='SELECT'?`select[data-answer="${q.id}"][data-index="${el.dataset.index}"]`:`input[data-answer="${q.id}"][value="${el.value}"]`;const scroll=window.scrollY;render();app.querySelector(selector)?.focus({preventScroll:true});window.scrollTo(0,scroll);}
@@ -129,9 +175,11 @@
     if(el.id==='glossary-search'){glossaryQuery=el.value;document.getElementById('glossary-results').innerHTML=glossaryRows();}
   });
   app.addEventListener('click',async event=>{
+    const caseLink=event.target.closest('a[data-case-link]');if(caseLink){event.preventDefault();focusTarget='teaching-case';go('stage/'+caseLink.dataset.caseLink+'/practice');return;}
     const el=event.target.closest('button');if(!el)return;
+    if(el.hasAttribute('data-open-nav')){const menu=app.querySelector('.course-nav');menu.open=true;menu.scrollIntoView({block:'start'});menu.querySelector('summary')?.focus({preventScroll:true});return;}
+    if(el.hasAttribute('data-top')){document.getElementById('main').focus({preventScroll:true});window.scrollTo({top:0,behavior:'smooth'});return;}
     if(el.hasAttribute('data-mode')){state.mode=el.dataset.mode==='review'?'review':'learn';save();go(isReview()?'review':state.lastRoute||'start');return;}
-    if(el.hasAttribute('data-play-film')){await playFilm(Number(el.dataset.playFilm)||0);return;}
     if(el.hasAttribute('data-case-review')){if(isReview())return;const i=Number(el.dataset.caseReview);if(!state.notes[C.stages[i].case.id]?.trim()){announce('Сначала запишите своё решение кейса.');return;}state.caseReviewed[i]=true;save();const y=window.scrollY;render();document.getElementById('case-feedback-'+i)?.focus({preventScroll:true});window.scrollTo(0,y);return;}
     if(el.hasAttribute('data-print')){window.print();return;}
     if(isReview()&&(el.hasAttribute('data-check')||el.hasAttribute('data-move')||el.hasAttribute('data-complete')||el.hasAttribute('data-reset')))return;
@@ -184,20 +232,21 @@
       <section class="prep-card"><span class="eyebrow">02 · АВТОРСКАЯ ОСНОВА</span><h2>Методический комплект</h2><p>Паспорт задаёт структуру; обоснование раскрывает логику; тетрадь содержит задания и формы.</p><a class="text-link" href="#materials">Открыть материалы →</a><label class="read-check"><input type="checkbox" data-preparation="sources" ${state.preparation.sources?'checked':''}><span>Я ознакомился(ась) с назначением трёх документов</span></label></section></div>
       <div class="section-heading"><h2>Шесть этапов</h2><span data-completed-count>${state.completed.length} из 6</span></div><div class="route-list">${C.stages.map((s,i)=>`<a href="${stageURL(i)}" class="route-item"><span class="route-number ${state.completed.includes(i)?'done':''}">${state.completed.includes(i)?'✓':String(i+1).padStart(2,'0')}</span><span><strong>${e(s.name)}</strong><small>${e(s.subtitle)}</small></span><span class="route-status">${state.completed.includes(i)?'Пройден':'Открыть'} →</span></a>`).join('')}</div><div class="course-note"><p>Результат обучения — ваш план проведения киноурока и сопровождения социальной практики. Свободные ответы вы сверяете с авторским материалом и критериями.</p><p>План просмотра и сроки общего дела определяются отдельно. Указанное в паспорте время этапов не является продолжительностью онлайн-обучения педагога.</p></div>`;
   }
-  function renderFilm(){
-    const scene=C.scenes.find(x=>x.id===route.scene),start=scene?.start||0;
-    return `${pageHeader('ФИЛЬМ И ПРАКТИКА','«Великий»','Полная версия · 23 минуты 40 секунд · режиссёр Елена Дубровская')}<div class="film-layout"><section><div class="video-shell" id="film-player"><img src="./media/film-poster.jpg" alt="Кадр из фильма Великий" width="640" height="360"></div><div class="video-controls"><button class="button primary" data-play-film="${start}">Открыть плеер VK</button><a class="button ghost" href="${C.filmVKURL}" target="_blank" rel="noopener noreferrer">Смотреть в VK ↗</a><a class="text-link" href="${C.filmURL}" target="_blank" rel="noopener noreferrer">Полная версия на Яндекс.Диске ↗</a></div><p id="video-status" class="video-status" role="status">${scene?e(scene.name)+' · ориентир '+e(scene.time):'Сначала посмотрите фильм целиком. Сцены ниже помогут при повторном обращении.'}</p>${scene?`<div class="scene-focus"><strong>${e(scene.name)}</strong><p>${e(scene.focus)}</p><p>Найдите эту отметку на шкале плеера. Время сцен указано по полной версии на Яндекс.Диске; в публикации VK возможен сдвиг начала.</p></div>`:''}<label class="read-check"><input type="checkbox" data-preparation="film" ${state.preparation.film?'checked':''}><span>Я посмотрел(а) полный фильм, включая титры</span></label><div class="actions wrap"><a class="button primary" href="${state.filmReturn?'#'+state.filmReturn:state.preparation.sources?nextRoute():'#start'}">Вернуться к обучению →</a><a class="text-link" href="https://lk.kinouroki.org/films/18" target="_blank" rel="noopener noreferrer">Карточка в личном кабинете ↗</a></div></section><aside class="scene-list"><h2>Семь опорных сцен</h2>${C.scenes.map((x,i)=>`<a href="#film/${x.id}" class="scene-link ${x.id===route.scene?'active':''}" ${x.id===route.scene?'aria-current="true"':''}><span>${i+1}</span><span><strong>${e(x.name)}</strong><small>${e(x.time)}</small></span></a>`).join('')}<p>В финале фильма Калина читает стихотворение. Рассказ — отдельная литературная версия.</p><a href="./materials/story.pdf" target="_blank" rel="noopener" class="text-link">Читать оригинальный рассказ ↗</a></aside></div>`;
+  function filmSceneInfo(){
+    const scene=C.scenes.find(x=>x.id===route.scene);
+    return `<p id="video-status" class="video-status" role="status">${scene?e(scene.name)+' · '+e(scene.time):'Посмотрите фильм целиком. При повторном просмотре используйте ориентиры сцен ниже.'}</p>${scene?`<div class="scene-focus"><strong>${e(scene.name)}</strong><p>${e(scene.focus)}</p><p>Найдите начало сцены на шкале плеера: ${e(scene.time.split('–')[0])}. Отметки ориентировочные; выбор сцены показывает задание и не перематывает фильм.</p></div>`:''}`;
   }
-  async function playFilm(start){
-    const container=document.getElementById('film-player'),status=document.getElementById('video-status');if(!container||!status)return;
-    container.innerHTML=`<iframe src="${e(C.filmEmbedURL)}" title="Фильм Великий — плеер VK" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
-    const scene=C.scenes.find(x=>x.start===start);
-    status.textContent=(scene?'Для сцены «'+scene.name+'» найдите отметку '+scene.time.split('–')[0]+'. ':'')+'Если плеер не появился или просит войти, откройте фильм в VK либо полную версию на Яндекс.Диске по ссылке выше.';
-    const button=app.querySelector('[data-play-film]');if(button)button.textContent='Загрузить плеер заново';
+  function updateFilmScene(){
+    const info=document.getElementById('film-scene-info');if(info)info.innerHTML=filmSceneInfo();
+    app.querySelectorAll('.scene-link').forEach(el=>{const active=el.getAttribute('href')==='#film/'+route.scene;el.classList.toggle('active',active);if(active)el.setAttribute('aria-current','true');else el.removeAttribute('aria-current');});
+    announce('Ориентир сцены обновлён. Плеер продолжает работать.');
+  }
+  function renderFilm(){
+    return `${pageHeader('ФИЛЬМ И ПРАКТИКА','«Великий»','Полная версия · 23 минуты 40 секунд · режиссёр Елена Дубровская')}<div class="film-layout"><section><div class="video-shell" id="film-player"><iframe src="${e(C.filmEmbedURL)}" title="Фильм Великий — плеер VK" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><div id="film-scene-info">${filmSceneInfo()}</div><label class="read-check"><input type="checkbox" data-preparation="film" ${state.preparation.film?'checked':''}><span>Я посмотрел(а) полный фильм, включая титры</span></label><div class="actions wrap">${returnLink()}</div></section><aside class="scene-list"><h2>Семь опорных сцен</h2>${C.scenes.map((x,i)=>`<a href="#film/${x.id}" class="scene-link ${x.id===route.scene?'active':''}" ${x.id===route.scene?'aria-current="true"':''}><span>${i+1}</span><span><strong>${e(x.name)}</strong><small>${e(x.time)}</small></span></a>`).join('')}<p>В финале фильма Калина читает стихотворение. Рассказ — отдельная литературная версия.</p><a href="./materials/story.pdf" target="_blank" rel="noopener" class="text-link">Читать оригинальный рассказ ↗</a></aside></div>`;
   }
   function renderCase(s,i){
     const q=s.case,field=s.fields.find(f=>f.id===q.id),show=isReview()||state.caseReviewed[i];
-    return `<section class="teaching-case" id="teaching-case"><span class="eyebrow">ПЕДАГОГИЧЕСКИЙ КЕЙС · ПРИМЕНИТЬ МЕТОДИКУ</span><h2>${e(q.title)}</h2><div class="case-materials"><a class="button ghost" href="#film/${q.scene}">Открыть эпизод фильма</a>${sourceButton('Тетрадь · страница '+q.page,'workbook',[q.page])}</div>${noteField(field)}${!isReview()?`<button class="button primary" data-case-review="${i}" ${state.notes[q.id]?.trim()?'':'disabled'}>Сверить решение с разбором</button>`:''}${show?`<div class="case-feedback" id="case-feedback-${i}" tabindex="-1"><h3>Критерии самопроверки</h3><ul>${q.criteria.map(t=>'<li>'+e(t)+'</li>').join('')}</ul><h3>Пример рассуждения</h3><p>${e(q.example)}</p><p class="source-caption">Учебный разбор для педагога. Это не автоматическая оценка вашего ответа. Сравните основания решения и при необходимости доработайте запись.</p></div>`:'<p class="source-caption">Сначала запишите своё решение. Затем откроются критерии и пример рассуждения.</p>'}</section>`;
+    return `<section class="teaching-case" id="teaching-case" tabindex="-1"><span class="eyebrow">ПЕДАГОГИЧЕСКИЙ КЕЙС · ПРИМЕНИТЬ МЕТОДИКУ</span><h2>${e(q.title)}</h2><div class="case-materials"><a class="button ghost" href="#film/${q.scene}">Открыть эпизод фильма</a>${sourceButton('Тетрадь · страница '+q.page,'workbook',[q.page])}</div>${noteField(field)}${!isReview()?`<button class="button primary" data-case-review="${i}" ${state.notes[q.id]?.trim()?'':'disabled'}>Сверить решение с разбором</button>`:''}${show?`<div class="case-feedback" id="case-feedback-${i}" tabindex="-1"><h3>Критерии самопроверки</h3><ul>${q.criteria.map(t=>'<li>'+e(t)+'</li>').join('')}</ul><h3>Пример рассуждения</h3><p>${e(q.example)}</p><p class="source-caption">Учебный разбор для педагога. Это не автоматическая оценка вашего ответа. Сравните основания решения и при необходимости доработайте запись.</p></div>`:'<p class="source-caption">Сначала запишите своё решение. Затем откроются критерии и пример рассуждения.</p>'}</section>`;
   }
   function renderReview(){return `${pageHeader('МЕТОДИЧЕСКОЕ РЕЦЕНЗИРОВАНИЕ','Обзор курса','Проверьте источники, педагогические задачи, разборы и итоговые формы каждого этапа.')}<div class="review-overview"><a class="button primary" href="#film">Полный фильм и сцены</a><a class="button ghost" href="#materials">Оригинальные материалы</a></div><div class="review-stages">${C.stages.map((s,i)=>`<article><div class="section-kicker">ЭТАП ${i+1}</div><h2>${e(s.name)}</h2><p>${e(s.goal)}</p><strong class="review-case-title">Кейс: ${e(s.case.title)}</strong><div class="actions wrap"><a href="${stageURL(i)}">Изучение и источник</a><a href="${stageURL(i,'practice')}">Задания и разборы</a><a href="${stageURL(i,'plan')}">План и критерии</a></div></article>`).join('')}</div>`;}
   function renderResult(){
@@ -210,10 +259,11 @@
     const objectInput=(input,keys)=>{if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(k=>!keys.includes(k)))throw new Error('Недопустимые параметры');};
     const definitions=[
       {name:'get_course_progress',title:'Прочитать прогресс курса',description:'Возвращает этапы, пройденные в этом браузере. Не возвращает личные записи и не меняет прогресс.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:false},execute(input){objectInput(input,[]);return{course:'Справедливость',completedStages:[...state.completed].sort().map(i=>({number:i+1,title:C.stages[i].name})),total:6,storage:'this_browser'};}},
-      {name:'open_course_section',title:'Открыть раздел курса',description:'Открывает указанный этап и вкладку в видимом интерфейсе. Не выполняет задания и не отмечает обучение пройденным.',inputSchema:{type:'object',properties:{stage:{type:'integer',minimum:1,maximum:6},tab:{type:'string',enum:['read','practice','plan']}},required:['stage','tab'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){objectInput(input,['stage','tab']);if(!Number.isInteger(input.stage)||input.stage<1||input.stage>6||!['read','practice','plan'].includes(input.tab))throw new Error('Укажите этап от 1 до 6 и вкладку read, practice или plan');history.replaceState(null,'','#stage/'+(input.stage-1)+'/'+input.tab);route=parseRoute();render(true);return{stage:input.stage,title:C.stages[input.stage-1].name,tab:input.tab};}}
+      {name:'open_course_section',title:'Открыть раздел курса',description:'Открывает указанный этап и вкладку в видимом интерфейсе. Не выполняет задания и не отмечает обучение пройденным.',inputSchema:{type:'object',properties:{stage:{type:'integer',minimum:1,maximum:6},tab:{type:'string',enum:['read','practice','plan']}},required:['stage','tab'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){objectInput(input,['stage','tab']);if(!Number.isInteger(input.stage)||input.stage<1||input.stage>6||!['read','practice','plan'].includes(input.tab))throw new Error('Укажите этап от 1 до 6 и вкладку read, practice или plan');go('stage/'+(input.stage-1)+'/'+input.tab);return{stage:input.stage,title:C.stages[input.stage-1].name,tab:input.tab};}}
     ];
     for(const tool of definitions){try{Promise.resolve(context.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{/* The visible course remains usable if the optional API is unavailable. */}}
   }
   document.querySelector('.skip')?.addEventListener('click',event=>{event.preventDefault();document.getElementById('main').focus();});
-  render();loadSources();setupWebMCP();
+  if(!isReview())state.lastRoute=location.hash.slice(1)||state.lastRoute||'start';
+  save();render();loadSources();setupWebMCP();
 })();
