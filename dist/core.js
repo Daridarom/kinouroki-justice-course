@@ -1,6 +1,6 @@
 'use strict';
 (function(root) {
-  const blank = () => ({version:1, read:[], completed:[], answers:{}, checked:{}, notes:{}, project:{}, reviews:{}, preparation:{}, caseReviewed:{}, mode:"learn", lastRoute:"start", filmReturn:null, updated:null});
+  const blank = () => ({version:1, read:[], completed:[], answers:{}, checked:{}, notes:{}, project:{}, reviews:{}, preparation:{}, caseReviewed:{}, mode:"learn", lastRoute:"start", filmReturn:null, lessonReturn:"start", updated:null});
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function grade(q, value) {
     if(q.type === 'single') return Number.isInteger(value) && value === q.answer;
@@ -34,6 +34,7 @@
     s.lastRoute=typeof input.lastRoute==='string'&&/^(start|learn|film(?:\/[a-z]+)?|stage\/[0-5]\/(read|practice|plan)|notebook|materials|glossary|result)$/.test(input.lastRoute)?input.lastRoute:'start';
     s.completed=Array.isArray(input.completed)?[...new Set(input.completed.filter(v=>validStage(v)&&canComplete(course,s,v)))]:[];
     s.filmReturn=typeof input.filmReturn==='string'&&/^stage\/[0-5]\/(read|practice|plan)$/.test(input.filmReturn)?input.filmReturn:null;
+    s.lessonReturn=typeof input.lessonReturn==='string'&&/^(start|stage\/[0-5]\/(read|practice|plan))$/.test(input.lessonReturn)?input.lessonReturn:s.filmReturn||'start';
     s.updated=typeof input.updated==='string'?input.updated.slice(0,50):null;
     return s;
   }

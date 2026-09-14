@@ -58,12 +58,13 @@ const makeHarness=(initial={},failStorage=false)=>{
     querySelector(){return null;}
     querySelectorAll(){return [];}
     focus(){}
+    scrollIntoView(){}
     showModal(){this.open=true;}
     close(){this.open=false;}
     appendChild(){}
     remove(){}
     click(){downloads.push(this.download);}
-    closest(){return this;}
+    closest(selector){return selector==='button'&&this.tagName==='BUTTON'||selector==='a[data-case-link]'&&this.dataset.caseLink!==undefined?this:null;}
     hasAttribute(name){return name==='data-export'?this.exportFlag:name==='data-reset'?this.resetFlag:name.startsWith('data-')&&name.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()) in this.dataset;}
     matches(selector){return this.match===selector;}
   }
@@ -72,7 +73,7 @@ const makeHarness=(initial={},failStorage=false)=>{
   const sandbox={console,innerWidth:1280,location,history:{replaceState(_,__,hash){location.hash=hash;}},document:{getElementById:get,querySelector(){return null;},querySelectorAll(){return [];},createElement(){return new Element('new');},body:new Element('body')},localStorage:{getItem(k){if(failStorage)throw new Error('denied');return local.get(k)||null;},setItem(k,v){if(failStorage)throw new Error('quota');local.set(k,v);}},fetch:async()=>({ok:true,json:async()=>source}),URL:{createObjectURL(blob){blobs.push(blob);return'blob:test';},revokeObjectURL(){}},Blob,AbortController,setTimeout(){return 1;},clearTimeout(){}};
   sandbox.window=sandbox;sandbox.addEventListener=(n,f)=>windowEvents[n]=f;sandbox.scrollTo=()=>{};sandbox.scrollY=0;
   vm.createContext(sandbox);for(const file of ['course.js','learning.js','core.js','app.js'])vm.runInContext(read('dist/'+file),sandbox,{filename:file});
-  const emit=async(type,attrs)=>{const el=new Element('target');Object.assign(el,attrs);await get('app').events[type]({target:el});};
+  const emit=async(type,attrs)=>{const el=new Element('target');Object.assign(el,attrs);await get('app').events[type]({target:el,preventDefault(){}});};
   const navigate=(hash)=>{location.hash=hash;windowEvents.hashchange();};
   return {get,local,downloads,blobs,emit,navigate,windowEvents};
 };
@@ -114,5 +115,23 @@ await reloaded.emit('click',{dataset:{check:'intro-antipode'}});assert(reloaded.
 await reloaded.emit('click',{resetFlag:true,dataset:{}});assert(reloaded.get('reset-dialog').open);reloaded.get('confirm-reset').events.click();assert.deepEqual(JSON.parse(reloaded.local.get('kinouroki.justice.v1')).completed,[]);
 const blocked=makeHarness({},true);assert(blocked.get('app').innerHTML.includes('Браузер не сохраняет записи'));
 await h.emit('click',{dataset:{source:'workbook',pages:'28'}});assert(h.get('source-dialog').open);assert(h.get('source-content').innerHTML.includes('Я заметил мысль-оковы.'));
+// Reference tools retain the lesson; scene selection and watched status must not recreate the player.
+const navigation=makeHarness();navigation.navigate('#stage/2/practice');navigation.navigate('#glossary');
+assert(navigation.get('app').innerHTML.includes('← Мысль · Практикум'));
+navigation.navigate('#materials');assert(navigation.get('app').innerHTML.includes('← Мысль · Практикум'));
+navigation.navigate('#film');const filmMarkup=navigation.get('app').innerHTML;
+assert(filmMarkup.includes('<iframe src="'+course.filmEmbedURL.replace(/&/g,'&amp;')+'"'));
+assert(!filmMarkup.includes('data-play-film'));assert(!filmMarkup.includes('Смотреть в VK'));assert(!filmMarkup.includes('Яндекс.Диске'));
+navigation.navigate('#film/money');assert.equal(navigation.get('app').innerHTML,filmMarkup,'Scene change must preserve the mounted player');
+assert(navigation.get('film-scene-info').innerHTML.includes('Деньги Вадику'));
+await navigation.emit('change',{match:'[data-preparation]',dataset:{preparation:'film'},checked:true});
+assert.equal(navigation.get('app').innerHTML,filmMarkup,'Watched checkbox must preserve the mounted player');
+const resumed=makeHarness(Object.fromEntries(navigation.local));resumed.navigate('#materials');assert(resumed.get('app').innerHTML.includes('← Мысль · Практикум'));
+navigation.navigate('#review');navigation.navigate('#stage/5/read');navigation.navigate('#film');assert(navigation.get('app').innerHTML.includes('← Воодушевление · Изучить'));
+const reviewReload=makeHarness(Object.fromEntries(navigation.local));reviewReload.navigate('#stage/5/practice');assert(reviewReload.get('app').innerHTML.includes('Показан ответ и методический разбор'));
+navigation.navigate('#learn');navigation.navigate('#unknown');assert(navigation.get('app').innerHTML.includes('Шесть этапов'));
+navigation.navigate('#stage/2/plan');assert(navigation.get('app').innerHTML.includes('Назад к практикуму'));
+await navigation.emit('click',{tagName:'A',dataset:{caseLink:'2'}});navigation.navigate('#stage/2/practice');assert(navigation.get('app').innerHTML.includes('id="teaching-case" tabindex="-1"'));
 console.log('PASS: full six-stage event flow, edit revokes completion, reload, source reader, escaped export, reset, unavailable storage');
+console.log('PASS: lesson return across tools and reload, reviewer reload, direct player, scene and watched-state continuity, previous-step links');
 console.log('Not performed: browser/layout verification and supported-context WebMCP validation.');
