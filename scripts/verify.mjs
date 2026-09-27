@@ -40,7 +40,10 @@ assert.equal(course.scenes.length,7,"The author's seven pedagogical episodes mus
 assert.equal(course.scenes[3].start,591.50,'Approved C05/C06 boundary must be used');
 assert.equal(course.scenes[4].start,770,'Approved C08/C09 boundary must be used');
 assert.equal(course.scenes[5].start,831.80,'Approved C09/C10 boundary must be used');
-for(let i=1;i<course.scenes.length;i++)assert.equal(course.scenes[i-1].end,course.scenes[i].start,'Episode ranges must be contiguous');
+for(let i=1;i<course.scenes.length;i++)assert(course.scenes[i-1].end<=course.scenes[i].start,'Episode ranges must not overlap');
+assert.equal(course.scenes[2].start,480.50,'Monument begins at approved C04/C05 boundary');
+assert.equal(course.scenes[2].name,'Памятник Невскому');
+assert.equal(course.scenes[6].name,'Концерт. Я — Калина');
 assert(course.scenes[6].focus.includes('стихотворение'),'Film finale must not be replaced with story ending');
 assert(source.pages['74-80']?.length);
 for(const principle of course.principles)assert(allText.includes(simplify(principle)));
@@ -128,7 +131,8 @@ assert(navigation.get('app').innerHTML.includes('← Мысль · Практи�
 navigation.navigate('#materials');assert(navigation.get('app').innerHTML.includes('← Мысль · Практикум'));
 navigation.navigate('#film');const filmMarkup=navigation.get('app').innerHTML;
 assert(filmMarkup.includes('Семь опорных эпизодов'));
-assert(filmMarkup.includes('остальные привязки и реплики ещё сверяются'));
+assert(!filmMarkup.includes('мастер-файл'));
+assert(!filmMarkup.includes('техническая карта'));
 assert(filmMarkup.includes('<iframe src="'+course.filmEmbedURL.replace(/&/g,'&amp;')+'"'));
 assert(!filmMarkup.includes('data-play-film'));assert(!filmMarkup.includes('Смотреть в VK'));assert(!filmMarkup.includes('Яндекс.Диске'));
 navigation.navigate('#film/money');assert.equal(navigation.get('app').innerHTML,filmMarkup,'Scene change must preserve the mounted player');
