@@ -1,0 +1,15 @@
+/* The shared course stylesheet defines layout, typography, colors and controls. */
+.mandarin-course [data-screen]>.title-row{margin:10px 0 24px}
+.mandarin-course [data-screen]>.eyebrow{display:block}
+.mandarin-course .prep-card h3{font-size:20px;margin:0 0 12px}
+.mandarin-course [data-screen]>label[for]{display:block;font-size:16px;font-weight:600;margin:28px 0 10px}
+.mandarin-course .timeline{list-style:none;padding:0;margin:28px 0}
+.mandarin-course .timeline li{border-left:3px solid var(--gold);padding:0 0 20px 18px;line-height:1.65}
+.mandarin-course .plan-answer{white-space:pre-wrap;overflow-wrap:anywhere}
+.mandarin-course .export-links{margin-top:20px}
+.mandarin-course .status-banner{margin-bottom:28px}
+@media print{
+  .mandarin-course [data-screen]{display:none!important}
+  .mandarin-course #plan{display:block!important}
+  .mandarin-course #plan .actions,.mandarin-course #plan .text-link,.mandarin-course .status-banner{display:none!important}
+}
