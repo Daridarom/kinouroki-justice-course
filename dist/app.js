@@ -7,6 +7,7 @@
   if(location.hash==='#learn')state.mode='learn';if(location.hash==='#review')state.mode='review';
   let route=parseRoute();
   let exportURL=null, reviewReturn='review', focusTarget=null, renderedKey=null;
+  let pendingProgress=null, progressURL=null, progressReadId=0;
   const pagePositions=new Map();
   if('scrollRestoration' in history)history.scrollRestoration='manual';
   const routeKey=()=>state.mode+':'+(route.view==='stage'?'stage/'+route.stage+'/'+route.tab:route.view==='film'?'film/'+(route.scene||''):route.view);
@@ -136,6 +137,7 @@
     const filled=Object.values(state.notes).filter(v=>v.trim()).length+Object.values(state.project).filter(v=>v.trim()).length;
     return `${pageHeader('ЛИЧНАЯ ПОДГОТОВКА','Моя рабочая тетрадь','Все записи к киноуроку — в одном месте. Их можно дополнять и скачать отдельным файлом.')}<div class="notebook-bar"><div><b>${state.completed.length} из 6</b><span>этапов пройдено</span></div><div><b data-filled-count>${filled}</b><span>полей заполнено</span></div><a class="button primary" href="#result">Открыть итоговую тетрадь →</a></div>
       <p class="local-explainer">Это ваши записи для подготовки. Они доступны в текущем браузере. Скачанный файл позволяет сохранить их отдельно; автоматической проверки методистом здесь нет.</p>
+      <div class="actions wrap"><button class="button ghost" data-save-progress>Сохранить прогресс в файл</button><button class="button ghost" data-load-progress ${isReview()?'disabled':''}>Загрузить прогресс</button></div><p id="progress-status" role="status" class="local-explainer">Файл прогресса переносит ответы и записи на другое устройство. Храните его у себя: он содержит ваши заметки.</p>
       ${state.completed.length===6?'<div class="course-finished"><strong>Учебный маршрут из шести этапов завершён</strong><p>Вы выполнили практикумы, подготовили записи и отметили самопроверку. Сохраните тетрадь. Практическое проведение киноурока и социального дела остаётся следующим шагом.</p></div>':''}
       <div class="notebook-sections">${C.stages.map((s,i)=>`<details ${i===0?'open':''}><summary><span><b class="chapter-small">${String(i+1).padStart(2,'0')}</b>${e(s.name)}</span><span class="notebook-status">${state.completed.includes(i)?'✓ Пройден':'Записи к этапу'}</span></summary><div class="notebook-body"><p>${e(s.takeaway)}</p>${s.fields.map(f=>noteField(f)).join('')}${i===4?projectForm():''}${reviewPanel(s,i)}<a href="${stageURL(i)}" class="text-link">Вернуться к учебному разделу →</a></div></details>`).join('')}</div><div class="notebook-footer"><span data-save-status>${storageOK?'Сохранено в этом браузере':'Сохранение недоступно'}</span><button class="text-button" data-reset>Начать заново</button></div>`;
   }
@@ -177,6 +179,8 @@
   app.addEventListener('click',async event=>{
     const caseLink=event.target.closest('a[data-case-link]');if(caseLink){event.preventDefault();focusTarget='teaching-case';go('stage/'+caseLink.dataset.caseLink+'/practice');return;}
     const el=event.target.closest('button');if(!el)return;
+    if(el.hasAttribute('data-save-progress')){downloadProgress();return;}
+    if(el.hasAttribute('data-load-progress')){if(!isReview())document.getElementById('progress-file').click();return;}
     if(el.hasAttribute('data-open-nav')){const menu=app.querySelector('.course-nav');menu.open=true;menu.scrollIntoView({block:'start'});menu.querySelector('summary')?.focus({preventScroll:true});return;}
     if(el.hasAttribute('data-top')){document.getElementById('main').focus({preventScroll:true});window.scrollTo({top:0,behavior:'smooth'});return;}
     if(el.hasAttribute('data-mode')){state.mode=el.dataset.mode==='review'?'review':'learn';save();go(isReview()?'review':state.lastRoute||'start');return;}
@@ -206,6 +210,35 @@
   document.getElementById('close-source').addEventListener('click',()=>document.getElementById('source-dialog').close());
   document.getElementById('cancel-reset').addEventListener('click',()=>document.getElementById('reset-dialog').close());
   document.getElementById('confirm-reset').addEventListener('click',()=>{state=blank();save();document.getElementById('reset-dialog').close();go('start');announce('Записи и прогресс удалены из этого браузера.');});
+  function downloadProgress(){
+    if(progressURL)URL.revokeObjectURL(progressURL);
+    progressURL=URL.createObjectURL(new Blob([window.CourseCore.exportProgress(state,C)],{type:'application/json;charset=utf-8'}));
+    const a=document.createElement('a');a.href=progressURL;a.download='Kinouroki_Spravedlivost_progress.json';document.body.appendChild(a);a.click();a.remove();
+    const status=document.getElementById('progress-status');if(status)status.innerHTML='Файл готов. Если скачивание не началось, <a href="'+e(progressURL)+'" download="Kinouroki_Spravedlivost_progress.json">сохраните прогресс по ссылке</a>.';
+    announce('Файл прогресса готов к скачиванию.');
+  }
+  document.getElementById('progress-file').addEventListener('change',async event=>{
+    const file=event.target.files?.[0],readId=++progressReadId;event.target.value='';pendingProgress=null;
+    if(!file||isReview())return;
+    try{
+      if(file.size>2000000)throw new Error('Файл слишком большой. Максимум — 2 МБ.');
+      const incoming=window.CourseCore.importProgress(await file.text(),C);
+      if(readId!==progressReadId||isReview())return;
+      pendingProgress=incoming;
+      const filled=Object.values(incoming.notes).filter(v=>v.trim()).length+Object.values(incoming.project).filter(v=>v.trim()).length;
+      document.getElementById('progress-summary').textContent='В файле: '+incoming.completed.length+' из 6 этапов пройдено, '+filled+' полей заполнено.';
+      document.getElementById('progress-error').textContent='';document.getElementById('progress-dialog').showModal();
+    }catch(error){const status=document.getElementById('progress-status');if(status)status.textContent=error.message;announce(error.message);}
+  });
+  document.getElementById('backup-progress').addEventListener('click',downloadProgress);
+  document.getElementById('cancel-progress').addEventListener('click',()=>{pendingProgress=null;document.getElementById('progress-dialog').close();});
+  document.getElementById('progress-dialog').addEventListener('close',()=>{pendingProgress=null;});
+  document.getElementById('confirm-progress').addEventListener('click',()=>{
+    if(!pendingProgress||isReview())return;
+    const incoming=normalize(pendingProgress,C);incoming.mode='learn';incoming.lastRoute='notebook';incoming.updated=new Date().toISOString();
+    try{localStorage.setItem(KEY,JSON.stringify(incoming));}catch{document.getElementById('progress-error').textContent='Браузер не смог сохранить файл. Текущие записи не заменены.';return;}
+    state=incoming;storageOK=true;document.getElementById('progress-dialog').close();pendingProgress=null;go('notebook');render();announce('Прогресс загружен и сохранён в этом браузере.');
+  });
   function exportNotebook(){
     const asText=value=>e(value||'Не заполнено').replace(/\n/g,'<br>');
     const fieldsHTML=(fields,group)=>fields.map(f=>`${f.group?'<h3>'+e(f.group)+'</h3>':''}<h4>${e(f.label)}</h4><p>${asText(state[group][f.id])}</p>`).join('');

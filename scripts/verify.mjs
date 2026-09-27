@@ -148,3 +148,27 @@ await navigation.emit('click',{tagName:'A',dataset:{caseLink:'2'}});navigation.n
 console.log('PASS: full six-stage event flow, edit revokes completion, reload, source reader, escaped export, reset, unavailable storage');
 console.log('PASS: lesson return across tools and reload, reviewer reload, direct player, scene and watched-state continuity, previous-step links');
 console.log('Not performed: browser/layout verification and supported-context WebMCP validation.');
+
+// Portable progress: preserve real work, reject unrelated files, never trust completion flags.
+const roundtrip=core.importProgress(core.exportProgress(finalState,course),course);
+assert.equal(roundtrip.completed.length,6);
+assert.deepEqual(roundtrip.notes,finalState.notes);
+assert.deepEqual(core.importProgress(JSON.stringify(finalState),course).answers,finalState.answers);
+for(const invalid of ['{}','[]','not json',JSON.stringify({format:'another.course',version:1,state:finalState})])assert.throws(()=>core.importProgress(invalid,course));
+assert.throws(()=>core.importProgress('x'.repeat(2000001),course));
+const fake=core.blank();fake.completed=[0,1,2,3,4,5];fake.notes.unexpected='bad';
+assert.deepEqual(core.importProgress(JSON.stringify(fake),course).completed,[]);
+assert(!('unexpected' in core.importProgress(JSON.stringify(fake),course).notes));
+const transfer=makeHarness();transfer.navigate('#notebook');
+const selectFile=async harness=>harness.get('progress-file').events.change({target:{files:[{size:500,text:async()=>core.exportProgress(finalState,course)}],value:'file.json'}});
+const beforeImport=transfer.local.get('kinouroki.justice.v1');
+await selectFile(transfer);assert(transfer.get('progress-dialog').open);
+assert.equal(transfer.local.get('kinouroki.justice.v1'),beforeImport,'Selection alone must not overwrite progress');
+transfer.get('cancel-progress').events.click();assert.equal(transfer.local.get('kinouroki.justice.v1'),beforeImport);
+await selectFile(transfer);transfer.get('confirm-progress').events.click();
+assert.equal(JSON.parse(transfer.local.get('kinouroki.justice.v1')).completed.length,6);
+assert(transfer.get('app').innerHTML.includes('&lt;script&gt;'),'Imported notes stay escaped');
+await selectFile(blocked);blocked.get('confirm-progress').events.click();
+assert(blocked.get('progress-error').textContent.includes('не заменены'));
+transfer.navigate('#review');await selectFile(transfer);assert(!transfer.get('progress-dialog').open,'Review mode cannot import');
+console.log('PASS: portable progress round trip, invalid files, normalization, cancel, storage failure and review guard');

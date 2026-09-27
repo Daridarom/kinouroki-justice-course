@@ -38,7 +38,22 @@
     s.updated=typeof input.updated==='string'?input.updated.slice(0,50):null;
     return s;
   }
-  const api={blank,escape,grade,normalize,planReady,canComplete};
+  function exportProgress(state,course){
+    return JSON.stringify({format:'kinouroki.justice.progress',version:1,state:normalize(state,course)},null,2);
+  }
+  function importProgress(text,course){
+    if(typeof text!=='string'||text.length>2000000)throw new Error('Файл слишком большой. Максимум — 2 МБ.');
+    let data;try{data=JSON.parse(text);}catch{throw new Error('Не удалось прочитать файл. Выберите файл прогресса JSON.');}
+    const object=v=>v&&typeof v==='object'&&!Array.isArray(v);
+    if(!object(data))throw new Error('Это не файл прогресса курса.');
+    if('format' in data){
+      if(data.format!=='kinouroki.justice.progress'||data.version!==1)throw new Error('Формат или версия файла не поддерживается.');
+      data=data.state;
+    }
+    if(!object(data)||data.version!==1||!Array.isArray(data.read)||!Array.isArray(data.completed)||!['notes','project','answers','checked'].every(k=>object(data[k])))throw new Error('В файле нет корректного прогресса этого курса.');
+    return normalize(data,course);
+  }
+  const api={blank,escape,grade,normalize,planReady,canComplete,exportProgress,importProgress};
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
   else root.CourseCore=api;
 })(typeof window!=='undefined'?window:globalThis);
