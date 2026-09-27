@@ -6,7 +6,8 @@ const mandarin=fs.readFileSync(new URL('../dist/mandarin/index.html',import.meta
 const root=fs.readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
 
 assert.match(great,/href="\.\/mandarin\/"/,'Great must link to Mandarin');
-assert.match(mandarin,/href="\.\.\/#start"/,'Mandarin must link to Great');
+assert.match(mandarin,/href="\.\.\/\?v=mandarin#start"/,'Mandarin must link to refreshed Great');
+assert.match(mandarin,/querySelectorAll\('\.layout > nav a'\)/,'Section navigation must not reset the active film tab');
 assert.match(great,/kinouroki\.justice\.v1/,'Keep existing Great progress key');
 assert.match(mandarin,/kinouroki\.mandarin\.preview\.v1/,'Use a separate Mandarin progress key');
 assert.match(mandarin,/https:\/\/kinouroki\.org\/mandarin\//,'Film must have a public official viewing route');
