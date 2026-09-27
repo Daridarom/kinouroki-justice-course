@@ -31,7 +31,7 @@
 </head>
 <body>
   <a class="skip" href="#main">К содержанию</a>
-  <header><div class="eyebrow">Киноуроки · курсы для педагогов</div><nav class="course-tabs" aria-label="Выбрать киноурок"><a href="../#start">Справедливость · Великий</a><a href="./#start" aria-current="page">Радость за другого · Мандарин</a></nav><h1>Радость за другого<br>«Мандарин»</h1><p>Четыре занятия по пособию, путь от впечатления о фильме к общему делу и разговору о пережитом.</p></header>
+  <header><div class="eyebrow">Киноуроки · курсы для педагогов</div><nav class="course-tabs" aria-label="Выбрать киноурок"><a href="../?v=mandarin#start">Справедливость · Великий</a><a href="./#start" aria-current="page">Радость за другого · Мандарин</a></nav><h1>Радость за другого<br>«Мандарин»</h1><p>Четыре занятия по пособию, путь от впечатления о фильме к общему делу и разговору о пережитом.</p></header>
   <p class="status" role="status"><strong>Рабочий черновик.</strong> Карта фильма пока содержит приблизительное время; реплики и методический статус двух редакций пособия ещё сверяются. Страница не прошла методическую приёмку.</p>
   <div class="layout">
     <nav aria-label="Разделы курса">
@@ -69,7 +69,7 @@
         const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='mandarin-course-notes.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
       });
       document.getElementById('print').addEventListener('click',()=>window.print());
-      const links=[...document.querySelectorAll('nav a')];
+      const links=[...document.querySelectorAll('.layout > nav a')];
       const activate=()=>{ const hash=location.hash||'#start'; for(const link of links) { if(link.getAttribute('href')===hash) link.setAttribute('aria-current','page'); else link.removeAttribute('aria-current'); } };
       window.addEventListener('hashchange',activate);activate();update();
     })();
