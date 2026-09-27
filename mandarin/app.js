@@ -6,6 +6,7 @@
   const screens=[...document.querySelectorAll('[data-screen]')];
   const names=['Впечатление','Осмысление','Применение','Рефлексия'];
   const menu=document.querySelector('.course-nav');
+  const filmPlayer=document.querySelector('[data-film-player]');
   let saved=normalize(null),storageOK=true,exportURL=null;
   try { saved=normalize(JSON.parse(localStorage.getItem(KEY))); } catch { storageOK=false; }
   menu.open=innerWidth>800;
@@ -48,6 +49,10 @@
   function showRoute(focus=true){
     const selected=route(location.hash.slice(1));
     screens.forEach(el=>el.hidden=el.dataset.screen!==selected);
+    // Load VK only in the film view; leaving it stops playback in the hidden frame.
+    if(selected==='film'){
+      if(!filmPlayer.hasAttribute('src'))filmPlayer.src=filmPlayer.dataset.src;
+    }else filmPlayer.removeAttribute('src');
     document.querySelectorAll('[data-route]').forEach(el=>{
       const active=el.dataset.route===selected;el.classList.toggle('active',active);
       if(active)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');
