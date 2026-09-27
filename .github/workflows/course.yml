@@ -1,5 +1,10 @@
 name: Check and publish course
 
+# Проверки запускаются на каждый push и pull request в main.
+# Публикация — только вручную (Run workflow → publish = true) и только после отдельного «да» Алексея.
+# Сайт раздаётся из ветки gh-pages (Settings → Pages: Deploy from a branch → gh-pages → /),
+# поэтому публикация копирует содержимое dist/ в эту ветку; настройки Pages менять не нужно.
+
 on:
   push:
     branches: [main]
@@ -8,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: 'Publish only after explicit approval from Aleksey'
+        description: 'Publish dist/ to gh-pages — only after explicit approval from Aleksey'
         required: true
         type: boolean
         default: false
@@ -25,25 +30,23 @@ jobs:
         with:
           node-version: '22'
       - run: npm test
-      - uses: actions/upload-pages-artifact@v3
-        if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main'
-        with:
-          path: dist
 
-  deploy:
+  publish:
     if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
     permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      contents: write
     concurrency:
-      group: github-pages
+      group: gh-pages-publish
       cancel-in-progress: false
     steps:
-      - name: Deploy checked artifact
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+      - name: Publish dist/ to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          enable_jekyll: false
+          commit_message: 'Publish course from main ${{ github.sha }}'
