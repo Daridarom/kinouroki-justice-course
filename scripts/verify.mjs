@@ -64,27 +64,28 @@ const makeHarness=(initial={},failStorage=false)=>{
   class Element{
     constructor(id){this.id=id;this.innerHTML='';this.textContent='';this.events={};this.dataset={};this.open=false;this.hidden=false;this.tagName='BUTTON';}
     addEventListener(name,fn){this.events[name]=fn;}
-    querySelector(){return null;}
+    querySelector(selector){if(this.id==='app'&&selector==='.course-nav')return get('course-nav');if(this.id==='course-nav'&&selector==='summary')return get('nav-summary');return null;}
     querySelectorAll(){return [];}
-    focus(){}
-    scrollIntoView(){}
+    focus(){this.focused=true;}
+    scrollIntoView(){this.scrolled=true;}
     showModal(){this.open=true;}
     close(){this.open=false;}
     appendChild(){}
     remove(){}
     click(){downloads.push(this.download);}
-    closest(selector){return selector==='button'&&this.tagName==='BUTTON'||selector==='a[data-case-link]'&&this.dataset.caseLink!==undefined?this:null;}
+    closest(selector){return selector==='button'&&this.tagName==='BUTTON'||selector==='a[data-case-link]'&&this.dataset.caseLink!==undefined||selector==='a[data-route-home]'&&this.dataset.routeHome!==undefined?this:null;}
     hasAttribute(name){return name==='data-export'?this.exportFlag:name==='data-reset'?this.resetFlag:name.startsWith('data-')&&name.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()) in this.dataset;}
     matches(selector){return this.match===selector;}
   }
   const get=id=>{if(!elements.has(id))elements.set(id,new Element(id));return elements.get(id);};
-  const location={hash:''};
+  let hash='';
+  const location={get hash(){return hash;},set hash(value){hash=value?(value.startsWith('#')?value:'#'+value):'';}};
   const sandbox={console,innerWidth:1280,location,history:{replaceState(_,__,hash){location.hash=hash;}},document:{getElementById:get,querySelector(){return null;},querySelectorAll(){return [];},createElement(){return new Element('new');},body:new Element('body')},localStorage:{getItem(k){if(failStorage)throw new Error('denied');return local.get(k)||null;},setItem(k,v){if(failStorage)throw new Error('quota');local.set(k,v);}},fetch:async()=>({ok:true,json:async()=>source}),URL:{createObjectURL(blob){blobs.push(blob);return'blob:test';},revokeObjectURL(){}},Blob,AbortController,setTimeout(){return 1;},clearTimeout(){}};
-  sandbox.window=sandbox;sandbox.addEventListener=(n,f)=>windowEvents[n]=f;sandbox.scrollTo=()=>{};sandbox.scrollY=0;
+  sandbox.window=sandbox;sandbox.addEventListener=(n,f)=>windowEvents[n]=f;sandbox.scrollTo=(v)=>{sandbox.lastScroll=v;};sandbox.scrollY=0;
   vm.createContext(sandbox);for(const file of ['course.js','learning.js','core.js','app.js'])vm.runInContext(read('dist/'+file),sandbox,{filename:file});
   const emit=async(type,attrs)=>{const el=new Element('target');Object.assign(el,attrs);await get('app').events[type]({target:el,preventDefault(){}});};
   const navigate=(hash)=>{location.hash=hash;windowEvents.hashchange();};
-  return {get,local,downloads,blobs,emit,navigate,windowEvents};
+  return {get,local,downloads,blobs,emit,navigate,windowEvents,sandbox};
 };
 const h=makeHarness();for(const key of ['film','sources'])await h.emit('change',{match:'[data-preparation]',dataset:{preparation:key},checked:true});assert(h.get('app').innerHTML.includes('Настроить «Весы в сердце»'));
 await h.emit('input',{match:'[data-note]',dataset:{note:'intro-definition',group:'notes'},value:'<script>alert("x")</script> Моя заметка'});
@@ -172,3 +173,14 @@ await selectFile(blocked);blocked.get('confirm-progress').events.click();
 assert(blocked.get('progress-error').textContent.includes('не заменены'));
 transfer.navigate('#review');await selectFile(transfer);assert(!transfer.get('progress-dialog').open,'Review mode cannot import');
 console.log('PASS: portable progress round trip, invalid files, normalization, cancel, storage failure and review guard');
+const mobile=makeHarness();mobile.sandbox.innerWidth=375;mobile.navigate('#start');
+await mobile.emit('click',{dataset:{openNav:''}});
+assert(mobile.get('course-nav').open&&mobile.get('course-nav').scrolled&&mobile.get('nav-summary').focused);
+await mobile.emit('click',{dataset:{top:''}});assert.equal(mobile.sandbox.lastScroll.top,0);
+for(const view of ['#stage/2/practice','#start']){
+  mobile.navigate(view);mobile.sandbox.scrollY=700;
+  await mobile.emit('click',{tagName:'A',dataset:{routeHome:''}});
+  assert.equal(mobile.sandbox.location.hash,'#start');assert.equal(mobile.sandbox.lastScroll.top,0);
+}
+mobile.navigate('#review');await mobile.emit('click',{tagName:'A',dataset:{routeHome:''}});assert.equal(mobile.sandbox.location.hash,'#review');
+console.log('PASS: mobile Sections opens menu, Top scrolls, Route returns home including repeated click');

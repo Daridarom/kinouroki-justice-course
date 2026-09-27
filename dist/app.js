@@ -66,7 +66,7 @@
       <div class="workspace"><header class="topbar"><span>Мастерская педагога <span class="divider">/</span> <strong>Справедливость</strong></span><button class="mode-switch" data-mode="${isReview()?'learn':'review'}">${isReview()?'Перейти к обучению':'Режим рецензирования'}</button></header>
       <div id="storage-warning" role="status" class="storage-warning" ${storageOK?'hidden':''}>Браузер не сохраняет записи. Перед закрытием скачайте рабочую тетрадь.</div>
       <main id="main" tabindex="-1">${pageNavigation()}${route.view==='start'||route.view==='review'?'<div class="status-banner"><strong>Рабочая версия · 27.09.2026</strong><span>Исходные документы доступны без правок. Электронные пояснения и привязка эпизодов проходят методическую проверку; прохождение курса не является удостоверением или экспертной оценкой.</span></div>':''}${isReview()?'<div class="review-banner"><strong>Режим рецензирования</strong><span>Все материалы и разборы доступны. Учебные ответы и прогресс не меняются.</span><a href="#review">Обзор этапов</a></div>':''}${route.view==='start'?renderStart():route.view==='film'?renderFilm():route.view==='review'?renderReview():route.view==='result'?renderResult():route.view==='stage'?renderStage():route.view==='notebook'?renderNotebook():route.view==='materials'?renderMaterials():renderGlossary()}</main>
-      <footer class="page-footer"><span>Курс для педагогов · «Великий»</span><span>Проект «Киноуроки»</span></footer><nav class="mobile-tools" aria-label="Быстрая навигация"><button data-open-nav>Разделы</button><a href="${isReview()?'#review':'#start'}">Маршрут</a><button data-top>Наверх ↑</button></nav></div>`;
+      <footer class="page-footer"><span>Курс для педагогов · «Великий»</span><span>Проект «Киноуроки»</span></footer><nav class="mobile-tools" aria-label="Быстрая навигация"><button data-open-nav>Разделы</button><a data-route-home href="${isReview()?'#review':'#start'}">Маршрут</a><button data-top>Наверх ↑</button></nav></div>`;
   }
   function render(focus=false){
     const key=routeKey(), samePage=renderedKey===key, y=window.scrollY;
@@ -177,6 +177,7 @@
     if(el.id==='glossary-search'){glossaryQuery=el.value;document.getElementById('glossary-results').innerHTML=glossaryRows();}
   });
   app.addEventListener('click',async event=>{
+    if(event.target.closest('a[data-route-home]')){event.preventDefault();const target=isReview()?'review':'start';pagePositions.delete(state.mode+':'+target);go(target);document.getElementById('main').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});return;}
     const caseLink=event.target.closest('a[data-case-link]');if(caseLink){event.preventDefault();focusTarget='teaching-case';go('stage/'+caseLink.dataset.caseLink+'/practice');return;}
     const el=event.target.closest('button');if(!el)return;
     if(el.hasAttribute('data-save-progress')){downloadProgress();return;}
