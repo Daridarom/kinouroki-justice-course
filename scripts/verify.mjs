@@ -36,6 +36,12 @@ for(const [id,doc] of Object.entries(source.documents)){
 for(const quiz of [course.stages[3].quizzes[0],course.stages[5].quizzes[0]])for(const item of quiz.items)assert(allText.includes(simplify(item)),`Matching text differs: ${item}`);
 assert.equal(source.glossary.length,25);
 assert.deepEqual(course.stages.map(s=>s.name),['Введение','Чувство','Мысль','Сознание','Воображение','Воодушевление']);
+assert.equal(course.scenes.length,7,"The author's seven pedagogical episodes must remain seven");
+assert.equal(course.scenes[3].start,591.50,'Approved C05/C06 boundary must be used');
+assert.equal(course.scenes[4].start,770,'Approved C08/C09 boundary must be used');
+assert.equal(course.scenes[5].start,831.80,'Approved C09/C10 boundary must be used');
+for(let i=1;i<course.scenes.length;i++)assert.equal(course.scenes[i-1].end,course.scenes[i].start,'Episode ranges must be contiguous');
+assert(course.scenes[6].focus.includes('стихотворение'),'Film finale must not be replaced with story ending');
 assert(source.pages['74-80']?.length);
 for(const principle of course.principles)assert(allText.includes(simplify(principle)));
 for(let i=1;i<=6;i++)assert(source.sections.passport['5.'+i+'.']?.length);
@@ -101,6 +107,7 @@ for(let i=0;i<6;i++){
   await h.emit('click',{dataset:{complete:String(i)}});
 }
 const entryHarness=makeHarness();entryHarness.navigate('#review');assert(entryHarness.get('app').innerHTML.includes('review-banner'));entryHarness.navigate('#learn');assert(!entryHarness.get('app').innerHTML.includes('class="review-banner"'),'Course link must exit review mode');assert(entryHarness.get('app').innerHTML.includes('Шесть этапов'));
+assert(entryHarness.get('app').innerHTML.includes('Рабочая версия · 27.09.2026'),'Public course must disclose its review status');
 const emptyQuizHarness=makeHarness();emptyQuizHarness.navigate('#stage/0/practice');await emptyQuizHarness.emit('click',{dataset:{check:'intro-antipode'}});assert(emptyQuizHarness.get('app').innerHTML.includes('Сначала выберите ответ'));assert(!emptyQuizHarness.get('app').innerHTML.includes('Пока не совпало'));
 const finalState=JSON.parse(h.local.get('kinouroki.justice.v1'));
 assert.equal(finalState.completed.length,6);
@@ -120,6 +127,8 @@ const navigation=makeHarness();navigation.navigate('#stage/2/practice');navigati
 assert(navigation.get('app').innerHTML.includes('← Мысль · Практикум'));
 navigation.navigate('#materials');assert(navigation.get('app').innerHTML.includes('← Мысль · Практикум'));
 navigation.navigate('#film');const filmMarkup=navigation.get('app').innerHTML;
+assert(filmMarkup.includes('Семь опорных эпизодов'));
+assert(filmMarkup.includes('остальные привязки и реплики ещё сверяются'));
 assert(filmMarkup.includes('<iframe src="'+course.filmEmbedURL.replace(/&/g,'&amp;')+'"'));
 assert(!filmMarkup.includes('data-play-film'));assert(!filmMarkup.includes('Смотреть в VK'));assert(!filmMarkup.includes('Яндекс.Диске'));
 navigation.navigate('#film/money');assert.equal(navigation.get('app').innerHTML,filmMarkup,'Scene change must preserve the mounted player');
