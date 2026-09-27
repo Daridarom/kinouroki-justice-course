@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "Интерактивное обучение педагогов по авторскому комплекту Справедливость / Великий",
-  "scripts": {"test": "node scripts/verify.mjs", "dev": "vite --config vite.config.mjs"},
+  "scripts": {"test": "node scripts/verify.mjs && node scripts/verify-courses.mjs", "dev": "vite --config vite.config.mjs"},
   "devDependencies": {"vite": "8.0.13"}
 }
