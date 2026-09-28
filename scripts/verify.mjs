@@ -33,12 +33,12 @@ for(const s of course.stages){
   }
 }
 const sourceAlgorithm=source.pages['28'].find(b=>b.type==='table').rows.slice(1).map(r=>r[1]);
-assert.deepEqual(course.stages[2].quizzes[0].items,sourceAlgorithm);
+assert.deepEqual(course.stages[3].quizzes[0].items,sourceAlgorithm);
 for(const [id,doc] of Object.entries(source.documents)){
   const bytes=fs.readFileSync(new URL('dist/'+doc.file.replace('./',''),base));
   assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),doc.sha256,`Original changed: ${id}`);
 }
-for(const quiz of [course.stages[3].quizzes[0],course.stages[5].quizzes[0]])for(const item of quiz.items)assert(allText.includes(simplify(item)),`Matching text differs: ${item}`);
+for(const quiz of [course.stages[4].quizzes[0],course.stages[7].quizzes[0]])for(const item of quiz.items)assert(allText.includes(simplify(item)),`Matching text differs: ${item}`);
 assert.equal(source.glossary.length,25);
 assert.deepEqual(course.stages.map(s=>s.name),['Введение','Просмотр фильма','Чувство','Мысль','Осознание','Воображение','Социальная практика','Воодушевление']);
 assert.equal(course.scenes.length,7,"The author's seven pedagogical episodes must remain seven");
