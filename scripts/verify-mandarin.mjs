@@ -12,6 +12,8 @@ assert.deepEqual(core.importNotes(core.exportNotes(state)),state);
 assert(!('unknown' in state.fields));
 for(const raw of ['{}','not json',JSON.stringify({...old,format:'justice'}),JSON.stringify({...old,version:2}),JSON.stringify({...old,notes:[]})])assert.throws(()=>core.importNotes(raw));
 assert.throws(()=>core.importNotes('x'.repeat(200001)));
+const maximal=core.normalize({notes:Object.fromEntries(['1','2','3','4'].map(k=>[k,'Я'.repeat(5000)])),fields:Object.fromEntries(core.fieldKeys.map(k=>[k,'Я'.repeat(5000)]))});
+const portable=core.exportNotes(maximal);assert.deepEqual(core.importNotes(portable),maximal);assert(Buffer.byteLength(portable)<=core.MAX_IMPORT_BYTES);
 const manifest=JSON.parse(fs.readFileSync(new URL('materials/manifest.json',dir)));
 for(const [name,info] of Object.entries(manifest)){
  const bytes=fs.readFileSync(new URL('materials/'+name,dir));assert.equal(bytes.length,info.bytes,name);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),info.sha256,name);
