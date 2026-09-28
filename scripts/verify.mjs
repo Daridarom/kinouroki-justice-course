@@ -18,11 +18,11 @@ assert.equal(course.stages.flatMap(s=>s.quizzes).length,21);
 assert.equal(course.projectFields.length,13);
 assert(allText.includes(simplify(course.definition)),'Definition must be an exact source excerpt');
 for(const s of course.stages){
-  if(!s.proposed){
+  if(s.goalSource==='passport'){
     assert(allText.includes(simplify(s.goal)),`Goal differs from source: ${s.name}`);
     assert(allText.includes(simplify(s.quote)),`Quotation differs from source: ${s.name}`);
   } else {
-    assert(['Просмотр фильма','Социальная практика'].includes(s.name),`Unexpected proposed stage: ${s.name}`);
+    assert(['Просмотр фильма','Социальная практика'].includes(s.name),`Unexpected standard goal: ${s.name}`);
   }
   for(const r of s.refs)for(const p of r.pages)assert(source.pages[p]?.length,`Missing workbook page ${p}`);
   for(const q of s.quizzes){
@@ -82,7 +82,7 @@ for(let i=0;i<8;i++){
   }
   h.navigate('#stage/'+i+'/plan');
   for(const f of course.stages[i].fields)await h.emit('input',{match:'[data-note]',dataset:{note:f.id,group:'notes'},value:i===0&&f.id==='intro-definition'?'<script>alert(1)</script> Моя заготовка':'Учебная заготовка по источнику'});
-  if(i===4)for(const f of course.projectFields)await h.emit('input',{match:'[data-note]',dataset:{note:f.id,group:'project'},value:'Плановое значение'});
+  if(i===course.projectStage)for(const f of course.projectFields)await h.emit('input',{match:'[data-note]',dataset:{note:f.id,group:'project'},value:'Плановое значение'});
   await h.emit('click',{dataset:{caseReview:String(i)}});
   await h.emit('change',{match:'[data-review]',dataset:{review:String(i)},checked:true});
   await h.emit('click',{dataset:{complete:String(i)}});
