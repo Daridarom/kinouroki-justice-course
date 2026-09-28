@@ -65,6 +65,6 @@
     s.quizzes.push({id:'decision-'+i,type:'single',title:s.case.question,prompt:'Выберите действие педагога, которое соответствует задаче этапа.',options:s.case.options,answer:s.case.answer,explanation:s.case.explanation,ref:'Учебный кейс · тетрадь, страница '+s.case.page});
     s.quizzes.forEach(q=>{q.sourcePages=q.id==='feel-color'?[19]:q.id==='intro-shadow'?[1,9]:q.id==='intro-antipode'?[4,6]:q.id==='thought-formula'?[29]:q.id==='conscious-diagnostic'?[48]:[s.case.page];});
   });
-  C.stages[1].quizzes.find(q=>q.id==='feel-question').sourcePages=[16,18];
+  C.stages[2].quizzes.find(q=>q.id==='feel-question').sourcePages=[16,18];
   Object.assign(C.stages[7].quizzes[0],{sourceDoc:'passport',sourceSection:'5.6.'});
 })();
