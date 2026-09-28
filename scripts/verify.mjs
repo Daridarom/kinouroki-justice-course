@@ -13,13 +13,17 @@ const source=JSON.parse(read('dist/sources.json'));
 const flat=blocks=>blocks.map(b=>b.type==='p'?b.text:b.rows.flat().join('\n')).join('\n');
 const simplify=s=>s.toLocaleLowerCase('ru').replace(/\s+/g,' ').trim();
 const allText=simplify(Object.values(source.documents).map(d=>flat(d.blocks)).join('\n'));
-assert.equal(course.stages.length,6);
-assert.equal(course.stages.flatMap(s=>s.quizzes).length,17);
+assert.equal(course.stages.length,8);
+assert.equal(course.stages.flatMap(s=>s.quizzes).length,21);
 assert.equal(course.projectFields.length,13);
 assert(allText.includes(simplify(course.definition)),'Definition must be an exact source excerpt');
 for(const s of course.stages){
-  assert(allText.includes(simplify(s.goal)),`Goal differs from source: ${s.name}`);
-  assert(allText.includes(simplify(s.quote)),`Quotation differs from source: ${s.name}`);
+  if(!s.proposed){
+    assert(allText.includes(simplify(s.goal)),`Goal differs from source: ${s.name}`);
+    assert(allText.includes(simplify(s.quote)),`Quotation differs from source: ${s.name}`);
+  } else {
+    assert(['Просмотр фильма','Социальная практика'].includes(s.name),`Unexpected proposed stage: ${s.name}`);
+  }
   for(const r of s.refs)for(const p of r.pages)assert(source.pages[p]?.length,`Missing workbook page ${p}`);
   for(const q of s.quizzes){
     assert(core.grade(q,q.answer),q.id+' answer must pass');
@@ -29,14 +33,14 @@ for(const s of course.stages){
   }
 }
 const sourceAlgorithm=source.pages['28'].find(b=>b.type==='table').rows.slice(1).map(r=>r[1]);
-assert.deepEqual(course.stages[2].quizzes[0].items,sourceAlgorithm);
+assert.deepEqual(course.stages[3].quizzes[0].items,sourceAlgorithm);
 for(const [id,doc] of Object.entries(source.documents)){
   const bytes=fs.readFileSync(new URL('dist/'+doc.file.replace('./',''),base));
   assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),doc.sha256,`Original changed: ${id}`);
 }
-for(const quiz of [course.stages[3].quizzes[0],course.stages[5].quizzes[0]])for(const item of quiz.items)assert(allText.includes(simplify(item)),`Matching text differs: ${item}`);
+for(const quiz of [course.stages[4].quizzes[0],course.stages[7].quizzes[0]])for(const item of quiz.items)assert(allText.includes(simplify(item)),`Matching text differs: ${item}`);
 assert.equal(source.glossary.length,25);
-assert.deepEqual(course.stages.map(s=>s.name),['Введение','Чувство','Мысль','Сознание','Воображение','Воодушевление']);
+assert.deepEqual(course.stages.map(s=>s.name),['Введение','Просмотр фильма','Чувство','Мысль','Осознание','Воображение','Социальная практика','Воодушевление']);
 assert.equal(course.scenes.length,7,"The author's seven pedagogical episodes must remain seven");
 assert.equal(course.scenes[3].start,591.50,'Approved C05/C06 boundary must be used');
 assert.equal(course.scenes[4].start,770,'Approved C08/C09 boundary must be used');
@@ -62,7 +66,7 @@ const engineFiles=dir=>[['course.js',new URL(dir+'course.js',base)],['learning.j
 const makeHarness=(initial={},failStorage=false)=>makeSharedHarness(engineFiles('dist/'),initial,failStorage,source);
 const h=makeHarness();for(const key of ['film','sources'])await h.emit('change',{match:'[data-preparation]',dataset:{preparation:key},checked:true});assert(h.get('app').innerHTML.includes('Настроить «Весы в сердце»'));
 await h.emit('input',{match:'[data-note]',dataset:{note:'intro-definition',group:'notes'},value:'<script>alert("x")</script> Моя заметка'});
-for(let i=0;i<6;i++){
+for(let i=0;i<8;i++){
   h.navigate('#stage/'+i+'/read');
   await h.emit('change',{match:'[data-read]',dataset:{read:String(i)},checked:true});
   h.navigate('#stage/'+i+'/practice');
@@ -83,16 +87,16 @@ for(let i=0;i<6;i++){
   await h.emit('change',{match:'[data-review]',dataset:{review:String(i)},checked:true});
   await h.emit('click',{dataset:{complete:String(i)}});
 }
-const entryHarness=makeHarness();entryHarness.navigate('#review');assert(entryHarness.get('app').innerHTML.includes('review-banner'));entryHarness.navigate('#learn');assert(!entryHarness.get('app').innerHTML.includes('class="review-banner"'),'Course link must exit review mode');assert(entryHarness.get('app').innerHTML.includes('Шесть этапов'));
+const entryHarness=makeHarness();entryHarness.navigate('#review');assert(entryHarness.get('app').innerHTML.includes('review-banner'));entryHarness.navigate('#learn');assert(!entryHarness.get('app').innerHTML.includes('class="review-banner"'),'Course link must exit review mode');assert(entryHarness.get('app').innerHTML.includes('Восемь этапов'));
 assert(entryHarness.get('app').innerHTML.includes('Рабочая версия · 27.09.2026'),'Public course must disclose its review status');
 const emptyQuizHarness=makeHarness();emptyQuizHarness.navigate('#stage/0/practice');await emptyQuizHarness.emit('click',{dataset:{check:'intro-antipode'}});assert(emptyQuizHarness.get('app').innerHTML.includes('Сначала выберите ответ'));assert(!emptyQuizHarness.get('app').innerHTML.includes('Пока не совпало'));
 const finalState=JSON.parse(h.local.get('kinouroki.justice.v1'));
-assert.equal(finalState.completed.length,6);
-h.navigate('#notebook');assert(h.get('app').innerHTML.includes('Учебный маршрут из шести этапов завершён'));
+assert.equal(finalState.completed.length,8);
+h.navigate('#notebook');assert(h.get('app').innerHTML.includes('Учебный маршрут из восьми этапов завершён'));
 await h.emit('click',{exportFlag:true,dataset:{}});assert.equal(h.downloads.length,1);
 const exported=await h.blobs[0].text();assert(exported.includes('&lt;script&gt;'));assert(!exported.includes('<script>'));assert(exported.includes('Паспорт проекта справедливости'));
 h.navigate('#review');const beforeReview=JSON.parse(h.local.get('kinouroki.justice.v1'));h.navigate('#stage/0/practice');assert(h.get('app').innerHTML.includes('Показан ответ и методический разбор'));await h.emit('change',{match:'[data-answer]',dataset:{answer:'intro-antipode'},value:'1',tagName:'INPUT'});await h.emit('click',{dataset:{complete:'0'}});assert.deepEqual(JSON.parse(h.local.get('kinouroki.justice.v1')),beforeReview,'Review cannot alter learning state');await h.emit('click',{dataset:{mode:'learn'}});
-const reloaded=makeHarness(Object.fromEntries(h.local));reloaded.navigate('#notebook');assert(reloaded.get('app').innerHTML.includes('Учебный маршрут из шести этапов завершён'));assert(reloaded.get('app').innerHTML.includes('&lt;script&gt;'));
+const reloaded=makeHarness(Object.fromEntries(h.local));reloaded.navigate('#notebook');assert(reloaded.get('app').innerHTML.includes('Учебный маршрут из восьми этапов завершён'));assert(reloaded.get('app').innerHTML.includes('&lt;script&gt;'));
 // Changing a checked answer revokes completion and must survive a reload.
 reloaded.navigate('#stage/0/practice');await reloaded.emit('change',{match:'[data-answer]',dataset:{answer:'intro-antipode'},value:'1',tagName:'INPUT'});assert.equal(JSON.parse(reloaded.local.get('kinouroki.justice.v1')).completed.includes(0),false);
 await reloaded.emit('click',{dataset:{check:'intro-antipode'}});assert(reloaded.get('app').innerHTML.includes('Пока не совпало'));
@@ -100,7 +104,7 @@ await reloaded.emit('click',{resetFlag:true,dataset:{}});assert(reloaded.get('re
 const blocked=makeHarness({},true);assert(blocked.get('app').innerHTML.includes('Браузер не сохраняет записи'));
 await h.emit('click',{dataset:{source:'workbook',pages:'28'}});assert(h.get('source-dialog').open);assert(h.get('source-content').innerHTML.includes('Я заметил мысль-оковы.'));
 // Reference tools retain the lesson; scene selection and watched status must not recreate the player.
-const navigation=makeHarness();navigation.navigate('#stage/2/practice');navigation.navigate('#glossary');
+const navigation=makeHarness();navigation.navigate('#stage/3/practice');navigation.navigate('#glossary');
 assert(navigation.get('app').innerHTML.includes('← Мысль · Практикум'));
 navigation.navigate('#materials');assert(navigation.get('app').innerHTML.includes('← Мысль · Практикум'));
 navigation.navigate('#film');const filmMarkup=navigation.get('app').innerHTML;
@@ -114,23 +118,23 @@ assert(navigation.get('film-scene-info').innerHTML.includes('Деньги Вад
 await navigation.emit('change',{match:'[data-preparation]',dataset:{preparation:'film'},checked:true});
 assert.equal(navigation.get('app').innerHTML,filmMarkup,'Watched checkbox must preserve the mounted player');
 const resumed=makeHarness(Object.fromEntries(navigation.local));resumed.navigate('#materials');assert(resumed.get('app').innerHTML.includes('← Мысль · Практикум'));
-navigation.navigate('#review');navigation.navigate('#stage/5/read');navigation.navigate('#film');assert(navigation.get('app').innerHTML.includes('← Воодушевление · Изучить'));
-const reviewReload=makeHarness(Object.fromEntries(navigation.local));reviewReload.navigate('#stage/5/practice');assert(reviewReload.get('app').innerHTML.includes('Показан ответ и методический разбор'));
-navigation.navigate('#learn');navigation.navigate('#unknown');assert(navigation.get('app').innerHTML.includes('Шесть этапов'));
-navigation.navigate('#stage/2/plan');assert(navigation.get('app').innerHTML.includes('Назад к практикуму'));
-await navigation.emit('click',{tagName:'A',dataset:{caseLink:'2'}});navigation.navigate('#stage/2/practice');assert(navigation.get('app').innerHTML.includes('id="teaching-case" tabindex="-1"'));
-console.log('PASS: full six-stage event flow, edit revokes completion, reload, source reader, escaped export, reset, unavailable storage');
+navigation.navigate('#review');navigation.navigate('#stage/7/read');navigation.navigate('#film');assert(navigation.get('app').innerHTML.includes('← Воодушевление · Изучить'));
+const reviewReload=makeHarness(Object.fromEntries(navigation.local));reviewReload.navigate('#stage/7/practice');assert(reviewReload.get('app').innerHTML.includes('Показан ответ и методический разбор'));
+navigation.navigate('#learn');navigation.navigate('#unknown');assert(navigation.get('app').innerHTML.includes('Восемь этапов'));
+navigation.navigate('#stage/3/plan');assert(navigation.get('app').innerHTML.includes('Назад к практикуму'));
+await navigation.emit('click',{tagName:'A',dataset:{caseLink:'3'}});navigation.navigate('#stage/3/practice');assert(navigation.get('app').innerHTML.includes('id="teaching-case" tabindex="-1"'));
+console.log('PASS: full eight-stage event flow, edit revokes completion, reload, source reader, escaped export, reset, unavailable storage');
 console.log('PASS: lesson return across tools and reload, reviewer reload, direct player, scene and watched-state continuity, previous-step links');
 console.log('Not performed: browser/layout verification and supported-context WebMCP validation.');
 
 // Portable progress: preserve real work, reject unrelated files, never trust completion flags.
 const roundtrip=core.importProgress(core.exportProgress(finalState,course),course);
-assert.equal(roundtrip.completed.length,6);
+assert.equal(roundtrip.completed.length,8);
 assert.deepEqual(roundtrip.notes,finalState.notes);
 assert.deepEqual(core.importProgress(JSON.stringify(finalState),course).answers,finalState.answers);
 for(const invalid of ['{}','[]','not json',JSON.stringify({format:'another.course',version:1,state:finalState})])assert.throws(()=>core.importProgress(invalid,course));
 assert.throws(()=>core.importProgress('x'.repeat(2000001),course));
-const fake=core.blank();fake.completed=[0,1,2,3,4,5];fake.notes.unexpected='bad';
+const fake=core.blank();fake.completed=[0,1,2,3,4,5,6,7];fake.notes.unexpected='bad';
 assert.deepEqual(core.importProgress(JSON.stringify(fake),course).completed,[]);
 assert(!('unexpected' in core.importProgress(JSON.stringify(fake),course).notes));
 const transfer=makeHarness();transfer.navigate('#notebook');
@@ -140,7 +144,7 @@ await selectFile(transfer);assert(transfer.get('progress-dialog').open);
 assert.equal(transfer.local.get('kinouroki.justice.v1'),beforeImport,'Selection alone must not overwrite progress');
 transfer.get('cancel-progress').events.click();assert.equal(transfer.local.get('kinouroki.justice.v1'),beforeImport);
 await selectFile(transfer);transfer.get('confirm-progress').events.click();
-assert.equal(JSON.parse(transfer.local.get('kinouroki.justice.v1')).completed.length,6);
+assert.equal(JSON.parse(transfer.local.get('kinouroki.justice.v1')).completed.length,8);
 assert(transfer.get('app').innerHTML.includes('&lt;script&gt;'),'Imported notes stay escaped');
 await selectFile(blocked);blocked.get('confirm-progress').events.click();
 assert(blocked.get('progress-error').textContent.includes('не заменены'));

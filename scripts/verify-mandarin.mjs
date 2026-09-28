@@ -14,19 +14,18 @@ const flat=blocks=>blocks.map(b=>b.type==='p'?b.text:b.rows.flat().join('\n')).j
 const simplify=s=>s.toLocaleLowerCase('ru').replace(/\s+/g,' ').trim();
 const allText=simplify(Object.values(source.documents).map(d=>flat(d.blocks)).join('\n'));
 const N=course.stages.length;
-assert.equal(N,7,'The canon course has seven stages');
-assert.deepEqual(course.stages.map(s=>s.name),['Введение','Просмотр фильма','Чувство','Мысль','Осознание','Воображение','Воодушевление']);
+assert.equal(N,8,'The course has eight stages in the proposed unified route');
+assert.deepEqual(course.stages.map(s=>s.name),['Введение','Просмотр фильма','Чувство','Мысль','Осознание','Воображение','Социальная практика','Воодушевление']);
 assert.equal(course.projectStage,5,'The common-deed passport belongs to the Imagination stage');
 assert.equal(course.meta.storageKey,'kinouroki.mandarin.v2');
 assert.notEqual(course.meta.storageKey,'kinouroki.justice.v1','Courses must not share browser progress');
 assert(allText.includes(simplify(course.definition)),'Definition must be an exact passport excerpt');
 for(const s of course.stages){
-  assert(allText.includes(simplify(s.goal)),`Goal differs from passport: ${s.name}`);
-  assert(allText.includes(simplify(s.quote)),`Quotation differs from passport: ${s.name}`);
-  assert.equal(s.paragraphs.length,4);assert.equal(s.reviewCriteria.length,3);
+  if(!s.proposed){assert(allText.includes(simplify(s.goal)),`Goal differs from passport: ${s.name}`);assert(allText.includes(simplify(s.quote)),`Quotation differs from passport: ${s.name}`);}
+  if(!s.proposed)assert.equal(s.paragraphs.length,4);assert.equal(s.reviewCriteria.length,3);
   for(const r of s.refs)for(const p of r.pages)assert(source.pages[String(p)]?.length,`Missing workbook page ${p} (${s.name})`);
   assert(source.pages[String(s.case.page)]?.length,`Missing case page ${s.case.page}`);
-  assert(course.scenes.some(x=>x.id===s.case.scene),`Unknown case scene ${s.case.scene}`);
+  if(s.case.scene)assert(course.scenes.some(x=>x.id===s.case.scene),`Unknown case scene ${s.case.scene}`);
   for(const q of s.quizzes){
     assert(core.grade(q,q.answer),q.id+' answer must pass');
     assert.equal(core.grade(q,undefined),false);
@@ -56,19 +55,19 @@ for(const asset of ['../styles.css','./course.js','./learning.js','../core.js','
 for(const file of ['passport.docx','rationale.docx','workbook.docx','standard-manual.pdf','standard-manual.docx','guide.pdf','original-workbook.pdf','slides.pdf','story.pdf'])assert(fs.existsSync(new URL('dist/mandarin/materials/'+file,base)),'Missing material '+file);
 for(const match of course.meta.supplements.matchAll(/href="(\.\/[^"#?]+)"/g))assert(fs.existsSync(new URL('dist/mandarin/'+match[1].slice(2),base)),match[1]);
 assert(!JSON.stringify(course).includes('drive.google.com'));
-console.log('PASS: Mandarin canon course — seven stages, passport quotations, workbook pages, quiz model, scenes, materials');
+console.log('PASS: Mandarin course — eight-stage route, passport quotations, workbook pages, quiz model, scenes, materials');
 
 const files=[['course.js',new URL('dist/mandarin/course.js',base)],['learning.js',new URL('dist/mandarin/learning.js',base)],['core.js',new URL('dist/core.js',base)],['app.js',new URL('dist/app.js',base)]];
 const makeHarness=(initial={},failStorage=false)=>makeSharedHarness(files,initial,failStorage,source);
 const h=makeHarness();
-assert(h.get('app').innerHTML.includes('Семь этапов'));
+assert(h.get('app').innerHTML.includes('Восемь этапов'));
 assert(h.get('app').innerHTML.includes('Радость за другого'));
 assert(h.get('app').innerHTML.includes('Предложение · 28.09.2026'),'Public course must disclose its proposal status');
-assert(h.get('app').innerHTML.includes('0 из 7'));
+assert(h.get('app').innerHTML.includes('0 из 8'));
 for(const key of ['film','sources'])await h.emit('change',{match:'[data-preparation]',dataset:{preparation:key},checked:true});
 for(let i=0;i<N;i++){
   h.navigate('#stage/'+i+'/read');
-  assert(h.get('app').innerHTML.includes('ЭТАП '+String(i+1).padStart(2,'0')+' / 07'));
+  assert(h.get('app').innerHTML.includes('ЭТАП '+String(i+1).padStart(2,'0')+' / 08'));
   await h.emit('change',{match:'[data-read]',dataset:{read:String(i)},checked:true});
   h.navigate('#stage/'+i+'/practice');
   for(const q of course.stages[i].quizzes){
@@ -94,25 +93,25 @@ for(let i=0;i<N;i++){
   assert(JSON.parse(h.local.get('kinouroki.mandarin.v2')).completed.includes(i),'Stage must complete: '+i);
 }
 const finalState=JSON.parse(h.local.get('kinouroki.mandarin.v2'));
-assert.equal(finalState.completed.length,7);
+assert.equal(finalState.completed.length,8);
 assert(!h.local.has('kinouroki.justice.v1'),'Mandarin progress must not touch the Justice key');
-h.navigate('#notebook');assert(h.get('app').innerHTML.includes('Учебный маршрут из семи этапов завершён'));
+h.navigate('#notebook');assert(h.get('app').innerHTML.includes('Учебный маршрут из восьми этапов завершён'));
 await h.emit('click',{exportFlag:true,dataset:{}});assert.equal(h.downloads.length,1);assert.equal(h.downloads[0],'Kinouroki_Mandarin_Moya_tetrad.html');
 const exported=await h.blobs[0].text();assert(exported.includes('Паспорт общего дела'));assert(exported.includes('&lt;b&gt;'));assert(!exported.includes('<b>Учебная'));
-const reloaded=makeHarness(Object.fromEntries(h.local));reloaded.navigate('#notebook');assert(reloaded.get('app').innerHTML.includes('Учебный маршрут из семи этапов завершён'));
-reloaded.navigate('#stage/6/practice');await reloaded.emit('change',{match:'[data-answer]',dataset:{answer:'inspire-when'},value:'0',tagName:'INPUT'});
-assert.equal(JSON.parse(reloaded.local.get('kinouroki.mandarin.v2')).completed.includes(6),false,'Changing an answer revokes completion');
+const reloaded=makeHarness(Object.fromEntries(h.local));reloaded.navigate('#notebook');assert(reloaded.get('app').innerHTML.includes('Учебный маршрут из восьми этапов завершён'));
+reloaded.navigate('#stage/7/practice');await reloaded.emit('change',{match:'[data-answer]',dataset:{answer:'inspire-when'},value:'0',tagName:'INPUT'});
+assert.equal(JSON.parse(reloaded.local.get('kinouroki.mandarin.v2')).completed.includes(7),false,'Changing an answer revokes completion');
 const nav=makeHarness();nav.navigate('#stage/1/read');assert(nav.get('app').innerHTML.includes('Просмотр фильма'));
 nav.navigate('#film');const filmMarkup=nav.get('app').innerHTML;assert(filmMarkup.includes('Семь сцен фильма'));assert(filmMarkup.includes('<iframe src="'+course.filmEmbedURL.replace(/&/g,'&amp;')+'"'));
 nav.navigate('#film/teacher');assert.equal(nav.get('app').innerHTML,filmMarkup,'Scene change must preserve the mounted player');assert(nav.get('film-scene-info').innerHTML.includes('Разговор с учительницей'));
-nav.navigate('#stage/7/read');assert(!nav.get('app').innerHTML.includes('ЭТАП 08'),'Stage 8 does not exist');
+nav.navigate('#stage/7/read');assert(nav.get('app').innerHTML.includes('ЭТАП 08 / 08'));assert(nav.get('app').innerHTML.includes('Воодушевление'));
 nav.navigate('#materials');assert(nav.get('app').innerHTML.includes('standard-manual.pdf'));assert(nav.get('app').innerHTML.includes('Паспорт методического пособия'));
 await nav.emit('click',{dataset:{source:'workbook',pages:'48'}});assert(nav.get('source-dialog').open);assert(nav.get('source-content').innerHTML.includes('ПАСПОРТ ОБЩЕГО ДЕЛА'));
 await nav.emit('click',{dataset:{source:'passport',section:'5.7.'}});assert(nav.get('source-content').innerHTML.includes('ВООДУШЕВЛЕНИЕ'));
 nav.navigate('#glossary');assert(nav.get('app').innerHTML.includes('Радость за другого'));
-const roundtrip=core.importProgress(core.exportProgress(finalState,course),course);assert.equal(roundtrip.completed.length,7);
-const forged=core.normalize({version:1,read:[0,7,99],completed:[0,7],notes:{},answers:{},checked:{},lastRoute:'stage/6/plan',lessonReturn:'stage/6/read'},course);
-assert.deepEqual(forged.read,[0]);assert.deepEqual(forged.completed,[]);assert.equal(forged.lastRoute,'stage/6/plan');assert.equal(forged.lessonReturn,'stage/6/read');
+const roundtrip=core.importProgress(core.exportProgress(finalState,course),course);assert.equal(roundtrip.completed.length,8);
+const forged=core.normalize({version:1,read:[0,8,99],completed:[0,8],notes:{},answers:{},checked:{},lastRoute:'stage/7/plan',lessonReturn:'stage/7/read'},course);
+assert.deepEqual(forged.read,[0]);assert.deepEqual(forged.completed,[]);assert.equal(forged.lastRoute,'stage/7/plan');assert.equal(forged.lessonReturn,'stage/7/read');
 const justice=JSON.parse(JSON.stringify((()=>{const c={window:{}};vm.runInNewContext(read('dist/course.js'),c);vm.runInNewContext(read('dist/learning.js'),c);return c.window.COURSE;})()));
-assert.equal(core.normalize({version:1,read:[],completed:[],notes:{},answers:{},checked:{},lastRoute:'stage/6/plan'},justice).lastRoute,'start','Six-stage course rejects a seventh stage route');
-console.log('PASS: Mandarin seven-stage event flow on the shared engine, separate storage, export, reload, film scenes, source reader, route bounds');
+assert.equal(core.normalize({version:1,read:[],completed:[],notes:{},answers:{},checked:{},lastRoute:'stage/8/plan'},justice).lastRoute,'start','Eight-stage course rejects a ninth stage route');
+console.log('PASS: Mandarin eight-stage event flow on the shared engine, separate storage, export, reload, film scenes, source reader, route bounds');
