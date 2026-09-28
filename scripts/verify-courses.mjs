@@ -13,3 +13,14 @@ for(const html of [great,mandarin])for(const match of html.matchAll(/(?:href|src
 }
 assert(!fs.existsSync(new URL('../dist/mandarin/app.js',import.meta.url)),'No second engine copy');
 console.log('PASS: shared engine and style, cross-links between courses, asset links');
+
+const greatLearning=read('dist/learning.js');
+const mandarinLearning=read('dist/mandarin/learning.js');
+for(const [label,source] of [['Justice',greatLearning],['Mandarin',mandarinLearning]]){
+  assert.match(source,/name:'Социальная практика'/,label+' has standalone social practice stage');
+  assert.match(source,/Точки роста/,label+' records growth points after practice');
+  assert.match(source,/stagesHeading:'Восемь этапов'/,label+' declares eight-stage route');
+}
+assert.match(greatLearning,/name:'Просмотр фильма'/,'Justice has standalone film-viewing stage');
+assert.match(greatLearning,/C\.stages\[3\]\.name='Осознание'/,'Justice uses unified Осознание stage name');
+console.log('PASS: unified eight-stage route, social practice and growth points');
