@@ -25,6 +25,7 @@
   const pages={'intro-antipode':[6],'intro-shadow':[2,7],'view-stop':[9,11],'view-question':[11],'feel-order':[15,18],'feel-motive':[13,14],'thought-sails':[27,28],'thought-secret':[25,26],'conscious-pyramid':[35],'conscious-winner':[38],'imagine-rule':[45],'imagine-choice':[46,47,48],'inspire-when':[55,56],'inspire-flower':[58]};
   // Social practice is a standalone seventh stage; inspiration follows the completed action.
   const practiceStage={
+    proposed:true,
     name:'Социальная практика',subtitle:'Совершить общее дело класса',minutes:0,
     goal:'Выполнить выбранное детьми общее дело и зафиксировать его реальный результат и наблюдаемый воспитательный эффект.',
     focus:'Сначала поступок — потом Праздник успехов',
