@@ -1,50 +1,58 @@
 {
-  "teacher-practice.docx": {
-    "bytes": 41965,
-    "sha256": "baa71d95cccd85d842f02c6e338cf7e38e6d62078b70ee5b24ba681beb125a4f"
-  },
-  "teacher-guide.docx": {
-    "bytes": 44028,
-    "sha256": "563f10ab4a97bac11fc93ea32112995f6a4796ef127c523addefec4fe792db35"
-  },
-  "teacher-guide.pdf": {
-    "bytes": 135348,
-    "sha256": "f4d2cd9264c99d0f6a27e7eaa374e3813413c00d45b6d6768a779401b098eb42"
-  },
-  "worksheets.pdf": {
-    "bytes": 114835,
-    "sha256": "05a269aa954f25bedc49f2b50709b7622fcdbe2d365a719728a4f84ad1ae4a59"
-  },
-  "guide.pdf": {
-    "bytes": 354198,
-    "sha256": "68e957f2a3c1f77315eed1cc6995db89f07bab8b3f0ec4791063f8d18740acdb"
-  },
-  "workbook.pdf": {
-    "bytes": 1079150,
-    "sha256": "54efecbfd45eff7c8277a58aa4d6294a0e1ca573d5abc182fedf8e991eccdfab"
-  },
-  "teacher-practice.pdf": {
-    "bytes": 130960,
-    "sha256": "ec6eb1100558480c8e8a8a105c33cf8f8da89bf7c8b70aa7cb662056d15aa693"
-  },
-  "README.md": {
-    "bytes": 2721,
-    "sha256": "58c5f73f9594f093ed461ffc25618a9ba654d12468eb8925086e117abcfb15c3"
-  },
-  "story.pdf": {
-    "bytes": 386565,
-    "sha256": "4488293c6c6867410c5281d30ae6ff94736b5925c90bf97f44ca484bae0a1b05"
-  },
-  "worksheets.docx": {
-    "bytes": 41191,
-    "sha256": "9c6022f227e33feb8ad88059cc09f19d3db4f4a16992795bc9a61aa9e2ac5262"
-  },
-  "slides.pptx": {
-    "bytes": 13125166,
-    "sha256": "002563a8ea35b67b7838861f0f081205bbe1337f4d96f6bc251f83c5b2a3696e"
-  },
-  "slides.pdf": {
-    "bytes": 1700491,
-    "sha256": "395f721af7d997e4d5034054479ad12fd5bd094d89666170bde7d29075fffcdd"
-  }
+ "slides.pptx": {
+  "bytes": 13125166,
+  "sha256": "002563a8ea35b67b7838861f0f081205bbe1337f4d96f6bc251f83c5b2a3696e"
+ },
+ "README.md": {
+  "bytes": 2433,
+  "sha256": "0665681d2b14ebdf4549ac9e9dccc4c86914890e9154bf06f9ceda77d1dfa45f"
+ },
+ "guide.pdf": {
+  "bytes": 354198,
+  "sha256": "68e957f2a3c1f77315eed1cc6995db89f07bab8b3f0ec4791063f8d18740acdb"
+ },
+ "original-workbook.pdf": {
+  "bytes": 1079150,
+  "sha256": "54efecbfd45eff7c8277a58aa4d6294a0e1ca573d5abc182fedf8e991eccdfab"
+ },
+ "slides.pdf": {
+  "bytes": 1700491,
+  "sha256": "395f721af7d997e4d5034054479ad12fd5bd094d89666170bde7d29075fffcdd"
+ },
+ "story.pdf": {
+  "bytes": 386565,
+  "sha256": "4488293c6c6867410c5281d30ae6ff94736b5925c90bf97f44ca484bae0a1b05"
+ },
+ "passport.docx": {
+  "bytes": 44302,
+  "sha256": "615f2224452f62b960003bbe333143e408f571db785245668a6d692861ee10ff"
+ },
+ "rationale.docx": {
+  "bytes": 44439,
+  "sha256": "5c2310b278faea759f352ce10a6eb3a7262a2c680a4f94653c2f2ecd07a243a9"
+ },
+ "workbook.docx": {
+  "bytes": 32211,
+  "sha256": "604550a0152b4dc1ef0519c6c59c88bbeccbec2ecd2dccb1498fa847f999f333"
+ },
+ "standard-manual.docx": {
+  "bytes": 57546,
+  "sha256": "9db28f791f14a6a578724203e54e52de8e4dfc999633973a87734a3f9fe58513"
+ },
+ "standard-manual.pdf": {
+  "bytes": 494023,
+  "sha256": "7b0813f51003140154cd30d3670d348d3abcbff5fc282ba81acead80d6582858"
+ },
+ "standard-passport.pdf": {
+  "bytes": 481958,
+  "sha256": "bec989d881c4c2ba32416c9e77e43ebc41946d8ff599b517e8635698df0fd3d8"
+ },
+ "standard-rationale.pdf": {
+  "bytes": 393479,
+  "sha256": "97cc947ad5f3d7b61bd6433f718c69dc03bac1b22c842ca154a62174e6dc5d50"
+ },
+ "standard-workbook.pdf": {
+  "bytes": 336044,
+  "sha256": "dae0174622892e5e445a7b0e641a7b08b1b1aa6c65031f1f48e25ba8a6138ec9"
+ }
 }

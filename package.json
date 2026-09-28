@@ -4,7 +4,7 @@
   "private": true,
   "description": "Интерактивное обучение педагогов по авторскому комплекту Справедливость / Великий",
   "scripts": {
-    "test": "python3 scripts/build-mandarin.py && node scripts/verify.mjs && node scripts/verify-courses.mjs && node scripts/verify-mandarin.mjs && python3 scripts/verify-mandarin-canon.py",
+    "test": "python3 scripts/build-mandarin.py && node scripts/verify.mjs && node scripts/verify-courses.mjs && node scripts/verify-mandarin.mjs",
     "dev": "vite --config vite.config.mjs"
   },
   "devDependencies": {

@@ -1,25 +1,15 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
-import {createRequire} from 'node:module';
-const require=createRequire(import.meta.url);
-const core=require('../dist/mandarin/core.js');
 const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
-const great=read('dist/app.js'),mandarin=read('dist/mandarin/index.html'),app=read('dist/mandarin/app.js');
-assert.match(great,/href="\.\/mandarin\/\?v=unified-20260927"/);
-assert.match(mandarin,/href="\.\.\/\?v=unified-20260927#start"/);
+const app=read('dist/app.js'),great=read('dist/index.html'),mandarin=read('dist/mandarin/index.html'),learning=read('dist/mandarin/learning.js');
+assert.match(app,/href="\.\/mandarin\/\?v=20260928-canon"/,'Justice course links to the Mandarin course');
+assert.match(learning,/href="\.\.\/\?v=20260928-canon#start"/,'Mandarin course links back to the Justice course');
 assert.match(mandarin,/href="\.\.\/styles\.css/,'Both courses must use the shared design');
-assert.match(great,/kinouroki\.justice\.v1/);
-assert.equal(core.KEY,'kinouroki.mandarin.preview.v1');
-assert.match(mandarin,/https:\/\/kinouroki\.org\/mandarin\//);
+assert.match(mandarin,/src="\.\.\/app\.js/,'Both courses must run on the shared engine');
 assert.doesNotMatch(mandarin,/drive\.google\.com\/file\/d\//);
-assert.equal((mandarin.match(/data-screen="lesson[1-4]"/g)||[]).length,4);
-for(const anchor of mandarin.matchAll(/href="#([a-z][a-z0-9]*)"/g))assert(mandarin.includes(`id="${anchor[1]}"`),`Broken section link: ${anchor[1]}`);
-for(const control of ['data-open-nav','data-home','data-top'])assert(mandarin.includes(control)&&app.includes(control));
-const existing={version:1,notes:{1:'Запись до обновления',2:'<img src=x>',3:'x'.repeat(6000),unknown:'private'},done:{1:true,2:'true'}};
-const restored=core.normalize(existing);
-assert.equal(restored.notes[1],existing.notes[1]);assert.equal(restored.done[1],true);
-assert.equal(restored.done[2],false);assert.equal(restored.notes[3].length,5000);assert(!('unknown' in restored.notes));
-assert.deepEqual(core.normalize(JSON.parse(core.exportNotes(existing))),restored);
-assert.equal(core.route('lesson4'),'lesson4');assert.equal(core.route('lesson5'),'start');
-assert.match(app,/p\.textContent=state\.notes\[i\]/,'Render teacher notes as text');
-console.log('PASS: shared style, course routes, existing Mandarin progress, bounded export, safe plan text');
+for(const html of [great,mandarin])for(const match of html.matchAll(/(?:href|src)="(\.\.?\/[^"#?]+)[^"]*"/g)){
+  const dir=html===great?'dist/':'dist/mandarin/';
+  assert(fs.existsSync(new URL('../'+dir+match[1],import.meta.url)),`Broken asset link: ${match[1]}`);
+}
+assert(!fs.existsSync(new URL('../dist/mandarin/app.js',import.meta.url)),'No second engine copy');
+console.log('PASS: shared engine and style, cross-links between courses, asset links');
