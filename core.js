@@ -7,13 +7,14 @@
     return Array.isArray(value) && value.length === q.answer.length && value.every((v,i)=>Number.isInteger(v)&&v === q.answer[i]);
   }
   function planReady(course,s,i){
-    return course.stages[i].fields.every(f=>typeof s.notes[f.id]==='string'&&s.notes[f.id].trim()) && (i!==4||course.projectFields.every(f=>typeof s.project[f.id]==='string'&&s.project[f.id].trim()));
+    return course.stages[i].fields.every(f=>typeof s.notes[f.id]==='string'&&s.notes[f.id].trim()) && (i!==(Number.isInteger(course.projectStage)?course.projectStage:4)||course.projectFields.every(f=>typeof s.project[f.id]==='string'&&s.project[f.id].trim()));
   }
   function canComplete(course,s,i){
     return Boolean(course.stages[i]&&(!course.stages[i].case||(s.preparation?.film&&s.preparation?.sources&&s.caseReviewed?.[i]))&&s.read.includes(i)&&course.stages[i].quizzes.every(q=>s.checked[q.id]&&grade(q,s.answers[q.id]))&&planReady(course,s,i)&&s.reviews?.[i]);
   }
   function normalize(input, course) {
     const s=blank(); if(!input || input.version!==1) return s;
+    const R='[0-'+(course.stages.length-1)+']';
     const validStage = v => Number.isInteger(v)&&v>=0&&v<course.stages.length;
     s.read=Array.isArray(input.read) ? [...new Set(input.read.filter(validStage))] : [];
     const safeMap=(from,keys)=>Object.fromEntries(keys.filter(k=>typeof from?.[k]==='string').map(k=>[k,from[k].slice(0,5000)]));
@@ -31,10 +32,10 @@
     s.preparation={film:input.preparation?.film===true,sources:input.preparation?.sources===true};
     s.caseReviewed=Object.fromEntries(course.stages.map((_,i)=>i).filter(i=>input.caseReviewed?.[i]===true).map(i=>[i,true]));
     s.mode=input.mode==='review'?'review':'learn';
-    s.lastRoute=typeof input.lastRoute==='string'&&/^(start|learn|film(?:\/[a-z]+)?|stage\/[0-5]\/(read|practice|plan)|notebook|materials|glossary|result)$/.test(input.lastRoute)?input.lastRoute:'start';
+    s.lastRoute=typeof input.lastRoute==='string'&&new RegExp('^(start|learn|film(?:\\/[a-z-]+)?|stage\\/'+R+'\\/(read|practice|plan)|notebook|materials|glossary|result)$').test(input.lastRoute)?input.lastRoute:'start';
     s.completed=Array.isArray(input.completed)?[...new Set(input.completed.filter(v=>validStage(v)&&canComplete(course,s,v)))]:[];
-    s.filmReturn=typeof input.filmReturn==='string'&&/^stage\/[0-5]\/(read|practice|plan)$/.test(input.filmReturn)?input.filmReturn:null;
-    s.lessonReturn=typeof input.lessonReturn==='string'&&/^(start|stage\/[0-5]\/(read|practice|plan))$/.test(input.lessonReturn)?input.lessonReturn:s.filmReturn||'start';
+    s.filmReturn=typeof input.filmReturn==='string'&&new RegExp('^stage\\/'+R+'\\/(read|practice|plan)$').test(input.filmReturn)?input.filmReturn:null;
+    s.lessonReturn=typeof input.lessonReturn==='string'&&new RegExp('^(start|stage\\/'+R+'\\/(read|practice|plan))$').test(input.lessonReturn)?input.lessonReturn:s.filmReturn||'start';
     s.updated=typeof input.updated==='string'?input.updated.slice(0,50):null;
     return s;
   }
