@@ -2,3 +2,5 @@
 .env
 node_modules/
 *.log
+dist/mandarin/materials/slides.pptx
+dist/mandarin/materials/mandarin-teacher-kit.zip

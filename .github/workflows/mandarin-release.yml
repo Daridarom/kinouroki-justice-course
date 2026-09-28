@@ -1,0 +1,31 @@
+name: Prepare tested course release
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+concurrency:
+  group: prepare-course-release
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python3 scripts/build-mandarin.py
+      - run: npm test
+      - name: Save tested distribution for publication
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin gh-pages
+          git worktree add /tmp/course-release origin/gh-pages
+          cp -a dist/. /tmp/course-release/
+          cd /tmp/course-release
+          git add .
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Prepare verified course distribution from $GITHUB_SHA"
+          git push origin HEAD:refs/heads/release/mandarin-20260928

@@ -1,0 +1,50 @@
+{
+  "teacher-practice.docx": {
+    "bytes": 41959,
+    "sha256": "c65df512a4f9d7b2bd46332af055fc04a5005bced361fa7ab200386de4defa3d"
+  },
+  "teacher-guide.docx": {
+    "bytes": 44019,
+    "sha256": "470a2b12e1759fbf432a0da0b7cae495036fc58934b24009ef8daf8027a1a92a"
+  },
+  "teacher-guide.pdf": {
+    "bytes": 135143,
+    "sha256": "196d2b06da9c724780a2251586f0dc7f8ffff2a93fd596d542af496f24bfb19c"
+  },
+  "worksheets.pdf": {
+    "bytes": 114826,
+    "sha256": "0bfcf719b8c05887156252f2ae13a74d819f0a23ed8fef643d3c2132c6d20213"
+  },
+  "guide.pdf": {
+    "bytes": 354198,
+    "sha256": "68e957f2a3c1f77315eed1cc6995db89f07bab8b3f0ec4791063f8d18740acdb"
+  },
+  "workbook.pdf": {
+    "bytes": 1079150,
+    "sha256": "54efecbfd45eff7c8277a58aa4d6294a0e1ca573d5abc182fedf8e991eccdfab"
+  },
+  "teacher-practice.pdf": {
+    "bytes": 131011,
+    "sha256": "d538c5d2ac42d8b05fd1f2cb6ec48fc4644ce951e701719bf59d7b58d4bda586"
+  },
+  "README.md": {
+    "bytes": 2719,
+    "sha256": "1e1cccd0e6093e259e3725450aceea751aac01852844912ae15a9ebcb7390469"
+  },
+  "story.pdf": {
+    "bytes": 386565,
+    "sha256": "4488293c6c6867410c5281d30ae6ff94736b5925c90bf97f44ca484bae0a1b05"
+  },
+  "worksheets.docx": {
+    "bytes": 41190,
+    "sha256": "6d1f4b8e4fd9524a9e339c02eea1f3cfa518f31c3106eb544edd9d9e0bd30690"
+  },
+  "slides.pptx": {
+    "bytes": 13125166,
+    "sha256": "002563a8ea35b67b7838861f0f081205bbe1337f4d96f6bc251f83c5b2a3696e"
+  },
+  "slides.pdf": {
+    "bytes": 1700491,
+    "sha256": "395f721af7d997e4d5034054479ad12fd5bd094d89666170bde7d29075fffcdd"
+  }
+}
