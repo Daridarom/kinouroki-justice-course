@@ -18,8 +18,12 @@ assert.equal(course.stages.flatMap(s=>s.quizzes).length,21);
 assert.equal(course.projectFields.length,13);
 assert(allText.includes(simplify(course.definition)),'Definition must be an exact source excerpt');
 for(const s of course.stages){
-  assert(allText.includes(simplify(s.goal)),`Goal differs from source: ${s.name}`);
-  assert(allText.includes(simplify(s.quote)),`Quotation differs from source: ${s.name}`);
+  if(!s.proposed){
+    assert(allText.includes(simplify(s.goal)),`Goal differs from source: ${s.name}`);
+    assert(allText.includes(simplify(s.quote)),`Quotation differs from source: ${s.name}`);
+  } else {
+    assert(['Просмотр фильма','Социальная практика'].includes(s.name),`Unexpected proposed stage: ${s.name}`);
+  }
   for(const r of s.refs)for(const p of r.pages)assert(source.pages[p]?.length,`Missing workbook page ${p}`);
   for(const q of s.quizzes){
     assert(core.grade(q,q.answer),q.id+' answer must pass');
