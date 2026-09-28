@@ -6,16 +6,17 @@
   const canonFieldKeys=['canonMeaning','canonAntipode','canonQuality1','canonQuality2','canonQuality3',...Array.from({length:7},(_,i)=>'pyramid'+(i+1)),...Array.from({length:5},(_,i)=>'momentFeeling'+(i+1))];
   fieldKeys.push(...canonFieldKeys);
   function normalize(raw) {
-    const state={version:1,notes:{},done:{},fields:{}};
+    const state={version:1,notes:{},done:{},fields:{},reviews:{}};
     for(const id of ids){
       state.notes[id]=typeof raw?.notes?.[id]==='string'?raw.notes[id].slice(0,5000):'';
       state.done[id]=raw?.done?.[id]===true;
+      state.reviews[id]=raw?.reviews?.[id]===true;
     }
     for(const key of fieldKeys)state.fields[key]=typeof raw?.fields?.[key]==='string'?raw.fields[key].slice(0,canonFieldKeys.includes(key)?100:5000):'';
     return state;
   }
   const MAX_IMPORT_CHARS=200000,MAX_IMPORT_BYTES=MAX_IMPORT_CHARS*4;
-  const route=hash=>/^(start|film|lesson[1-4]|plan|materials)$/.test(hash)?hash:'start';
+  const route=hash=>{const view=hash.replace(/^review\//,'');return /^(start|review|film|lesson[1-4]|plan|materials)$/.test(view)?view:'start';};
   const exportNotes=state=>JSON.stringify({format:'kinouroki.mandarin.preview',...normalize(state)},null,2);
   function importNotes(text){
     if(typeof text!=='string'||text.length>MAX_IMPORT_CHARS)throw new Error('Файл слишком большой. Выберите файл прогресса этого курса.');

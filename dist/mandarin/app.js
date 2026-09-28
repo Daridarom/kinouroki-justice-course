@@ -3,6 +3,8 @@
   const {KEY,normalize,route,exportNotes,importNotes,MAX_IMPORT_BYTES}=window.MandarinCore;
   const notes=[...document.querySelectorAll('[data-note]')];
   const checks=[...document.querySelectorAll('[data-done]')];
+  const selfChecks=[...document.querySelectorAll('[data-self-check]')];
+  const isReview=()=>location.hash==='#review'||location.hash.startsWith('#review/');
   const screens=[...document.querySelectorAll('[data-screen]')];
   const names=['Впечатление','Осмысление','Применение','Рефлексия'];
   const menu=document.querySelector('.course-nav');
@@ -13,10 +15,11 @@
   menu.open=innerWidth>800;
   for(const el of notes)el.value=saved.notes[el.dataset.note];
   for(const el of checks)el.checked=saved.done[el.dataset.done];
+  for(const el of selfChecks)el.checked=saved.reviews[el.dataset.selfCheck];
   for(const el of fields)el.value=saved.fields[el.dataset.field]||'';
 
   function getState(){
-    return normalize({notes:Object.fromEntries(notes.map(el=>[el.dataset.note,el.value])),done:Object.fromEntries(checks.map(el=>[el.dataset.done,el.checked])),fields:Object.fromEntries(fields.map(el=>[el.dataset.field,el.value]))});
+    return normalize({reviews:Object.fromEntries(selfChecks.map(el=>[el.dataset.selfCheck,el.checked])),notes:Object.fromEntries(notes.map(el=>[el.dataset.note,el.value])),done:Object.fromEntries(checks.map(el=>[el.dataset.done,el.checked])),fields:Object.fromEntries(fields.map(el=>[el.dataset.field,el.value]))});
   }
   function displayProgress(){
     const state=getState(),count=Object.values(state.done).filter(Boolean).length;
@@ -52,18 +55,22 @@
     return state;
   }
   function save(){
+    if(isReview())return;
     document.getElementById('export-links').replaceChildren();
     const state=getState();
     try {localStorage.setItem(KEY,JSON.stringify(state));storageOK=true;}catch{storageOK=false;}
     displayProgress();
   }
-  for(const el of notes)el.addEventListener('input',save);
+  for(const el of notes)el.addEventListener('input',()=>{invalidateReview(el);save();});
+  for(const el of selfChecks)el.addEventListener('change',save);
   for(const el of checks)el.addEventListener('change',save);
   for(const el of fields)el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{
+    invalidateReview(el);
     const exercise=el.closest('[data-exercise]');if(exercise)exercise.querySelector('[data-feedback]').textContent='';
     document.getElementById('export-links').replaceChildren();save();
   });
   for(const button of document.querySelectorAll('[data-check]'))button.addEventListener('click',()=>{
+    if(isReview())return;
     const q=window.MandarinPractice[button.dataset.check],state=getState();
     const complete=q.keys.every(key=>state.fields[key]!=='');
     const okay=complete&&q.keys.every((key,i)=>state.fields[key]===q.answer[i]);
@@ -72,6 +79,7 @@
   let pendingImport=null;
   const importStatus=document.getElementById('import-status'),applyImport=document.getElementById('apply-import');
   document.getElementById('import-file').addEventListener('change',async event=>{
+    if(isReview())return;
     pendingImport=null;applyImport.hidden=true;
     const file=event.target.files[0];if(!file)return;
     try{
@@ -82,9 +90,10 @@
     event.target.value='';
   });
   applyImport.addEventListener('click',()=>{
-    if(!pendingImport)return;
+    if(isReview()||!pendingImport)return;
     for(const el of notes)el.value=pendingImport.notes[el.dataset.note];
     for(const el of checks)el.checked=pendingImport.done[el.dataset.done];
+    for(const el of selfChecks)el.checked=pendingImport.reviews[el.dataset.selfCheck];
     for(const el of fields)el.value=pendingImport.fields[el.dataset.field];
     document.querySelectorAll('[data-feedback]').forEach(el=>el.textContent='');
     document.getElementById('export-links').replaceChildren();save();
@@ -99,7 +108,27 @@
   });
   document.getElementById('close-reader').addEventListener('click',()=>{document.getElementById('document-reader').hidden=true;document.getElementById('pdf-frame').removeAttribute('src');});
 
+  function invalidateReview(el){
+    if(isReview())return;
+    const id=el.closest('[data-screen]')?.dataset.screen.replace('lesson','');
+    const check=selfChecks.find(x=>x.dataset.selfCheck===id);if(check)check.checked=false;
+  }
+  // Review mode is encoded in the URL, so refresh preserves it without changing progress.
   function showRoute(focus=true){
+    const reviewing=isReview();
+    document.getElementById('review-banner').hidden=!reviewing;
+    const toggle=document.getElementById('mode-toggle');
+    toggle.href=reviewing?'#start':'#review';toggle.textContent=reviewing?'Перейти к обучению':'Режим рецензирования';
+    for(const el of [...notes,...checks,...fields,...selfChecks,document.getElementById('import-file'),applyImport])el.disabled=reviewing;
+    document.querySelectorAll('[data-check]').forEach(el=>el.hidden=reviewing);
+    document.querySelectorAll('[data-feedback]').forEach(el=>el.hidden=reviewing);
+    document.querySelectorAll('[data-review-solution]').forEach(el=>el.hidden=!reviewing);
+    document.querySelectorAll('a[href^="#"]').forEach(el=>{
+      if(el.id==='mode-toggle'||el.hasAttribute('data-review-overview')||el.classList.contains('skip'))return;
+      if(!el.dataset.learnHref)el.dataset.learnHref=el.getAttribute('href');
+      const base=el.dataset.learnHref;
+      el.href=reviewing?(base==='#start'?'#review':'#review/'+base.slice(1)):base;
+    });
     const selected=route(location.hash.slice(1));
     screens.forEach(el=>el.hidden=el.dataset.screen!==selected);
     // Load VK only in the film view; leaving it stops playback in the hidden frame.
@@ -117,7 +146,7 @@
   window.addEventListener('hashchange',()=>showRoute());
   document.querySelector('[data-open-nav]').addEventListener('click',()=>{menu.open=true;menu.scrollIntoView({block:'start'});menu.querySelector('summary').focus({preventScroll:true});});
   document.querySelector('[data-top]').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
-  document.querySelector('[data-home]').addEventListener('click',event=>{event.preventDefault();if(location.hash==='#start')showRoute();else location.hash='start';});
+  document.querySelector('[data-home]').addEventListener('click',event=>{event.preventDefault();const home=isReview()?'review':'start';if(location.hash==='#'+home)showRoute();else location.hash=home;});
   document.getElementById('download').addEventListener('click',()=>{
     if(exportURL)URL.revokeObjectURL(exportURL);
     exportURL=URL.createObjectURL(new Blob([exportNotes(getState())],{type:'application/json'}));
