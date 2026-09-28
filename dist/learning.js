@@ -24,6 +24,7 @@
   ];
   // Unified eight-stage route: film viewing and the completed social practice are explicit stages.
   const viewingStage={
+    proposed:true,
     name:'Просмотр фильма',subtitle:'Увидеть историю целиком',minutes:25,
     goal:'Обеспечить целостное эмоциональное восприятие фильма до разбора отдельных сцен.',
     focus:'Сначала целый фильм — затем анализ',
@@ -35,6 +36,7 @@
     reviewCriteria:['Фильм смотрится целиком до сценового анализа.']
   };
   const practiceStage={
+    proposed:true,
     name:'Социальная практика',subtitle:'Совершить общее дело',minutes:0,
     goal:'Перевести выбранный замысел в реальное общественно полезное действие и зафиксировать наблюдаемый воспитательный эффект.',
     focus:'Оцениваем состоявшийся поступок, а не хороший план',
