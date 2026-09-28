@@ -1,0 +1,122 @@
+name: Verify standard source attribution without publication
+on:
+  push:
+    branches: [fix/standard-source-attribution-20260928]
+    paths: ['.review-standard/**', '.github/workflows/standard-repair-once.yml']
+permissions:
+  contents: write
+jobs:
+  repair-and-test:
+    if: github.ref == 'refs/heads/fix/standard-source-attribution-20260928'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE: 5d79b50ee5eaf5497e38ec4e6a7dcb81e74b8419
+      PUBLISHED: 0be508b9a55a701e91c6d7fd1ea42e56c6a9f4a1
+      REVIEW_BRANCH: fix/standard-source-attribution-20260928
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check isolated scope and apply hash-verified local edits
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$BASE"
+          test "$(git ls-remote origin refs/heads/gh-pages | cut -f1)" = "$PUBLISHED"
+          test "$(git rev-parse HEAD:dist)" = ff9deffc418ea22d1f86d9de8b5dc483f0ed6b33
+          python3 - <<'PY'
+          import gzip,hashlib,json,os,subprocess
+          from pathlib import Path
+          parts=sorted(Path('.review-standard').glob('repair.part*'))
+          assert len(parts)==5
+          data=b''.join(p.read_bytes() for p in parts)
+          assert hashlib.sha256(data).hexdigest()=='bdd30e5195651f8079d4277a000be672f9f8deb455ca24205497700d7f078503', 'Transport integrity mismatch'
+          spec=json.loads(gzip.decompress(data))
+          assert spec['base']==os.environ['BASE']
+          allowed={'dist/app.js','dist/index.html','dist/learning.js','dist/mandarin/index.html','dist/mandarin/learning.js','scripts/verify-standard-ui.mjs'}
+          assert {f['path'] for f in spec['files']}==allowed
+          for f in spec['files']:
+              p=Path(f['path'])
+              if f['sha256_before'] is None:
+                  assert not p.exists()
+                  text=f['content']
+              else:
+                  b=p.read_bytes()
+                  assert hashlib.sha256(b).hexdigest()==f['sha256_before'],str(p)
+                  text=b.decode('utf-8')
+                  edits=f['edits']
+                  assert all(0<=e['start']<=e['end']<=len(text) for e in edits)
+                  assert all(edits[i]['end']<=edits[i+1]['start'] for i in range(len(edits)-1))
+                  for e in reversed(edits):
+                      text=text[:e['start']]+e['text']+text[e['end']:]
+              b=text.encode('utf-8')
+              assert hashlib.sha256(b).hexdigest()==f['sha256_after'],str(p)
+              p.parent.mkdir(parents=True,exist_ok=True)
+              p.write_bytes(b)
+          old_tests={
+              'scripts/verify.mjs':('ac034af91cf7f066bb3d32367de4a6ee1599d5bb', [('!s.proposed',"s.goalSource==='passport'",1),('Unexpected proposed stage:','Unexpected standard goal:',1),('if(i===4)','if(i===course.projectStage)',1)]),
+              'scripts/verify-mandarin.mjs':('7af044a725672ca0028aec9cc2b000dbb16be7be', [('!s.proposed',"s.goalSource==='passport'",2),('in the proposed unified route','in the approved unified route',1)]),
+              'scripts/verify-courses.mjs':('f5a6e0b56ca904b846c7130d7ca7640e4e95a04c', [('20260928-canon','20260928-standard-r1',2)])
+          }
+          for name,(expected,replacements) in old_tests.items():
+              assert subprocess.check_output(['git','hash-object',name],text=True).strip()==expected,name
+              p=Path(name); text=p.read_text()
+              for old,new,count in replacements:
+                  assert text.count(old)==count,(name,old)
+                  text=text.replace(old,new)
+              if name=='scripts/verify-courses.mjs': text+="\nawait import('./verify-standard-ui.mjs');\n"
+              p.write_text(text)
+          allowed.update(old_tests)
+          Path('/tmp/standard-r1-allowed.json').write_text(json.dumps(sorted(allowed)))
+          print('Applied locally browser-verified edits; source files and documents unchanged.')
+          PY
+      - name: Install existing PDF text verifier
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Full existing npm test plus rendered regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm test 2>&1 | tee /tmp/npm-standard-test.log
+      - name: Remove temporary runner and commit only the review branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/standard-repair-once.yml .review-standard/repair.part*
+          python3 - <<'PY'
+          import json,os,subprocess
+          from pathlib import Path
+          allowed=json.loads(Path('/tmp/standard-r1-allowed.json').read_text())
+          subprocess.run(['git','add','--']+allowed,check=True)
+          changed=subprocess.check_output(['git','diff','--cached','--name-only',os.environ['BASE']],text=True).splitlines()
+          assert set(changed)==set(allowed),(changed,allowed)
+          protected=['dist/materials','dist/mandarin/materials','dist/course.js','dist/mandarin/course.js','dist/sources.json','dist/mandarin/sources.json','dist/core.js','dist/styles.css','assets','.github/workflows/course.yml','.github/workflows/mandarin-release.yml']
+          assert not subprocess.check_output(['git','diff','--cached',os.environ['BASE'],'--']+protected), 'Protected source content changed'
+          Path('/tmp/standard-r1-final.patch').write_bytes(subprocess.check_output(['git','diff','--cached','--binary',os.environ['BASE']]))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Fix approved standard attribution, source links and post-practice explanation'
+          git archive --format=tar.gz -o /tmp/standard-r1-source.tar.gz HEAD
+          git rev-parse HEAD > /tmp/standard-r1-commit.txt
+          test "$(git ls-remote origin "refs/heads/$REVIEW_BRANCH" | cut -f1)" = "$GITHUB_SHA"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$BASE"
+          test "$(git ls-remote origin refs/heads/gh-pages | cut -f1)" = "$PUBLISHED"
+          git push origin "HEAD:refs/heads/$REVIEW_BRANCH"
+          git ls-remote origin refs/heads/main refs/heads/gh-pages "refs/heads/$REVIEW_BRANCH" | tee /tmp/standard-r1-refs.txt
+      - name: Retain review evidence only, never deploy Pages
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: standard-r1-review-evidence
+          path: |
+            /tmp/npm-standard-test.log
+            /tmp/standard-r1-final.patch
+            /tmp/standard-r1-source.tar.gz
+            /tmp/standard-r1-commit.txt
+            /tmp/standard-r1-refs.txt
+          retention-days: 7
