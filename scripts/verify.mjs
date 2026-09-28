@@ -104,7 +104,7 @@ await reloaded.emit('click',{resetFlag:true,dataset:{}});assert(reloaded.get('re
 const blocked=makeHarness({},true);assert(blocked.get('app').innerHTML.includes('Браузер не сохраняет записи'));
 await h.emit('click',{dataset:{source:'workbook',pages:'28'}});assert(h.get('source-dialog').open);assert(h.get('source-content').innerHTML.includes('Я заметил мысль-оковы.'));
 // Reference tools retain the lesson; scene selection and watched status must not recreate the player.
-const navigation=makeHarness();navigation.navigate('#stage/2/practice');navigation.navigate('#glossary');
+const navigation=makeHarness();navigation.navigate('#stage/3/practice');navigation.navigate('#glossary');
 assert(navigation.get('app').innerHTML.includes('← Мысль · Практикум'));
 navigation.navigate('#materials');assert(navigation.get('app').innerHTML.includes('← Мысль · Практикум'));
 navigation.navigate('#film');const filmMarkup=navigation.get('app').innerHTML;
@@ -121,8 +121,8 @@ const resumed=makeHarness(Object.fromEntries(navigation.local));resumed.navigate
 navigation.navigate('#review');navigation.navigate('#stage/7/read');navigation.navigate('#film');assert(navigation.get('app').innerHTML.includes('← Воодушевление · Изучить'));
 const reviewReload=makeHarness(Object.fromEntries(navigation.local));reviewReload.navigate('#stage/7/practice');assert(reviewReload.get('app').innerHTML.includes('Показан ответ и методический разбор'));
 navigation.navigate('#learn');navigation.navigate('#unknown');assert(navigation.get('app').innerHTML.includes('Восемь этапов'));
-navigation.navigate('#stage/2/plan');assert(navigation.get('app').innerHTML.includes('Назад к практикуму'));
-await navigation.emit('click',{tagName:'A',dataset:{caseLink:'2'}});navigation.navigate('#stage/2/practice');assert(navigation.get('app').innerHTML.includes('id="teaching-case" tabindex="-1"'));
+navigation.navigate('#stage/3/plan');assert(navigation.get('app').innerHTML.includes('Назад к практикуму'));
+await navigation.emit('click',{tagName:'A',dataset:{caseLink:'3'}});navigation.navigate('#stage/3/practice');assert(navigation.get('app').innerHTML.includes('id="teaching-case" tabindex="-1"'));
 console.log('PASS: full eight-stage event flow, edit revokes completion, reload, source reader, escaped export, reset, unavailable storage');
 console.log('PASS: lesson return across tools and reload, reviewer reload, direct player, scene and watched-state continuity, previous-step links');
 console.log('Not performed: browser/layout verification and supported-context WebMCP validation.');
