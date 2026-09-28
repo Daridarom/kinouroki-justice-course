@@ -1,50 +1,82 @@
 {
-  "teacher-practice.docx": {
-    "bytes": 41965,
-    "sha256": "baa71d95cccd85d842f02c6e338cf7e38e6d62078b70ee5b24ba681beb125a4f"
-  },
-  "teacher-guide.docx": {
-    "bytes": 44028,
-    "sha256": "563f10ab4a97bac11fc93ea32112995f6a4796ef127c523addefec4fe792db35"
-  },
-  "teacher-guide.pdf": {
-    "bytes": 135348,
-    "sha256": "f4d2cd9264c99d0f6a27e7eaa374e3813413c00d45b6d6768a779401b098eb42"
-  },
-  "worksheets.pdf": {
-    "bytes": 114835,
-    "sha256": "05a269aa954f25bedc49f2b50709b7622fcdbe2d365a719728a4f84ad1ae4a59"
-  },
-  "guide.pdf": {
-    "bytes": 354198,
-    "sha256": "68e957f2a3c1f77315eed1cc6995db89f07bab8b3f0ec4791063f8d18740acdb"
-  },
-  "workbook.pdf": {
-    "bytes": 1079150,
-    "sha256": "54efecbfd45eff7c8277a58aa4d6294a0e1ca573d5abc182fedf8e991eccdfab"
-  },
-  "teacher-practice.pdf": {
-    "bytes": 130960,
-    "sha256": "ec6eb1100558480c8e8a8a105c33cf8f8da89bf7c8b70aa7cb662056d15aa693"
-  },
-  "README.md": {
-    "bytes": 2721,
-    "sha256": "58c5f73f9594f093ed461ffc25618a9ba654d12468eb8925086e117abcfb15c3"
-  },
-  "story.pdf": {
-    "bytes": 386565,
-    "sha256": "4488293c6c6867410c5281d30ae6ff94736b5925c90bf97f44ca484bae0a1b05"
-  },
-  "worksheets.docx": {
-    "bytes": 41191,
-    "sha256": "9c6022f227e33feb8ad88059cc09f19d3db4f4a16992795bc9a61aa9e2ac5262"
-  },
-  "slides.pptx": {
-    "bytes": 13125166,
-    "sha256": "002563a8ea35b67b7838861f0f081205bbe1337f4d96f6bc251f83c5b2a3696e"
-  },
-  "slides.pdf": {
-    "bytes": 1700491,
-    "sha256": "395f721af7d997e4d5034054479ad12fd5bd094d89666170bde7d29075fffcdd"
-  }
+ "teacher-practice.docx": {
+  "bytes": 41965,
+  "sha256": "baa71d95cccd85d842f02c6e338cf7e38e6d62078b70ee5b24ba681beb125a4f"
+ },
+ "teacher-guide.docx": {
+  "bytes": 44028,
+  "sha256": "563f10ab4a97bac11fc93ea32112995f6a4796ef127c523addefec4fe792db35"
+ },
+ "teacher-guide.pdf": {
+  "bytes": 135348,
+  "sha256": "f4d2cd9264c99d0f6a27e7eaa374e3813413c00d45b6d6768a779401b098eb42"
+ },
+ "worksheets.pdf": {
+  "bytes": 114835,
+  "sha256": "05a269aa954f25bedc49f2b50709b7622fcdbe2d365a719728a4f84ad1ae4a59"
+ },
+ "guide.pdf": {
+  "bytes": 354198,
+  "sha256": "68e957f2a3c1f77315eed1cc6995db89f07bab8b3f0ec4791063f8d18740acdb"
+ },
+ "workbook.pdf": {
+  "bytes": 1079150,
+  "sha256": "54efecbfd45eff7c8277a58aa4d6294a0e1ca573d5abc182fedf8e991eccdfab"
+ },
+ "teacher-practice.pdf": {
+  "bytes": 130960,
+  "sha256": "ec6eb1100558480c8e8a8a105c33cf8f8da89bf7c8b70aa7cb662056d15aa693"
+ },
+ "README.md": {
+  "bytes": 4426,
+  "sha256": "7cc86e2e94bd4a0309ae5a715077f04a071a4cf8f0c865398406bd9ba61ca4bf"
+ },
+ "story.pdf": {
+  "bytes": 386565,
+  "sha256": "4488293c6c6867410c5281d30ae6ff94736b5925c90bf97f44ca484bae0a1b05"
+ },
+ "worksheets.docx": {
+  "bytes": 41191,
+  "sha256": "9c6022f227e33feb8ad88059cc09f19d3db4f4a16992795bc9a61aa9e2ac5262"
+ },
+ "slides.pptx": {
+  "bytes": 13125166,
+  "sha256": "002563a8ea35b67b7838861f0f081205bbe1337f4d96f6bc251f83c5b2a3696e"
+ },
+ "slides.pdf": {
+  "bytes": 1700491,
+  "sha256": "395f721af7d997e4d5034054479ad12fd5bd094d89666170bde7d29075fffcdd"
+ },
+ "standard-passport.docx": {
+  "bytes": 43527,
+  "sha256": "008a574e079840664631d28be19dab4187e8e94004f4fbc027394a2cd401ef6a"
+ },
+ "standard-passport.pdf": {
+  "bytes": 476632,
+  "sha256": "0b6e4433ddf125d769cb4305dcb7597094b11e9ac17640ffcfa83c98a59307d9"
+ },
+ "standard-rationale.docx": {
+  "bytes": 43362,
+  "sha256": "bbf45e9a53a35a185d58047813caac3fe1c26509547249e65b0d2ee6ce7dde44"
+ },
+ "standard-rationale.pdf": {
+  "bytes": 384024,
+  "sha256": "e0edabbbfe09fd8535bc4c37754da0e3ecf55285ecba08cabe9652a4f742e18c"
+ },
+ "standard-manual.docx": {
+  "bytes": 55882,
+  "sha256": "545a1821e896e5af8094940d2792d275ba647f9129c1052013f26a32c950079f"
+ },
+ "standard-manual.pdf": {
+  "bytes": 477825,
+  "sha256": "7eb80f14bf0830d31e0ba72f974684fd26b88480509621324ae4a7fe1ad2f44a"
+ },
+ "standard-workbook.docx": {
+  "bytes": 31704,
+  "sha256": "4dde256921da73e945632b076a82d9aa607c49416f7f77644e867599dcfee32c"
+ },
+ "standard-workbook.pdf": {
+  "bytes": 334983,
+  "sha256": "4f3ea17516d631a992496f6c1572fe03556945c92bba5935b27b25d257c5276b"
+ }
 }
