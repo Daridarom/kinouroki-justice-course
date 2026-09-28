@@ -14,7 +14,7 @@ const flat=blocks=>blocks.map(b=>b.type==='p'?b.text:b.rows.flat().join('\n')).j
 const simplify=s=>s.toLocaleLowerCase('ru').replace(/\s+/g,' ').trim();
 const allText=simplify(Object.values(source.documents).map(d=>flat(d.blocks)).join('\n'));
 assert.equal(course.stages.length,8);
-assert.equal(course.stages.flatMap(s=>s.quizzes).length,17);
+assert.equal(course.stages.flatMap(s=>s.quizzes).length,21);
 assert.equal(course.projectFields.length,13);
 assert(allText.includes(simplify(course.definition)),'Definition must be an exact source excerpt');
 for(const s of course.stages){
