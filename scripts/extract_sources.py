@@ -7,10 +7,12 @@ import json, shutil, re, hashlib, sys
 
 root=Path(__file__).resolve().parents[1]
 source_root=Path(sys.argv[1]) if len(sys.argv)>1 else root/'dist/materials'
+out_root=Path(sys.argv[2]) if len(sys.argv)>2 else root/'dist'
+materials_dir=out_root/'materials'
 names={'passport':'ПАСПОРТ МЕТОДИЧЕСКОГО ПОСОБИЯ 1 ОТ 29.0826','rationale':'МЕТОДИЧЕСКОЕ ОБОСНОВАНИЕ ПАСПОРТА ОТ 20.08.26','workbook':'СВОДНАЯ РАБОЧАЯ ТЕТРАДЬ 1'}
 labels={'passport':'Паспорт методического пособия','rationale':'Методическое обоснование','workbook':'Сводная рабочая тетрадь'}
 all_docs={};pages={};glossary=[]
-(root/'dist/materials').mkdir(exist_ok=True)
+materials_dir.mkdir(exist_ok=True)
 for key,name in names.items():
     path=source_root/(name+'.docx')
     if not path.exists(): path=source_root/(key+'.docx')
@@ -32,12 +34,12 @@ for key,name in names.items():
             blocks.append(block)
             if key=='workbook' and current is not None:pages[current].append(block)
     all_docs[key]={'title':labels[key],'originalName':name+'.docx','file':'./materials/'+key+'.docx','sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'blocks':blocks}
-    target=root/'dist/materials'/(key+'.docx')
+    target=materials_dir/(key+'.docx')
     if path.resolve()!=target.resolve(): shutil.copyfile(path,target)
 # The source documents stay exact. The glossary inconsistency is retained in the source reader,
 # but the inconsistent entry is not used as an automatically graded learning objective.
 sections={}
-for key,prefixes in {'passport':['5.'+str(i)+'.' for i in range(1,7)],'rationale':['2.2.'+str(i)+'.' for i in range(1,9)]}.items():
+for key,prefixes in {'passport':['5.'+str(i)+'.' for i in range(1,10)],'rationale':['2.2.'+str(i)+'.' for i in range(1,10)]}.items():
     sections[key]={}
     bs=all_docs[key]['blocks']
     for prefix in prefixes:
@@ -46,5 +48,5 @@ for key,prefixes in {'passport':['5.'+str(i)+'.' for i in range(1,7)],'rationale
         end=next((i for i in range(start+1,len(bs)) if bs[i]['type']=='p' and re.match(r'^\d+\.',bs[i]['text'])),len(bs))
         sections[key][prefix]=bs[start:end]
 data={'documents':all_docs,'pages':pages,'glossary':glossary,'sections':sections}
-(root/'dist/sources.json').write_text(json.dumps(data,ensure_ascii=False),encoding='utf8')
+(out_root/'sources.json').write_text(json.dumps(data,ensure_ascii=False),encoding='utf8')
 print(json.dumps({'source_documents':len(all_docs),'workbook_pages':len(pages),'glossary_entries':len(glossary)}))
