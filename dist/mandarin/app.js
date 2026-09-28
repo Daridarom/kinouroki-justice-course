@@ -1,6 +1,6 @@
 'use strict';
 (() => {
-  const {KEY,normalize,route,exportNotes,importNotes}=window.MandarinCore;
+  const {KEY,normalize,route,exportNotes,importNotes,MAX_IMPORT_BYTES}=window.MandarinCore;
   const notes=[...document.querySelectorAll('[data-note]')];
   const checks=[...document.querySelectorAll('[data-done]')];
   const screens=[...document.querySelectorAll('[data-screen]')];
@@ -47,7 +47,7 @@
     }
     target.append(practical);
     const solved=Object.values(window.MandarinPractice).filter(q=>q.keys.every((key,i)=>state.fields[key]===q.answer[i])).length;
-    document.getElementById('practice-progress').textContent=`Самопроверка: ${solved} из 6 упражнений выполнено верно. Личные ответы не оцениваются.`;
+    document.getElementById('practice-progress').textContent=`Самопроверка: ${solved} из ${Object.keys(window.MandarinPractice).length} упражнений выполнено верно. Личные ответы не оцениваются.`;
     document.getElementById('storage-warning').hidden=storageOK;
     return state;
   }
@@ -75,7 +75,7 @@
     pendingImport=null;applyImport.hidden=true;
     const file=event.target.files[0];if(!file)return;
     try{
-      if(file.size>200000)throw new Error('Файл слишком большой. Выберите файл прогресса «Мандарина».');
+      if(file.size>MAX_IMPORT_BYTES)throw new Error('Файл слишком большой. Выберите файл прогресса «Мандарина».');
       pendingImport=importNotes(await file.text());
       importStatus.textContent=`Файл прочитан. Записей: ${Object.values(pendingImport.notes).filter(Boolean).length}, ответов практики: ${Object.values(pendingImport.fields).filter(Boolean).length}. При загрузке они заменят текущие записи этого курса. Сначала можно сохранить текущие записи в файл.`;applyImport.hidden=false;
     }catch(error){importStatus.textContent=error.message;}

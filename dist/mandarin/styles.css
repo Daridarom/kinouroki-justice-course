@@ -19,6 +19,14 @@
 .mandarin-course .exercise button{margin-top:18px}
 .mandarin-course .feedback{margin:16px 0 0;font-weight:600}
 .mandarin-course .feedback:empty{display:none}
+.mandarin-course .quality-passport{margin:28px 0;padding:24px;border-left:4px solid var(--gold);background:white;overflow-wrap:anywhere}
+.mandarin-course .quality-passport h2{margin-top:12px}
+.mandarin-course .quality-definition{font-size:20px;line-height:1.65}
+.mandarin-course .quality-passport dt{font-weight:700;margin-top:14px}
+.mandarin-course .quality-passport dd{margin:4px 0 0}
+.mandarin-course .quality-formula{padding:16px;background:#f3f6f8;font-weight:700;line-height:1.7}
+.mandarin-course .pyramid-levels li{padding:5px 0}
+.mandarin-course .reading li{line-height:1.65;margin-bottom:10px}
 .mandarin-course .material-links{display:flex;gap:18px;flex-wrap:wrap;margin:16px 0}
 .mandarin-course .task-source{margin:18px 0;padding-left:18px;border-left:3px solid var(--gold)}
 .mandarin-course .materials-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
