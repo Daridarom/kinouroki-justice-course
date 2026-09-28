@@ -24,35 +24,35 @@
   "sha256": "4488293c6c6867410c5281d30ae6ff94736b5925c90bf97f44ca484bae0a1b05"
  },
  "passport.docx": {
-  "bytes": 44302,
-  "sha256": "615f2224452f62b960003bbe333143e408f571db785245668a6d692861ee10ff"
+  "bytes": 44358,
+  "sha256": "575de26222c3368116fb56e4326ce18737ecd7712072b50216af5cb35b64095f"
  },
  "rationale.docx": {
-  "bytes": 44439,
-  "sha256": "5c2310b278faea759f352ce10a6eb3a7262a2c680a4f94653c2f2ecd07a243a9"
+  "bytes": 44578,
+  "sha256": "a773ce7161dfeabe11301aee306959fcc0bd22e4c1e55274dd69b6e4b3e6ac2e"
  },
  "workbook.docx": {
-  "bytes": 32211,
-  "sha256": "604550a0152b4dc1ef0519c6c59c88bbeccbec2ecd2dccb1498fa847f999f333"
+  "bytes": 32311,
+  "sha256": "b31bf9d5502b7f3838247e731cc3946e25d28fd9466ebad352ac293d6fbbaad6"
  },
  "standard-manual.docx": {
-  "bytes": 57546,
-  "sha256": "9db28f791f14a6a578724203e54e52de8e4dfc999633973a87734a3f9fe58513"
+  "bytes": 57807,
+  "sha256": "e65c781d91ea24901b96849cb068d95ec23ce003d09a21d433c68c60ab9dda0f"
  },
  "standard-manual.pdf": {
-  "bytes": 494023,
-  "sha256": "7b0813f51003140154cd30d3670d348d3abcbff5fc282ba81acead80d6582858"
+  "bytes": 494611,
+  "sha256": "e1e9702a6a13e424854261a5a3de459db193145cd49b8ad14af8284295e2450e"
  },
  "standard-passport.pdf": {
-  "bytes": 481958,
-  "sha256": "bec989d881c4c2ba32416c9e77e43ebc41946d8ff599b517e8635698df0fd3d8"
+  "bytes": 482110,
+  "sha256": "90f16f307266d8b3eb63f83d9bbed7af4512a5ba426c775b734294855d48db1a"
  },
  "standard-rationale.pdf": {
-  "bytes": 393479,
-  "sha256": "97cc947ad5f3d7b61bd6433f718c69dc03bac1b22c842ca154a62174e6dc5d50"
+  "bytes": 393504,
+  "sha256": "ac34a205612d657d2316261b04b50e1872dad225c2ae5842d57cc6b240827dd3"
  },
  "standard-workbook.pdf": {
-  "bytes": 336044,
-  "sha256": "dae0174622892e5e445a7b0e641a7b08b1b1aa6c65031f1f48e25ba8a6138ec9"
+  "bytes": 336156,
+  "sha256": "ee62337dda518c49b8f23cb8987320a68a8560df18307ed786890042444bea02"
  }
 }
