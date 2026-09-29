@@ -88,7 +88,7 @@ for(let i=0;i<8;i++){
   await h.emit('click',{dataset:{complete:String(i)}});
 }
 const entryHarness=makeHarness();entryHarness.navigate('#review');assert(entryHarness.get('app').innerHTML.includes('review-banner'));entryHarness.navigate('#learn');assert(!entryHarness.get('app').innerHTML.includes('class="review-banner"'),'Course link must exit review mode');assert(entryHarness.get('app').innerHTML.includes('Восемь этапов'));
-assert(entryHarness.get('app').innerHTML.includes('Рабочая версия · 27.09.2026'),'Public course must disclose its review status');
+assert(entryHarness.get('app').innerHTML.includes('Рабочая версия · 29.09.2026'),'Public course must disclose its review status');
 const emptyQuizHarness=makeHarness();emptyQuizHarness.navigate('#stage/0/practice');await emptyQuizHarness.emit('click',{dataset:{check:'intro-antipode'}});assert(emptyQuizHarness.get('app').innerHTML.includes('Сначала выберите ответ'));assert(!emptyQuizHarness.get('app').innerHTML.includes('Пока не совпало'));
 const finalState=JSON.parse(h.local.get('kinouroki.justice.v1'));
 assert.equal(finalState.completed.length,8);
