@@ -27,3 +27,137 @@ dialog{border:1px solid var(--line);border-radius:12px;padding:0;width:min(960px
 @media print{.context-nav,.step-navigation,.mobile-tools{display:none!important}}
 
 .film-switch{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.film-switch a{display:inline-flex;align-items:center;min-height:44px;padding:7px 12px;border-radius:7px;text-decoration:none;color:var(--navy);font-size:14px;line-height:1.35}.film-switch a:hover{background:#edf1f5}.film-switch a[aria-current=page]{background:var(--navy);color:#fff;font-weight:650}.topbar{height:auto;min-height:76px;padding-top:10px;padding-bottom:10px}@media(max-width:800px){.film-switch{width:100%;display:grid;grid-template-columns:1fr 1fr}.film-switch a{font-size:12px;padding:8px;justify-content:center;text-align:center}.topbar{align-items:center}.mode-switch{margin-left:auto}}@media print{.film-switch{display:none}}
+
+/* ——— Маршрутная карта педагога (Подготовка → Старт → Итоги), 29.09.2026 ——— */
+.t-sidebar{margin:18px 0 6px;padding:14px 0 4px;border-top:1px solid #ffffff1f}
+.t-sidebar .course-label{margin-bottom:8px}
+.t-side-link{display:block;padding:8px 12px;border-radius:6px;color:#dbe6f0;text-decoration:none;font-size:14px}
+.t-side-link:hover,.t-side-link.active{background:#ffffff14;color:#fff}
+.t-side-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:6px 0 8px}
+.t-side-steps a{display:flex;flex-direction:column;gap:2px;padding:9px 8px;border:1px solid #ffffff2b;border-radius:8px;color:#fff;text-decoration:none;min-width:0}
+.t-side-steps a b{font-size:13px;font-weight:650;overflow-wrap:anywhere}
+.t-side-steps a small{font-size:11px;color:#bccfe0;line-height:1.3}
+.t-side-steps a.active,.t-side-steps a:hover{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+.t-side-steps a.active small,.t-side-steps a:hover small{color:var(--navy)}
+.t-start{margin:28px 0;padding:24px 26px;border:1px solid var(--line);border-radius:var(--radius);background:#fff;display:grid;gap:16px}
+.t-start h2{margin:4px 0 6px;font-size:22px}
+.t-start p{margin:0;color:var(--muted)}
+.t-segments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:22px 0}
+.t-start .t-segments{margin:0}
+.t-segments a{display:flex;align-items:center;gap:12px;min-height:56px;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius);background:#fff;color:var(--navy);font-weight:650;text-decoration:none;font-size:16px}
+.t-segments a span{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--blue-light);color:var(--blue);font-size:12px;flex-shrink:0}
+.t-segments a:hover{border-color:var(--navy)}
+.t-segments a.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.t-segments a.active span{background:var(--gold);color:var(--navy)}
+.t-map{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:0}
+.t-map-block{display:grid;grid-template-columns:48px minmax(0,1fr);gap:18px;position:relative;padding-bottom:26px}
+.t-map-block:not(:last-child):before{content:"";position:absolute;left:23px;top:50px;bottom:0;width:2px;background:var(--line)}
+.t-map-num{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--navy);color:var(--gold);font-weight:700}
+.t-map-body{border:1px solid var(--line);border-radius:var(--radius);background:#fff;padding:22px 24px;min-width:0}
+.t-map-body>p{color:var(--muted);margin:4px 0 14px}
+.t-map-body .button{margin-top:16px}
+.t-map-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.t-map-title h2{margin:0;font-size:24px}
+.t-map-title span{font-size:13px;color:var(--muted);white-space:nowrap}
+.t-map-group{margin-top:14px}
+.t-map-group-head{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line)}
+.t-map-group-head b{font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--blue)}
+.t-map-group-head small{color:var(--muted);font-size:12px}
+.t-map-stage{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
+.t-map-stage:hover strong{text-decoration:underline}
+.t-map-stage span:last-child{display:flex;flex-direction:column;min-width:0}
+.t-map-stage strong{font-size:15px;font-weight:600}
+.t-map-stage small{font-size:12px;color:var(--muted)}
+.t-dot{display:inline-grid;place-items:center;flex-shrink:0;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);font-size:12px;color:#fff;background:#fff}
+.t-dot.done{background:var(--green);border-color:var(--green)}
+.t-dot.wait{border-style:dashed;color:var(--muted);background:transparent}
+.t-badge{display:inline-block;margin-left:auto;padding:3px 9px;border-radius:999px;background:#fbf1e2;color:#8a5a14;font-size:12px;font-weight:600;white-space:nowrap}
+.t-prep-progress{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:18px 22px;border-radius:var(--radius);background:var(--navy);color:#fff;margin-bottom:22px}
+.t-prep-progress b{font-size:26px;color:var(--gold)}
+.t-prep-progress .button{margin:0 0 0 auto}
+.t-prep-step{border:1px solid var(--line);border-radius:var(--radius);background:#fff;padding:22px 24px;margin:0 0 16px;scroll-margin-top:20px}
+.t-prep-step.done{border-color:#b9d8c7}
+.t-prep-step.pending{background:#fcfaf6;border-style:dashed}
+.t-prep-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.t-prep-head h2{margin:0;font-size:21px}
+.t-prep-step .definition{margin:14px 0}
+.t-prep-step .source-link{margin-top:8px}
+.t-prep-step .quiz{margin:18px 0 0}
+.t-pending-note{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-left:3px solid var(--gold);background:#fbf5ea;margin:8px 0 14px;font-size:14px}
+.t-pending-note span{color:var(--muted)}
+.t-score{font-size:15px}
+.t-list{padding-left:20px}
+.t-list li{margin:4px 0}
+.t-as-student,.t-for-teacher{margin:22px 0;padding:22px 24px;border-radius:var(--radius);border:1px solid var(--line);background:#fff}
+.t-as-student{border-color:#c9d8f3;background:#f7f9fe}
+.t-as-student h2,.t-for-teacher h2{margin:6px 0 6px;font-size:21px}
+.t-block-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.t-count{font-size:13px;font-weight:650;color:var(--blue);background:#fff;border:1px solid #c9d8f3;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.t-student-list{list-style:none;padding:0;margin:14px 0 0}
+.t-student-list li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #dfe7f4}
+.t-student-list label{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0;cursor:pointer;font-size:14px}
+.t-student-list input{margin-top:4px;flex-shrink:0}
+.t-student-list b{color:var(--muted);font-weight:600;margin-right:4px;white-space:nowrap}
+.t-student-list label span{font-size:13px;letter-spacing:.2px}
+.t-student-list .source-link{width:auto;margin:0;flex-shrink:0;padding:6px 10px;font-size:13px}
+.t-note{border-top:1px solid var(--line)}
+.t-note summary{cursor:pointer;padding:12px 0;font-weight:650;color:var(--navy)}
+.t-note>div{padding:0 0 14px;font-size:15px}
+.t-note .table-scroll{margin:8px 0}
+.t-effect{display:grid;gap:10px;margin:6px 0}
+.t-effect div{padding:10px 12px;border-radius:8px;background:var(--bg)}
+.t-effect dt{font-size:12px;font-weight:650;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.t-effect dd{margin:2px 0 0}
+.t-chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.t-chips a{padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--navy);text-decoration:none;font-size:14px}
+.t-chips a.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.t-print-bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin:18px 0}
+.t-print-bar .button{margin:0}
+.t-part-title{margin:30px 0 12px}
+.t-sheet{background:#fff;border:1px solid var(--line);border-radius:8px;padding:26px 28px;margin:0 0 16px;overflow-wrap:anywhere}
+.t-sheet p:first-child{font-weight:700;font-size:17px}
+.t-outcome{border:1px solid var(--line);border-radius:var(--radius);background:#fff;margin:0 0 10px}
+.t-outcome>summary{display:flex;justify-content:space-between;gap:10px;padding:16px 20px;cursor:pointer;font-weight:600}
+.t-outcome .notebook-body{padding:0 20px 10px}
+.t-outcome-general{margin:18px 0}
+.t-print-value{display:none}
+.t-guide{position:fixed;right:22px;bottom:22px;z-index:20;display:flex;gap:12px;align-items:flex-start;max-width:340px;padding:14px 16px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}
+.t-guide-face svg,.t-guide-min svg{width:44px;height:44px;display:block}
+.t-guide-body strong{font-size:14px;color:var(--navy)}
+.t-guide-body p{margin:2px 0 8px;font-size:14px;line-height:1.45}
+.t-guide-actions{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.t-guide-actions a{color:var(--blue);font-weight:600}
+.t-guide-actions button{border:0;background:none;padding:0;color:var(--muted);font:inherit;cursor:pointer;text-decoration:underline}
+.t-guide-min{position:fixed;right:22px;bottom:22px;z-index:20;border:0;padding:0;background:none;border-radius:50%;box-shadow:var(--shadow);cursor:pointer}
+@media(max-width:800px){
+  .t-segments{gap:6px}
+  .t-segments a{flex-direction:column;gap:4px;min-height:64px;padding:8px 4px;font-size:13px;text-align:center}
+  .t-segments a span{width:24px;height:24px;font-size:11px}
+  .t-guide-body p{font-size:13px;margin-bottom:4px}
+  .t-start{padding:18px}
+  .t-map-block{grid-template-columns:34px minmax(0,1fr);gap:10px}
+  .t-map-num{width:34px;height:34px;font-size:13px}
+  .t-map-block:not(:last-child):before{left:16px;top:36px}
+  .t-map-body,.t-prep-step,.t-as-student,.t-for-teacher{padding:16px}
+  .t-map-body .button,.t-prep-progress .button{width:100%;margin-left:0}
+  .t-sheet{padding:16px}
+  .t-student-list li{flex-wrap:wrap}
+  .t-student-list .source-link{margin-left:26px}
+  .t-guide{left:12px;right:12px;bottom:calc(64px + env(safe-area-inset-bottom));max-width:none;padding:10px 12px}
+  .t-guide-face svg{width:36px;height:36px}
+  .t-guide-min{right:12px;bottom:calc(66px + env(safe-area-inset-bottom))}
+  .t-guide-min svg{width:40px;height:40px}
+}
+@media print{
+  .t-noprint,.t-guide,.t-guide-min,.t-segments,.t-chips{display:none!important}
+  .t-sheet{border:0;padding:0;margin:0;break-after:page;page-break-after:always}
+  .t-sheet{font-size:10.5pt;line-height:1.4}.t-sheet p{margin:0 0 6pt}.t-sheet table{font-size:9.5pt}.t-sheet .table-scroll{overflow:visible}
+  .t-student-page .page-subtitle,.t-student-page .local-explainer{display:none}
+  .t-part-title{break-before:page}
+  .t-part:first-of-type .t-part-title{break-before:auto}
+  .t-outcome{border:0}
+  .t-outcome>summary{padding:10px 0}
+  .t-outcome .notebook-body{display:block;padding:0}
+  .t-outcome textarea{display:none}
+  .t-print-value{display:block;padding:4px 0 10px;white-space:pre-wrap}
+}
