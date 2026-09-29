@@ -1,69 +1,10 @@
 'use strict';
+// Общий движок педагогического контура. Данные курса — в teacher-data.js рядом со страницей курса.
 // Педагогический контур курса «Великий» по отзыву команды проекта 29.09.2026:
 // маршрутная карта (Подготовка → Старт → Итоги), педагог проходит задания как ученик,
 // пояснения педагогу по первоисточникам, экзамен на понимание качества, печатная тетрадь ученика,
 // фиксация результатов и персонаж-подсказчик. Эталонные документы не изменяются:
 // пояснения выводятся из паспорта и обоснования без пересказа.
-window.TEACHER = {
-  storageKey: 'kinouroki.justice.teacher.v1',
-  // Страницы исходной рабочей тетради, которые ученик выполняет на каждом этапе маршрута из восьми этапов.
-  studentPages: [
-    [0,1,2,3,4,5,6,7,8,9,10,12,13,14],
-    [11,15],
-    [16,17,18,19,20,21,22,23,24],
-    [25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],
-    [40,41,42,43,44,45,46,47,48,49,50,51,52,53],
-    [54,55,56,57,58,59,60,61,62,63,64,65,66,67,68],
-    [60,62,65],
-    [69,70,71,72,73,'74-80',81,82,83,84,85]
-  ],
-  // Разделы исходной тетради ученика для печати (нумерация страниц — по оригиналу).
-  workbookParts: [
-    {id:'intro', name:'Введение', pages:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]},
-    {id:'feel', name:'Чувство', pages:[15,16,17,18,19,20,21,22,23,24]},
-    {id:'thought', name:'Мысль', pages:[25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]},
-    {id:'conscious', name:'Сознание', pages:[40,41,42,43,44,45,46,47,48,49,50,51,52,53]},
-    {id:'imagine', name:'Воображение', pages:[54,55,56,57,58,59,60,61,62,63,64,65,66,67,68]},
-    {id:'inspire', name:'Воодушевление', pages:[69,70,71,72,73,'74-80',81,82,83,84,85]}
-  ],
-  // Рабочая тетрадь ученика для класса: листы эталонной тетради, отобранные по «ключевым блокам» паспорта (разделы 5.1–5.6).
-  // Состав — предложение на согласование с командой проекта; тексты листов не меняются.
-  classWorkbook: [
-    {id:'intro',stage:'Введение',items:[['Паспорт исследователя','',[0]],['Метафора «Весы в сердце»','2 мин',[2]],['Интерактив «Четвёртый лишний»','2 мин',[3]],['Интерактив «Собери определение»','2 мин',[4]],['Интерактив «Весы Соломона»','2 мин',[5]],['Интерактив «Антипод-детектор»','1 мин',[6]],['Самодиагностика «Точка А»','1 мин',[9]],['Трекер роста «Мои Весы» — сквозная карта','',[14]]]},
-    {id:'feel',stage:'Чувство',items:[['Карта отклика сердца: 7 сцен фильма','',[18]],['Термометр чувств','',[19]],['Самодиагностика','',[22]]]},
-    {id:'thought',stage:'Мысль',items:[['Метафора «Мысль — гиря»','1 мин',[27]],['Алгоритм калибровки','3 мин',[28]],['Калибровка ×2/÷7','2 мин',[29]],['Групповой анализ «Дневник мыслей героя»','4 мин',[30]],['Две ключевые мысли','2 мин',[31]],['Созидательный алгоритм','1 мин',[33]],['Карта влияния','1 мин',[34]],['Самодиагностика','',[39]]]},
-    {id:'conscious',stage:'Сознание',items:[['Метафора «Весы в повседневной жизни»','1 мин',[42]],['Фабрика справедливости · Блок А. Лестница роста','',[43]],['Фабрика справедливости · Блок Б. Операция «Антидот»','',[44]],['Фабрика справедливости · Блок В. Карта моего роста','',[47]],['Самодиагностика «Точка Б»','1 мин',[48]],['Договор с собой','1 мин',[49]]]},
-    {id:'imagine',stage:'Воображение',items:[['Метафора «Весы будущего»','1 мин',[56]],['Выбор практики: мозговой штурм и голосование','',[58,59]],['Паспорт проекта справедливости','6 мин',[60]],['Самодиагностика','1 мин',[64]],['Трюизм и мостик','1 мин',[66]]]},
-    {id:'practice',stage:'Социальная практика',items:[['Мой личный вклад','',[62]],['Договор команды','',[65]]]},
-    {id:'inspire',stage:'Воодушевление',items:[['Сравнительный итог Весов','1 мин',[71]],['Эстафета этапов','1 мин',[72]],['Аллея рекордов справедливости','5 мин',['74-80',81]],['Финальный хор','2 мин',[82]]]}
-  ],
-  // Дословно из паспорта пособия, раздел 5.1.
-  quality: {
-    definition: 'Справедливость — это способность остро ощущать дисбаланс между поступками, заслугами и их оценкой, и стремление восстановить должный порядок.',
-    antipode: 'Произвол (пристрастность) — решение в пользу личной выгоды, обиды или симпатии, без учёта объективности и должного порядка.',
-    concepts: ['Весы в сердце (метафора)','Гири-качества (правая чаша 🌱)','Оковы-антиподы (левая чаша 🕳️)','Произвол (антипод справедливости)','Эталонные Весы (3 принципа)']
-  },
-  // Экзамен на понимание качества. Основание — паспорт и обоснование; после добавления раздела энциклопедии дополняется.
-  exam: [
-    {id:'exam-definition',type:'single',title:'Какое определение справедливости дано в паспорте?',options:['Справедливость — это способность остро ощущать дисбаланс между поступками, заслугами и их оценкой, и стремление восстановить должный порядок.','Справедливость — это когда всем достаётся поровну, без исключений.','Справедливость — это наказание для каждого, кто нарушил правило.'],answer:0,explanation:'Верно первое определение — оно дословно из паспорта. Два других варианта похожи на маски, которые дети учатся отличать в интерактиве «Четвёртый лишний»: уравниловку и месть.',ref:'Паспорт пособия · раздел 5.1'},
-    {id:'exam-antipode',type:'single',title:'Как паспорт определяет антипод справедливости?',options:['Произвол — любое решение, с которым не согласен хотя бы один участник.','Произвол (пристрастность) — решение в пользу личной выгоды, обиды или симпатии, без учёта объективности и должного порядка.','Произвол — строгое соблюдение правил без исключений.'],answer:1,explanation:'Антипод — произвол (пристрастность). Его признак — решение из выгоды, обиды или симпатии. Несогласие участников и строгость правил сами по себе произволом не являются.',ref:'Паспорт пособия · раздел 5.1'},
-    {id:'exam-masks',type:'single',title:'Какие маски произвола различают дети в интерактиве «Четвёртый лишний»?',options:['Страх, лень, зависть','Робость, гордость, обида','Месть, уравниловка, предвзятость'],answer:2,explanation:'В паспорте интерактив описан так: различение масок — месть, уравниловка, предвзятость. Эти маски выдают себя за справедливость.',ref:'Паспорт пособия · раздел 5.1; тетрадь · страница 3'},
-    {id:'exam-scales',type:'single',title:'Что лежит на чашах «Весов в сердце»?',options:['Левая чаша — оковы-антиподы, правая чаша — гири-качества','Левая чаша — хорошие поступки, правая — плохие','Левая чаша — мысли, правая — чувства'],answer:0,explanation:'Устройство Весов по паспорту: левая чаша — оковы, правая — гири-качества, между ними стрелка. Этот образ — общий язык всего киноурока.',ref:'Паспорт пособия · раздел 5.1; тетрадь · страница 2'},
-    {id:'exam-principles',type:'single',title:'Какой пункт НЕ входит в три принципа Эталонных Весов?',options:['Будущее важнее настоящего','Общественные интересы выше личных','Большинство всегда право','Личные качества ценнее материальных благ'],answer:2,explanation:'Три принципа Эталонных Весов: будущее важнее настоящего; общественные интересы выше личных; личные качества ценнее материальных благ. «Большинство всегда право» среди них нет.',ref:'Паспорт пособия · раздел 5.3'},
-    {id:'exam-point-a',type:'single',title:'Что такое «Точка А» по методическому обоснованию?',options:['Оценка поведения ребёнка, которую ставит педагог','Стартовая позиция ребёнка, от которой он будет двигаться; это не оценка','Балл за выполнение вводных заданий'],answer:1,explanation:'Обоснование прямо говорит: Точка А — не оценка ребёнка, а стартовая позиция. Она снимает тревожность: начать можно с любой точки.',ref:'Методическое обоснование · раздел 2.2.2'},
-    {id:'exam-enc-kindness',type:'single',title:'Чем справедливость отличается от доброты по энциклопедии?',options:['Справедливость – это максимальная этика, ведущая к преображению общества','Справедливость – это минимальная этика, базовые основы, необходимые для выживания общества','Это одно и то же качество, названное по-разному'],answer:1,explanation:'В энциклопедии: доброта — максимальная этика, ведущая к преображению общества, а справедливость — минимальная этика, базовые основы, необходимые для выживания общества. Без справедливости добро может быть беззащитным, а без добра справедливость может быть жестокой.',ref:'Энциклопедия · «Справедливость» · 2.4'},
-    {id:'exam-enc-indignation',type:'single',title:'Чем возмущение отличается от раздражения?',options:['Возмущение не имеет личного «я» и является нравственной реакцией, раздражение же всегда содержит личную обиду или эгоцентризм','Возмущение сильнее раздражения, но по сути это одно чувство','Раздражение — нравственная реакция, возмущение — личная обида'],answer:0,explanation:'Смешение возмущения и раздражения энциклопедия называет искажением качества. Это же различение есть в паспорте этапа «Чувство»: возмущение — нравственная реакция, раздражение — личная обида.',ref:'Энциклопедия · «Справедливость» · 6'},
-    {id:'exam-enc-attitude',type:'single',title:'Какая установка — конструктивная?',options:['«Моим можно всё, чужим ничего нельзя»','«Что мне выгодно, то и справедливо»','«Прежде чем судить, спрошу себя: это чувство справедливости или обида, симпатия, выгода?»'],answer:2,explanation:'Третья установка — конструктивная (раздел 5.9). Первые две энциклопедия относит к разрушительным: это двойные стандарты и подмена идеи личным интересом (раздел 5.3).',ref:'Энциклопедия · «Справедливость» · 5.3, 5.9'},
-    {id:'exam-enc-formula',type:'single',title:'Какова формула качества в энциклопедии?',options:['Справедливость = Доброта [ядро] + Идея [ядро] + Совесть + Уважение + Честность','Справедливость = Воля [ядро] + Сила + Власть','Справедливость = Равенство + Наказание'],answer:0,explanation:'Формула из раздела 4. Знак «+» означает совместное присутствие компонентов, а не арифметическую зависимость.',ref:'Энциклопедия · «Справедливость» · 4'},
-    {id:'exam-path',type:'order',title:'Восстановите путь присвоения ценности',prompt:'Перемещайте шаги стрелками. Порядок должен совпасть с методическим обоснованием.',items:['ВНЕШНЕЕ (герой фильма)','ЭМОЦИОНАЛЬНОЕ (этап «Чувство»)','СМЫСЛОВОЕ (этап «Мысль»)','ЛИЧНОСТНОЕ (этап «Сознание»)','ПРОЕКТНОЕ (этап «Воображение»)','ИСТОРИЧЕСКОЕ (этап «Воодушевление»)','ВНУТРЕННЕЕ (установка-регулятор)'],initial:[2,0,4,1,6,3,5],answer:[0,1,2,3,4,5,6],explanation:'По обоснованию ценность проходит путь от внешнего (герой фильма) через эмоциональное, смысловое, личностное, проектное и историческое к внутреннему — установке-регулятору. Пропуск этапа даёт неполную установку.',ref:'Методическое обоснование · раздел 2.2.1'}
-  ],
-  outcomeFields: [
-    {id:'plan',label:'Что прошло по плану',hint:'Какие задания и формы удалось провести.'},
-    {id:'kids',label:'Что заметили у детей',hint:'Наблюдаемые действия и высказывания — без оценки личности ребёнка.'},
-    {id:'next',label:'Что изменить в следующий раз',hint:'Время, вопросы, порядок заданий.'}
-  ]
-};
-
 window.TeacherUI = function(ctx){
   const T=window.TEACHER, C=ctx.C, e=ctx.e, N=C.stages.length;
   const views=['map','prep','student','workbook','encyclopedia','socrat','outcomes','happiness'];
@@ -117,6 +58,9 @@ window.TeacherUI = function(ctx){
       {n:'П6',title:'Рабочая тетрадь ученика — распечатать',done:t.prep.print,href:'#prep/print-step'}
     ];
   };
+  // Что сделать, чтобы шаг засчитался. Показывается в карточке шага и в подсказке помощника.
+  const prepHow={'П1':'посмотрите фильм и поставьте галочку «Я посмотрел(а) полный фильм»','П2':'откройте материалы и поставьте галочку «Я ознакомился(ась)…»','П3':'прочитайте введение и поставьте галочку «Я изучил(а) введение в качество»','П4':'ответьте верно на все вопросы экзамена — после каждого ответа нажмите «Проверить ответ»','П5':'пройдите задания тетради как ученик и поставьте галочку в конце карточки','П6':'распечатайте тетрадь ученика и поставьте галочку «Тетрадь ученика распечатана к уроку»'};
+  const num=x=>x.n.replace('П','');
   const prepReady=()=>prepSteps().filter(x=>!x.pending).every(x=>x.done);
   const prepCount=()=>{const list=prepSteps().filter(x=>!x.pending);return list.filter(x=>x.done).length+' из '+list.length;};
   const stagePages=i=>T.studentPages[i]||[];
@@ -133,6 +77,9 @@ window.TeacherUI = function(ctx){
   // Энциклопедия (рабочая редакция): дословные разделы статьи по номеру.
   const enc=()=>window.ENCYCLOPEDIA||null;
   const encSec=(key,num)=>enc()?.articles?.[key]?.sections.find(x=>x.title.startsWith(num))?.text||[];
+  const encName=()=>enc()?.articles?.[T.encKey]?.name||'';
+  // Раздел 2.4 статьи: строки после подзаголовка «2.4.», без общей редакционной фразы-шаблона.
+  const encDistinct=()=>{const l=encSec(T.encKey,'2.'),i=l.findIndex(x=>x.startsWith('2.4.'));return (i<0?[]:l.slice(i+1)).filter(x=>!/отделяется от внешне похожего поведения/.test(x)).map(x=>'<p>'+e(x)+'</p>').join('');};
   const encText=(key,num)=>encSec(key,num).map(t=>'<p>'+e(t)+'</p>').join('');
   const encRef=(key,num)=>`<span class="source-caption">Энциклопедия · «${e(enc()?.articles?.[key]?.name||'')}» · ${e(num.replace(/\.$/,''))} · редакция ${e(enc()?.edition||'')}</span>`;
   const encBadge=()=>enc()?`<div class="t-pending-note"><strong>${e(enc().title)} · редакция ${e(enc().edition)}</strong><span>${e(enc().status)}. Тексты приведены дословно; незаполненные места помечены в самой энциклопедии как «не сформировано».</span></div>`:'';
@@ -156,7 +103,7 @@ window.TeacherUI = function(ctx){
     const group=(title,note,from,to)=>`<div class="t-map-group"><div class="t-map-group-head"><b>${title}</b><small>${note}</small></div>${C.stages.slice(from,to).map((st,k)=>stageRow(st,from+k)).join('')}</div>`;
     return `${header('МАРШРУТНАЯ КАРТА','Весь киноурок на одной карте','Три раздела: подготовка педагога, проведение урока по восьми этапам и фиксация результатов.',['#start','Главная страница курса'])}${segmented('')}
       <ol class="t-map">
-        <li class="t-map-block"><div class="t-map-num">01</div><div class="t-map-body"><div class="t-map-title"><h2>Подготовка</h2><span>${prepCount()}</span></div><p>Педагог один, до урока. Смысл качества, экзамен, фильм, комплект и тетради.</p><a class="t-map-stage t-map-foundation" href="#prep/method">${check(t.prep.course)}<span><strong>Основа · курс обучения методике</strong><small>один раз для всех киноуроков · kinouroki.org</small></span></a>${steps.map(x=>`<a class="t-map-stage" href="${x.href}">${x.pending?'<span class="t-dot wait" aria-hidden="true">…</span>':check(x.done)}<span><strong>${x.n} · ${e(x.title)}</strong><small>${x.pending?'ожидает материала':x.done?'готово':'не выполнено'}</small></span></a>`).join('')}<a class="button primary" href="#prep">Открыть подготовку →</a></div></li>
+        <li class="t-map-block"><div class="t-map-num">01</div><div class="t-map-body"><div class="t-map-title"><h2>Подготовка</h2><span>${prepCount()}</span></div><p>Педагог один, до урока. Смысл качества, экзамен, фильм, комплект и тетради.</p><a class="t-map-stage t-map-foundation" href="#prep/method">${check(t.prep.course)}<span><strong>Основа · курс обучения методике</strong><small>один раз для всех киноуроков · kinouroki.org</small></span></a>${steps.map(x=>`<a class="t-map-stage" href="${x.href}">${x.pending?'<span class="t-dot wait" aria-hidden="true">…</span>':check(x.done)}<span><strong>Шаг ${num(x)} · ${e(x.title)}</strong><small>${x.pending?'ожидает материала':x.done?'готово':'не выполнено'}</small></span></a>`).join('')}<a class="button primary" href="#prep">Открыть подготовку →</a></div></li>
         <li class="t-map-block"><div class="t-map-num">02</div><div class="t-map-body"><div class="t-map-title"><h2>Старт</h2><span>${s.completed.length} из ${N}</span></div><p>Урок с классом. На каждом этапе вы сначала выполняете задания ученика, затем читаете пояснения педагогу.</p>${group('На уроке','этапы 1–6 — в классе',0,6)}${group('Общее дело','вне урока, по срокам выбранного дела',6,7)}${group('Праздник успехов','после выполненного дела',7,8)}<a class="button primary" href="${startHref()}">${s.completed.length?'Продолжить урок →':'Старт: этап 1 →'}</a></div></li>
         <li class="t-map-block"><div class="t-map-num">03</div><div class="t-map-body"><div class="t-map-title"><h2>Итоги</h2><span>${outcomeFilled()} записей</span></div><p>После урока и общего дела: что прошло по плану, что заметили у детей, что изменить. По каждому этапу.</p><a class="button primary" href="#outcomes">Зафиксировать итоги →</a></div></li>
       </ol>`;
@@ -177,14 +124,18 @@ window.TeacherUI = function(ctx){
   }
   function renderPrep(route){
     const s=app(),steps=prepSteps(),Q=T.quality;
-    const card=(x,body)=>`<section class="t-prep-step ${x.done?'done':''} ${x.pending?'pending':''}" id="${({'П1':'step-film','П2':'step-kit','П3':'intro','П4':'exam','П5':'workbook-step','П6':'print-step'})[x.n]}"><div class="t-prep-head">${x.pending?'<span class="t-dot wait" aria-hidden="true">…</span>':check(x.done)}<span class="eyebrow">${x.n}</span><h2>${e(x.title)}</h2>${x.pending?pendingBadge:''}</div>${body}</section>`;
+    const ids={'П1':'step-film','П2':'step-kit','П3':'intro','П4':'exam','П5':'workbook-step','П6':'print-step'};
+    const card=(x,body)=>{const k=steps.indexOf(x),nx=steps[k+1],pv=steps[k-1];
+      const how=`<p class="t-how">${x.done?'<b>✓ Готово.</b> Шаг засчитан.':'<b>Что сделать:</b> '+e(prepHow[x.n]||'')+'.'}</p>`;
+      const foot=`<nav class="t-step-nav" aria-label="Переход между шагами подготовки">${pv?`<a class="text-link" href="#prep/${ids[pv.n]}">← Шаг ${num(pv)}</a>`:'<span></span>'}${nx?`<a class="button ${x.done?'primary':'ghost'}" href="#prep/${ids[nx.n]}">${x.done?'Дальше':'Пропустить пока'} · Шаг ${num(nx)}: ${e(nx.title)} →</a>`:`<a class="button ${prepReady()?'primary':'ghost'}" href="${startHref()}">${prepReady()?'Подготовка готова · Старт →':'Перейти к старту →'}</a>`}</nav>`;
+      return `<section class="t-prep-step ${x.done?'done':''}" id="${ids[x.n]}"><div class="t-prep-head">${check(x.done)}<span class="eyebrow">ШАГ ${num(x)}</span><h2>${e(x.title)}</h2></div>${how}${body}${foot}</section>`;};
     const box=(key,label,checked)=>`<label class="read-check"><input type="checkbox" ${key.startsWith('app:')?'data-preparation="'+key.slice(4)+'"':'data-t-input data-t-prep="'+key+'"'} ${checked?'checked':''}><span>${label}</span></label>`;
     return `${header('РАЗДЕЛ 01 · ДО УРОКА','Подготовка','Вы проходите подготовку один. Отметки сохраняются в этом браузере.')}${segmented('prep')}
       <div class="t-prep-progress"><b>${prepCount()}</b><span>шагов подготовки выполнено</span>${prepReady()?'<a class="button primary" href="#stage/0/read">Готово — перейти к старту →</a>':''}</div>
       ${foundation(box)}
       ${card(steps[0],`<p>${e(ctx.M.filmPrepText)}</p><a class="text-link" href="#film">${e(ctx.M.filmNavLabel)} · ${e(ctx.M.filmDuration)} →</a>${box('app:film','Я посмотрел(а) полный фильм',s.preparation.film)}`)}
       ${card(steps[1],'<p>Паспорт задаёт структуру; обоснование раскрывает логику; тетрадь содержит задания и формы.</p><a class="text-link" href="#materials">Открыть материалы →</a>'+box('app:sources','Я ознакомился(ась) с назначением трёх документов',s.preparation.sources))}
-      ${card(steps[2],`${encBadge()}${enc()?`<div class="definition"><h3>Справедливость · энциклопедия</h3>${encText('spravedlivost','1.3.')}${encRef('spravedlivost','1.3.')}</div><h3>Чем отличается от сходного поведения</h3>${encText('spravedlivost','2.').split('</p>').filter(x=>!/2\.[1234]\.|нравственное \+|ядро\]|вектор не требуется/.test(x)).join('</p>')}${encRef('spravedlivost','2.4.')}<h3>Формула качества</h3>${encSec('spravedlivost','4.').slice(1,2).map(t=>'<p><strong>'+e(t)+'</strong></p>').join('')}${encRef('spravedlivost','4.')}<h3>Антипод: ${e(encSec('spravedlivost','5.4.')[0]||'')}</h3>${encText('spravedlivost','5.5.')}${encRef('spravedlivost','5.5.')}<h3>Возможные искажения качества</h3><ul class="t-list">${encSec('spravedlivost','6.').map(t=>'<li>'+e(t)+'</li>').join('')}</ul>${encRef('spravedlivost','6.')}<blockquote><div class="eyebrow">ФОРМУЛА-АФОРИЗМ</div><p>${e(encSec('spravedlivost','7.6.')[0]||'')}</p><cite>Энциклопедия · «Справедливость» · 7.6</cite></blockquote><a class="text-link" href="#encyclopedia">Открыть статью энциклопедии целиком →</a>`:''}<h3>В паспорте пособия</h3><div class="definition"><h3>Определение качества</h3><p>${e(Q.definition)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><div class="definition"><h3>Определение антипода</h3><p>${e(Q.antipode)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><h3>Ключевые понятия этапа «Введение»</h3><ul class="t-list">${Q.concepts.map(c=>'<li>'+e(c)+'</li>').join('')}</ul>${ctx.sourceButton('Паспорт · этап «Введение»','passport',null,'5.1.')}${ctx.sourceButton('Обоснование · задача «Введения»','rationale',null,'2.2.2.')}${box('intro','Я изучил(а) введение в качество',t.prep.intro)}`)}
+      ${card(steps[2],`${encBadge()}${enc()?`<div class="definition"><h3>${e(encName())} · энциклопедия</h3>${encText(T.encKey,'1.3.')}${encRef(T.encKey,'1.3.')}</div><h3>Чем отличается от сходного поведения</h3>${encDistinct()}${encRef(T.encKey,'2.4.')}<h3>Формула качества</h3>${encSec(T.encKey,'4.').slice(1,2).map(t=>'<p><strong>'+e(t)+'</strong></p>').join('')}${encRef(T.encKey,'4.')}<h3>Антипод: ${e(encSec(T.encKey,'5.4.')[0]||'')}</h3>${encText(T.encKey,'5.5.')}${encRef(T.encKey,'5.5.')}<h3>Возможные искажения качества</h3><ul class="t-list">${encSec(T.encKey,'6.').map(t=>'<li>'+e(t)+'</li>').join('')}</ul>${encRef(T.encKey,'6.')}<blockquote><div class="eyebrow">ФОРМУЛА-АФОРИЗМ</div><p>${e(encSec(T.encKey,'7.6.')[0]||'')}</p><cite>Энциклопедия · «Справедливость» · 7.6</cite></blockquote><a class="text-link" href="#encyclopedia">Открыть статью энциклопедии целиком →</a>`:''}<h3>В паспорте пособия</h3><div class="definition"><h3>Определение качества</h3><p>${e(Q.definition)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><div class="definition"><h3>Определение антипода</h3><p>${e(Q.antipode)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><h3>Ключевые понятия этапа «Введение»</h3><ul class="t-list">${Q.concepts.map(c=>'<li>'+e(c)+'</li>').join('')}</ul>${ctx.sourceButton('Паспорт · этап «Введение»','passport',null,'5.1.')}${ctx.sourceButton('Обоснование · задача «Введения»','rationale',null,'2.2.2.')}${box('intro','Я изучил(а) введение в качество',t.prep.intro)}`)}
       ${card(steps[3],`<p>Экзамен проверяет понимание качества перед уроком: ${T.exam.length} вопросов по энциклопедии, паспорту и обоснованию. Попытки не ограничены.</p><p class="t-score">Верных ответов: <b>${examScore()} из ${T.exam.length}</b></p>${T.exam.map(renderExamQuestion).join('')}`)}
       ${card(steps[4],`<p>Сводная рабочая тетрадь комплекта становится вашим разделом подготовки: вы проходите её задания сами, как ученик. На каждом этапе «Старта» задания этого этапа собраны в «Шаг 1». Здесь — вся тетрадь целиком.</p><p class="t-score">Пройдено как ученик: <b>${Object.keys(t.studentDone).length} из ${pageKeys.size}</b> страниц</p><a class="text-link" href="#workbook">Открыть сводную тетрадь целиком →</a>${box('workbook','Я прошёл(ла) задания тетради как ученик',t.prep.workbook)}`)}
       ${card(steps[5],`<p>Отдельная тетрадь для ребёнка: только листы, с которыми дети работают в классе, по порядку этапов. Её можно распечатать целиком или по этапам.</p><a class="text-link" href="#student">Открыть рабочую тетрадь ученика →</a>${box('print','Тетрадь ученика распечатана к уроку',t.prep.print)}`)}
@@ -199,10 +150,10 @@ window.TeacherUI = function(ctx){
   function stageBlock(i){
     const total=stagePages(i).length,done=stageStudentDone(i);
     return `<section class="t-as-student"><div class="t-block-head"><span class="eyebrow">ШАГ 1 · ПРОЙДИТЕ КАК УЧЕНИК</span><span class="t-count" data-t-count="${i}">${done} из ${total}</span></div><h2>Задания ученика на этом этапе</h2><p>Откройте каждую страницу тетради и выполните задание сами — так, как его будут выполнять дети. Отметьте выполненное.</p><div id="t-student-list">${studentList(i)}</div>${classLink(i)}</section>
-      <section class="t-for-teacher"><span class="eyebrow">ШАГ 2 · ПОЯСНЕНИЯ ПЕДАГОГУ</span><h2>Как провести этот этап</h2>${i===0&&enc()?'<p class="t-class-link"><a href="#encyclopedia">Статья «Справедливость» в энциклопедии качеств →</a></p>':''}${i===4&&soc()?'<p class="t-class-link"><a href="#socrat">Потренируйтесь разрушать разрушительную установку сократовским методом →</a></p>':''}<div id="t-teacher-notes">${teacherNotes(i)}</div><p class="source-caption">Тексты в пояснениях приведены из паспорта и обоснования без пересказа. После урока запишите, как прошёл этап, в разделе <a href="#outcomes">«Итоги»</a>.</p></section>`;
+      <section class="t-for-teacher"><span class="eyebrow">ШАГ 2 · ПОЯСНЕНИЯ ПЕДАГОГУ</span><h2>Как провести этот этап</h2>${i===0&&enc()?'<p class="t-class-link"><a href="#encyclopedia">Статья «'+e(encName())+'» в энциклопедии качеств →</a></p>':''}${i===4&&soc()?'<p class="t-class-link"><a href="#socrat">Потренируйтесь разрушать разрушительную установку сократовским методом →</a></p>':''}<div id="t-teacher-notes">${teacherNotes(i)}</div><p class="source-caption">Тексты в пояснениях приведены из паспорта и обоснования без пересказа. После урока запишите, как прошёл этап, в разделе <a href="#outcomes">«Итоги»</a>.</p></section>`;
   }
   function classLink(i){
-    const part=T.classWorkbook.find(p=>p.stage===(C.stages[i].sourceStage===4?'Сознание':C.stages[i].name));
+    const part=T.classWorkbook.find(p=>p.stageIndex===i);
     return part?`<p class="source-caption t-class-link">В классе дети работают с листами рабочей тетради ученика: <a href="#student/${part.id}">листы этапа «${e(part.stage)}» →</a></p>`:'';
   }
   function trimBlocks(blocks){
@@ -213,16 +164,16 @@ window.TeacherUI = function(ctx){
     if(!Number.isInteger(n))return `<details class="t-note" open><summary>Сценарная подсказка</summary><div><p>Отдельного раздела этого этапа в исходном паспорте нет. Порядок задан стандартом проекта — он изложен в пояснениях ниже.</p></div></details><details class="t-note"><summary>Ожидаемый результат</summary><div><p>${e(s.takeaway)}</p></div></details>`;
     if(!sources)return '<p class="source-caption">Загружаем пояснения из паспорта и обоснования…</p>';
     const scenario=trimBlocks(sources.sections?.passport?.['5.'+n+'.']),reason=trimBlocks(sources.sections?.rationale?.['2.2.'+(n+1)+'.']);
-    const table=(sources.sections?.rationale?.['2.2.8.']||[]).find(b=>b.type==='table'),head=table?.rows[0],row=table?.rows[n];
-    const effect=row&&head?`<dl class="t-effect">${head.slice(1).map((h,k)=>`<div><dt>${e(h)}</dt><dd>${e(row[k+1])}</dd></div>`).join('')}</dl><span class="source-caption">Обоснование · сводная таблица 2.2.8</span>`:'';
+    const table=(sources.sections?.rationale?.[T.summarySection]||[]).find(b=>b.type==='table'),head=table?.rows[0],row=table?.rows[n];
+    const effect=row&&head?`<dl class="t-effect">${head.slice(1).map((h,k)=>`<div><dt>${e(h)}</dt><dd>${e(row[k+1])}</dd></div>`).join('')}</dl><span class="source-caption">Обоснование · сводная таблица ${e(T.summarySection.replace(/\.$/,''))}</span>`:'';
     return `<details class="t-note" open><summary>Сценарная подсказка: блоки и время</summary><div>${ctx.renderBlocks(scenario)}<span class="source-caption">Паспорт пособия · раздел 5.${n}</span></div></details><details class="t-note"><summary>Задача этапа и почему она важна</summary><div>${ctx.renderBlocks(reason)}<span class="source-caption">Методическое обоснование · раздел 2.2.${n+1}</span></div></details><details class="t-note"><summary>Ожидаемый результат и эффект</summary><div>${effect}</div></details>`;
   }
 
   // В экранном тексте к странице 3 прикреплён раздел «Термометр чувств» из конца этапа «Чувство» (после страницы 24).
   // Для печати он возвращается на своё место в исходном порядке документа.
   const sheets=(sources,p)=>{
-    const blocks=sources.pages[String(p)]||[],cut=blocks.findIndex((b,k)=>k>0&&b.type==='p'&&/^\S*\s*СТРАНИЦА 3\. ТЕРМОМЕТР ЧУВСТВ/.test(b.text));
-    const extra=String(p)==='24'?(()=>{const b3=sources.pages['3']||[],c=b3.findIndex((b,k)=>k>0&&b.type==='p'&&/^\S*\s*СТРАНИЦА 3\. ТЕРМОМЕТР ЧУВСТВ/.test(b.text));return c>0?[b3.slice(c)]:[];})():[];
+    const blocks=sources.pages[String(p)]||[],cut=T.appendixFix?blocks.findIndex((b,k)=>k>0&&b.type==='p'&&/^\S*\s*СТРАНИЦА 3\. ТЕРМОМЕТР ЧУВСТВ/.test(b.text)):-1;
+    const extra=T.appendixFix&&String(p)==='24'?(()=>{const b3=sources.pages['3']||[],c=b3.findIndex((b,k)=>k>0&&b.type==='p'&&/^\S*\s*СТРАНИЦА 3\. ТЕРМОМЕТР ЧУВСТВ/.test(b.text));return c>0?[b3.slice(c)]:[];})():[];
     // Заголовок следующего этапа («📘 ЭТАП N…»), прилипший к последней странице, на лист не выводится.
   const main=String(p)==='3'&&cut>0?blocks.slice(0,cut):blocks,stageCut=main.findIndex((b,k)=>k>0&&b.type==='p'&&/^📘 ЭТАП \d/.test(b.text));
   return [stageCut>0?main.slice(0,stageCut):main,...extra];
@@ -233,7 +184,7 @@ window.TeacherUI = function(ctx){
     const sources=ctx.getSources(),parts=T.workbookParts,sel=parts.find(p=>p.id===route.sub)||null,list=sel?[sel]:parts;
     const chips=`<nav class="t-chips t-noprint" aria-label="Выбрать этап тетради"><a href="#workbook" class="${sel?'':'active'}">Вся тетрадь</a>${parts.map(p=>`<a href="#workbook/${p.id}" class="${sel===p?'active':''}">${e(p.name)}</a>`).join('')}</nav>`;
     const body=!sources?'<p class="source-caption">Загружаем страницы тетради…</p>':list.map(part=>`<section class="t-part"><h2 class="t-part-title">${e(part.name)}</h2>${part.pages.flatMap(p=>sheets(sources,p)).map(b=>`<article class="t-sheet">${ctx.renderBlocks(b)}</article>`).join('')}</section>`).join('');
-    return `${header('ПОДГОТОВКА · П5','Сводная рабочая тетрадь','Эталонная тетрадь комплекта целиком. Педагог проходит её задания сам, как ученик.',['#prep/workbook-step','Подготовка · П5'])}<div class="t-print-bar t-noprint"><button type="button" class="button primary" data-t-print>Печать / сохранить в PDF</button><a class="text-link" href="./materials/workbook.docx" download>Скачать оригинал DOCX ↓</a></div><p class="local-explainer t-noprint">Текст страниц совпадает с оригиналом тетради; оформление упрощено для экрана и печати.</p>${chips}<div id="t-student-pages">${body}</div>`;
+    return `${header('ПОДГОТОВКА · ШАГ 5','Сводная рабочая тетрадь','Эталонная тетрадь комплекта целиком. Педагог проходит её задания сам, как ученик.',['#prep/workbook-step','Подготовка · шаг 5'])}<div class="t-print-bar t-noprint"><button type="button" class="button primary" data-t-print>Печать / сохранить в PDF</button><a class="text-link" href="./materials/workbook.docx" download>Скачать оригинал DOCX ↓</a></div><p class="local-explainer t-noprint">Текст страниц совпадает с оригиналом тетради; оформление упрощено для экрана и печати.</p>${chips}<div id="t-student-pages">${body}</div>`;
   }
 
   // ——— Рабочая тетрадь ученика (для класса, печать) ———
@@ -261,9 +212,9 @@ window.TeacherUI = function(ctx){
 
   // ——— Энциклопедия: статья целиком ———
   function renderEncyclopedia(route){
-    const key=['spravedlivost','schastye'].includes(route.sub)?route.sub:'spravedlivost',a=enc()?.articles?.[key];
+    const key=[T.encKey,'schastye'].includes(route.sub)?route.sub:T.encKey,a=enc()?.articles?.[key];
     if(!a)return `${header('ЭНЦИКЛОПЕДИЯ','Энциклопедия качеств','Статья не загружена.')}`;
-    const tabs=`<nav class="t-chips" aria-label="Статьи энциклопедии"><a href="#encyclopedia" class="${key==='spravedlivost'?'active':''}">Справедливость</a><a href="#encyclopedia/schastye" class="${key==='schastye'?'active':''}">Счастье</a></nav>`;
+    const tabs=`<nav class="t-chips" aria-label="Статьи энциклопедии"><a href="#encyclopedia" class="${key===T.encKey?'active':''}">${e(enc()?.articles?.[T.encKey]?.name||'')}</a><a href="#encyclopedia/schastye" class="${key==='schastye'?'active':''}">Счастье</a></nav>`;
     const body=a.sections.map(sec=>sec.level===2?`<h2 class="t-enc-h2">${e(sec.title)}</h2>${sec.text.map(t=>'<p>'+e(t)+'</p>').join('')}`:`<section class="t-enc-sec"><h3>${e(sec.title)}</h3>${sec.text.map(t=>'<p>'+e(t)+'</p>').join('')}</section>`).join('');
     return `${header('ЭНЦИКЛОПЕДИЯ ПРИКЛАДНОЙ ЭТИКИ',a.name,'Статья целиком. Раздел 1.2 с карточками источников здесь не показан.',key==='schastye'?['#happiness','Раздел «Счастье»']:['#prep/intro','Подготовка · введение в качество'])}${encBadge()}${tabs}<article class="t-enc">${body}</article>`;
   }
@@ -329,7 +280,7 @@ window.TeacherUI = function(ctx){
   function guideText(route){
     const s=app();
     if(route.view==='prep'||route.view==='map'||route.view==='start'){
-      if(!prepReady()){const next=prepSteps().find(x=>!x.pending&&!x.done);return {text:'Начнём с подготовки. Следующий шаг — «'+next.title+'».',href:next.href,label:'К шагу '+next.n};}
+      if(!prepReady()){const next=prepSteps().find(x=>!x.pending&&!x.done),here=route.view==='prep'&&next.href==='#prep/'+route.sub;return {text:'Шаг '+num(next)+' «'+next.title+'»: '+prepHow[next.n]+'. Когда шаг засчитается, я поведу дальше.',href:here?null:next.href,label:'Открыть шаг '+num(next)};}
       const i=C.stages.findIndex((_,n)=>!s.completed.includes(n));
       return i<0?{text:'Все этапы пройдены. Осталось зафиксировать итоги урока.',href:'#outcomes',label:'К итогам'}:{text:'Подготовка готова. Жмите «Старт» — этап '+(i+1)+' «'+C.stages[i].name+'».',href:'#stage/'+i+'/read',label:'Старт'};
     }
@@ -370,7 +321,7 @@ window.TeacherUI = function(ctx){
   function guide(route){
     const g=guideText(route),who=guideFor(route);
     if(t.guideHidden)return `<button type="button" class="t-guide-min t-noprint" data-t-guide="show" aria-label="Показать подсказки: ${e(who.name)}">${who.svg}</button>`;
-    return `<aside class="t-guide t-noprint" aria-label="Подсказка: ${e(who.name)}"><div class="t-guide-face">${who.svg}</div><div class="t-guide-body"><strong>${e(who.name)}</strong> <small>${e(who.role)}</small><p>${e(g.text)}</p><div class="t-guide-actions">${g.href?`<a href="${e(g.href)}">${e(g.label)} →</a>`:''}${route.view!=='map'?'<a href="#map">Карта</a>':''}<button type="button" data-t-guide="hide">Свернуть</button></div></div></aside>`;
+    return `<aside class="t-guide t-noprint" aria-label="Подсказка: ${e(who.name)}"><div class="t-guide-face">${who.svg}</div><div class="t-guide-body"><strong>${e(who.name)}</strong> <small>${e(who.role)}</small><p>${e(g.text)}</p><div class="t-guide-actions">${g.href?`<a href="${e(g.href)}">${e(g.label)} →</a>`:''}${route.view!=='map'&&g.href!=='#map'?'<a href="#map">Карта</a>':''}<button type="button" data-t-guide="hide">Свернуть</button></div></div></aside>`;
   }
 
   // ——— События (вызываются из обработчиков приложения) ———
