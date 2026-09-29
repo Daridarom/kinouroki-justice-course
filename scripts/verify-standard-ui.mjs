@@ -68,7 +68,7 @@ for(const cfg of [
   const practice=h.get('app').innerHTML;
   assert(!practice.includes('ИНСТРУКЦИЯ ПО ВЫЖИВАНИЮ'));
   if(dir.includes('mandarin')){
-    assert(practice.includes('ДНЕВНИК НАШЕГО ДЕЛА'));
+    assert(practice.includes('СОЦИАЛЬНАЯ ПРАКТИКА — НАШЕ ОБЩЕЕ ДЕЛО'));
     assert(!practice.includes('седьмая, последняя остановка'));
   }else{
     assert.equal(course.meta.principlesStage,3,'Principles belong to Thought');
