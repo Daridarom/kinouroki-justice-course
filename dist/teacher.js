@@ -27,6 +27,17 @@ window.TEACHER = {
     {id:'imagine', name:'Воображение', pages:[54,55,56,57,58,59,60,61,62,63,64,65,66,67,68]},
     {id:'inspire', name:'Воодушевление', pages:[69,70,71,72,73,'74-80',81,82,83,84,85]}
   ],
+  // Рабочая тетрадь ученика для класса: листы эталонной тетради, отобранные по «ключевым блокам» паспорта (разделы 5.1–5.6).
+  // Состав — предложение на согласование с командой проекта; тексты листов не меняются.
+  classWorkbook: [
+    {id:'intro',stage:'Введение',items:[['Паспорт исследователя','',[0]],['Метафора «Весы в сердце»','2 мин',[2]],['Интерактив «Четвёртый лишний»','2 мин',[3]],['Интерактив «Собери определение»','2 мин',[4]],['Интерактив «Весы Соломона»','2 мин',[5]],['Интерактив «Антипод-детектор»','1 мин',[6]],['Самодиагностика «Точка А»','1 мин',[9]],['Трекер роста «Мои Весы» — сквозная карта','',[14]]]},
+    {id:'feel',stage:'Чувство',items:[['Карта отклика сердца: 7 сцен фильма','',[18]],['Термометр чувств','',[19]],['Самодиагностика','',[22]]]},
+    {id:'thought',stage:'Мысль',items:[['Метафора «Мысль — гиря»','1 мин',[27]],['Алгоритм калибровки','3 мин',[28]],['Калибровка ×2/÷7','2 мин',[29]],['Групповой анализ «Дневник мыслей героя»','4 мин',[30]],['Две ключевые мысли','2 мин',[31]],['Созидательный алгоритм','1 мин',[33]],['Карта влияния','1 мин',[34]],['Самодиагностика','',[39]]]},
+    {id:'conscious',stage:'Сознание',items:[['Метафора «Весы в повседневной жизни»','1 мин',[42]],['Фабрика справедливости · Блок А. Лестница роста','',[43]],['Фабрика справедливости · Блок Б. Операция «Антидот»','',[44]],['Фабрика справедливости · Блок В. Карта моего роста','',[47]],['Самодиагностика «Точка Б»','1 мин',[48]],['Договор с собой','1 мин',[49]]]},
+    {id:'imagine',stage:'Воображение',items:[['Метафора «Весы будущего»','1 мин',[56]],['Выбор практики: мозговой штурм и голосование','',[58,59]],['Паспорт проекта справедливости','6 мин',[60]],['Самодиагностика','1 мин',[64]],['Трюизм и мостик','1 мин',[66]]]},
+    {id:'practice',stage:'Социальная практика',items:[['Мой личный вклад','',[62]],['Договор команды','',[65]]]},
+    {id:'inspire',stage:'Воодушевление',items:[['Сравнительный итог Весов','1 мин',[71]],['Эстафета этапов','1 мин',[72]],['Аллея рекордов справедливости','5 мин',['74-80',81]],['Финальный хор','2 мин',[82]]]}
+  ],
   // Дословно из паспорта пособия, раздел 5.1.
   quality: {
     definition: 'Справедливость — это способность остро ощущать дисбаланс между поступками, заслугами и их оценкой, и стремление восстановить должный порядок.',
@@ -52,8 +63,8 @@ window.TEACHER = {
 
 window.TeacherUI = function(ctx){
   const T=window.TEACHER, C=ctx.C, e=ctx.e, N=C.stages.length;
-  const views=['map','prep','student','outcomes','happiness'];
-  const blank=()=>({version:1,studentDone:{},exam:{answers:{},checked:{}},prep:{intro:false,print:false},outcomes:{},guideHidden:false});
+  const views=['map','prep','student','workbook','outcomes','happiness'];
+  const blank=()=>({version:1,studentDone:{},exam:{answers:{},checked:{}},prep:{intro:false,workbook:false,print:false},outcomes:{},guideHidden:false});
   const pageKeys=new Set(T.studentPages.flat().map(String));
   const outcomeKeys=new Set(['lesson','summary',...C.stages.flatMap((_,i)=>T.outcomeFields.map(f=>'s'+i+'-'+f.id))]);
   function normalize(input){
@@ -65,7 +76,7 @@ window.TeacherUI = function(ctx){
       if(q.type==='order'&&Array.isArray(a)&&a.length===q.items.length&&a.every(v=>Number.isInteger(v)&&v>=0&&v<q.items.length)&&new Set(a).size===a.length)s.exam.answers[q.id]=a;
       if(input.exam?.checked?.[q.id]===true&&q.id in s.exam.answers)s.exam.checked[q.id]=true;
     }
-    s.prep.intro=input.prep?.intro===true;s.prep.print=input.prep?.print===true;
+    s.prep.intro=input.prep?.intro===true;s.prep.workbook=input.prep?.workbook===true;s.prep.print=input.prep?.print===true;
     for(const k of Object.keys(input.outcomes||{}))if(outcomeKeys.has(k)&&typeof input.outcomes[k]==='string')s.outcomes[k]=input.outcomes[k].slice(0,5000);
     s.guideHidden=input.guideHidden===true;
     return s;
@@ -87,9 +98,9 @@ window.TeacherUI = function(ctx){
       {n:'П2',title:'Методический комплект',done:s.preparation.sources,href:'#materials'},
       {n:'П3',title:'Введение в качество',done:t.prep.intro,href:'#prep/intro'},
       {n:'П4',title:'Экзамен на понимание качества',done:examPassed(),href:'#prep/exam'},
-      {n:'П5',title:'Рабочая тетрадь педагога',pending:true,href:'#prep/pending'},
-      {n:'П6',title:'Курс обучения методике',pending:true,href:'#prep/pending'},
-      {n:'П7',title:'Тетрадь ученика для класса',done:t.prep.print,href:'#student'}
+      {n:'П5',title:'Сводная рабочая тетрадь — пройти самому',done:t.prep.workbook,href:'#prep/workbook-step'},
+      {n:'П6',title:'Курс обучения методике',pending:true,href:'#prep/method'},
+      {n:'П7',title:'Рабочая тетрадь ученика — распечатать',done:t.prep.print,href:'#student'}
     ];
   };
   const prepReady=()=>prepSteps().filter(x=>!x.pending).every(x=>x.done);
@@ -109,7 +120,7 @@ window.TeacherUI = function(ctx){
   // ——— Боковое меню и старт ———
   function sidebar(route){
     const on=v=>route.view===v?'active':'';
-    return `<div class="t-sidebar"><div class="course-label">МАРШРУТНАЯ КАРТА</div><a class="t-side-link ${on('map')}" href="#map">Вся карта урока</a><div class="t-side-steps"><a class="${on('prep')}" href="#prep"><b>Подготовка</b><small>${prepCount()}</small></a><a class="${route.view==='stage'?'active':''}" href="#stage/0/read"><b>Старт</b><small>${app().completed.length} из ${N}</small></a><a class="${on('outcomes')}" href="#outcomes"><b>Итоги</b><small>${outcomeFilled()?'записи есть':'после урока'}</small></a></div><a class="t-side-link ${on('student')}" href="#student">Тетрадь ученика · печать</a><a class="t-side-link ${on('happiness')}" href="#happiness">Раздел «Счастье»</a></div>`;
+    return `<div class="t-sidebar"><div class="course-label">МАРШРУТНАЯ КАРТА</div><a class="t-side-link ${on('map')}" href="#map">Вся карта урока</a><div class="t-side-steps"><a class="${on('prep')}" href="#prep"><b>Подготовка</b><small>${prepCount()}</small></a><a class="${route.view==='stage'?'active':''}" href="#stage/0/read"><b>Старт</b><small>${app().completed.length} из ${N}</small></a><a class="${on('outcomes')}" href="#outcomes"><b>Итоги</b><small>${outcomeFilled()?'записи есть':'после урока'}</small></a></div><a class="t-side-link ${on('student')}" href="#student">Рабочая тетрадь ученика</a><a class="t-side-link ${on('workbook')}" href="#workbook">Сводная тетрадь (эталон)</a><a class="t-side-link ${on('happiness')}" href="#happiness">Раздел «Счастье»</a></div>`;
   }
   function segmented(active){
     return `<nav class="t-segments" aria-label="Разделы маршрутной карты"><a href="#prep" class="${active==='prep'?'active':''}"><span>01</span>Подготовка</a><a href="#stage/0/read" class="${active==='start'?'active':''}"><span>02</span>Старт</a><a href="#outcomes" class="${active==='outcomes'?'active':''}"><span>03</span>Итоги</a></nav>`;
@@ -142,7 +153,7 @@ window.TeacherUI = function(ctx){
   }
   function renderPrep(route){
     const s=app(),steps=prepSteps(),Q=T.quality;
-    const card=(x,body)=>`<section class="t-prep-step ${x.done?'done':''} ${x.pending?'pending':''}" id="${x.n==='П3'?'intro':x.n==='П4'?'exam':x.n==='П5'?'pending':'prep-'+x.n}"><div class="t-prep-head">${x.pending?'<span class="t-dot wait" aria-hidden="true">…</span>':check(x.done)}<span class="eyebrow">${x.n}</span><h2>${e(x.title)}</h2>${x.pending?pendingBadge:''}</div>${body}</section>`;
+    const card=(x,body)=>`<section class="t-prep-step ${x.done?'done':''} ${x.pending?'pending':''}" id="${({'П3':'intro','П4':'exam','П5':'workbook-step','П6':'method','П7':'print-step'})[x.n]||'prep-'+x.n}"><div class="t-prep-head">${x.pending?'<span class="t-dot wait" aria-hidden="true">…</span>':check(x.done)}<span class="eyebrow">${x.n}</span><h2>${e(x.title)}</h2>${x.pending?pendingBadge:''}</div>${body}</section>`;
     const box=(key,label,checked)=>`<label class="read-check"><input type="checkbox" ${key.startsWith('app:')?'data-preparation="'+key.slice(4)+'"':'data-t-input data-t-prep="'+key+'"'} ${checked?'checked':''}><span>${label}</span></label>`;
     return `${header('РАЗДЕЛ 01 · ДО УРОКА','Подготовка','Вы проходите подготовку один. Отметки сохраняются в этом браузере.')}${segmented('prep')}
       <div class="t-prep-progress"><b>${prepCount()}</b><span>шагов подготовки выполнено</span>${prepReady()?'<a class="button primary" href="#stage/0/read">Готово — перейти к старту →</a>':''}</div>
@@ -150,9 +161,9 @@ window.TeacherUI = function(ctx){
       ${card(steps[1],'<p>Паспорт задаёт структуру; обоснование раскрывает логику; тетрадь содержит задания и формы.</p><a class="text-link" href="#materials">Открыть материалы →</a>'+box('app:sources','Я ознакомился(ась) с назначением трёх документов',s.preparation.sources))}
       ${card(steps[2],`<div class="t-pending-note"><strong>Раздел о качестве из «Энциклопедии прикладной этики» будет добавлен.</strong><span>Пока введение построено на паспорте пособия. Формулировки ниже приведены дословно.</span></div><div class="definition"><h3>Определение качества</h3><p>${e(Q.definition)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><div class="definition"><h3>Определение антипода</h3><p>${e(Q.antipode)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><h3>Ключевые понятия этапа «Введение»</h3><ul class="t-list">${Q.concepts.map(c=>'<li>'+e(c)+'</li>').join('')}</ul>${ctx.sourceButton('Паспорт · этап «Введение»','passport',null,'5.1.')}${ctx.sourceButton('Обоснование · задача «Введения»','rationale',null,'2.2.2.')}${box('intro','Я изучил(а) введение в качество',t.prep.intro)}`)}
       ${card(steps[3],`<p>Экзамен проверяет понимание качества перед уроком: ${T.exam.length} вопросов по паспорту и обоснованию. Попытки не ограничены. Когда будет добавлен раздел энциклопедии, вопросы дополнятся.</p><p class="t-score">Верных ответов: <b>${examScore()} из ${T.exam.length}</b></p>${T.exam.map(renderExamQuestion).join('')}`)}
-      ${card(steps[4],'<p>Рабочая тетрадь педагога от команды проекта станет частью подготовки: здесь будут её задания в интерактивном виде.</p>')}
+      ${card(steps[4],`<p>Сводная рабочая тетрадь комплекта становится вашим разделом подготовки: вы проходите её задания сами, как ученик. На каждом этапе «Старта» задания этого этапа собраны в «Шаг 1». Здесь — вся тетрадь целиком.</p><p class="t-score">Пройдено как ученик: <b>${Object.keys(t.studentDone).length} из ${pageKeys.size}</b> страниц</p><a class="text-link" href="#workbook">Открыть сводную тетрадь целиком →</a>${box('workbook','Я прошёл(ла) задания тетради как ученик',t.prep.workbook)}`)}
       ${card(steps[5],'<p>Ссылка на курс обучения методике киноуроков будет добавлена, когда команда её передаст.</p>')}
-      ${card(steps[6],`<p>Материалы для работы ребёнка в классе. Распечатайте нужные этапы или всю тетрадь.</p><a class="text-link" href="#student">Открыть тетрадь ученика для печати →</a>${box('print','Тетрадь ученика подготовлена к уроку',t.prep.print)}`)}
+      ${card(steps[6],`<p>Отдельная тетрадь для ребёнка: только листы, с которыми дети работают в классе, по порядку этапов. Её можно распечатать целиком или по этапам.</p><a class="text-link" href="#student">Открыть рабочую тетрадь ученика →</a>${box('print','Тетрадь ученика распечатана к уроку',t.prep.print)}`)}
       <div class="actions wrap"><a class="button primary" href="#stage/0/read">Перейти к старту →</a><a class="text-link" href="#map">Маршрутная карта</a></div>`;
   }
 
@@ -163,8 +174,12 @@ window.TeacherUI = function(ctx){
   }
   function stageBlock(i){
     const total=stagePages(i).length,done=stageStudentDone(i);
-    return `<section class="t-as-student"><div class="t-block-head"><span class="eyebrow">ШАГ 1 · ПРОЙДИТЕ КАК УЧЕНИК</span><span class="t-count" data-t-count="${i}">${done} из ${total}</span></div><h2>Задания ученика на этом этапе</h2><p>Откройте каждую страницу тетради и выполните задание сами — так, как его будут выполнять дети. Отметьте выполненное.</p><div id="t-student-list">${studentList(i)}</div></section>
+    return `<section class="t-as-student"><div class="t-block-head"><span class="eyebrow">ШАГ 1 · ПРОЙДИТЕ КАК УЧЕНИК</span><span class="t-count" data-t-count="${i}">${done} из ${total}</span></div><h2>Задания ученика на этом этапе</h2><p>Откройте каждую страницу тетради и выполните задание сами — так, как его будут выполнять дети. Отметьте выполненное.</p><div id="t-student-list">${studentList(i)}</div>${classLink(i)}</section>
       <section class="t-for-teacher"><span class="eyebrow">ШАГ 2 · ПОЯСНЕНИЯ ПЕДАГОГУ</span><h2>Как провести этот этап</h2><div id="t-teacher-notes">${teacherNotes(i)}</div><p class="source-caption">Тексты в пояснениях приведены из паспорта и обоснования без пересказа. После урока запишите, как прошёл этап, в разделе <a href="#outcomes">«Итоги»</a>.</p></section>`;
+  }
+  function classLink(i){
+    const part=T.classWorkbook.find(p=>p.stage===(C.stages[i].sourceStage===4?'Сознание':C.stages[i].name));
+    return part?`<p class="source-caption t-class-link">В классе дети работают с листами рабочей тетради ученика: <a href="#student/${part.id}">листы этапа «${e(part.stage)}» →</a></p>`:'';
   }
   function trimBlocks(blocks){
     return (blocks||[]).slice(1).filter(b=>!(b.type==='p'&&(/^[\d\s]+$/.test(b.text.trim())||/^Педагогическая цель:|^Формула этапа:$|^Задача:$/.test(b.text.trim()))));
@@ -179,19 +194,33 @@ window.TeacherUI = function(ctx){
     return `<details class="t-note" open><summary>Сценарная подсказка: блоки и время</summary><div>${ctx.renderBlocks(scenario)}<span class="source-caption">Паспорт пособия · раздел 5.${n}</span></div></details><details class="t-note"><summary>Задача этапа и почему она важна</summary><div>${ctx.renderBlocks(reason)}<span class="source-caption">Методическое обоснование · раздел 2.2.${n+1}</span></div></details><details class="t-note"><summary>Ожидаемый результат и эффект</summary><div>${effect}</div></details>`;
   }
 
-  // ——— Тетрадь ученика для печати ———
-  function renderStudent(route){
+  // В экранном тексте к странице 3 прикреплён раздел «Термометр чувств» из конца этапа «Чувство» (после страницы 24).
+  // Для печати он возвращается на своё место в исходном порядке документа.
+  const sheets=(sources,p)=>{
+    const blocks=sources.pages[String(p)]||[],cut=blocks.findIndex((b,k)=>k>0&&b.type==='p'&&/^\S*\s*СТРАНИЦА 3\. ТЕРМОМЕТР ЧУВСТВ/.test(b.text));
+    const extra=String(p)==='24'?(()=>{const b3=sources.pages['3']||[],c=b3.findIndex((b,k)=>k>0&&b.type==='p'&&/^\S*\s*СТРАНИЦА 3\. ТЕРМОМЕТР ЧУВСТВ/.test(b.text));return c>0?[b3.slice(c)]:[];})():[];
+    // Заголовок следующего этапа («📘 ЭТАП N…»), прилипший к последней странице, на лист не выводится.
+  const main=String(p)==='3'&&cut>0?blocks.slice(0,cut):blocks,stageCut=main.findIndex((b,k)=>k>0&&b.type==='p'&&/^📘 ЭТАП \d/.test(b.text));
+  return [stageCut>0?main.slice(0,stageCut):main,...extra];
+  };
+
+  // ——— Сводная тетрадь (эталон) целиком ———
+  function renderWorkbook(route){
     const sources=ctx.getSources(),parts=T.workbookParts,sel=parts.find(p=>p.id===route.sub)||null,list=sel?[sel]:parts;
-    const chips=`<nav class="t-chips t-noprint" aria-label="Выбрать этап тетради"><a href="#student" class="${sel?'':'active'}">Вся тетрадь</a>${parts.map(p=>`<a href="#student/${p.id}" class="${sel===p?'active':''}">${e(p.name)}</a>`).join('')}</nav>`;
-    // В экранном тексте к странице 3 прикреплён раздел «Термометр чувств» из конца этапа «Чувство» (после страницы 24).
-    // Для печати он возвращается на своё место в исходном порядке документа.
-    const sheets=p=>{
-      const blocks=sources.pages[String(p)]||[],cut=blocks.findIndex((b,k)=>k>0&&b.type==='p'&&/^\S*\s*СТРАНИЦА 3\. ТЕРМОМЕТР ЧУВСТВ/.test(b.text));
-      const extra=String(p)==='24'?(()=>{const b3=sources.pages['3']||[],c=b3.findIndex((b,k)=>k>0&&b.type==='p'&&/^\S*\s*СТРАНИЦА 3\. ТЕРМОМЕТР ЧУВСТВ/.test(b.text));return c>0?[b3.slice(c)]:[];})():[];
-      return [String(p)==='3'&&cut>0?blocks.slice(0,cut):blocks,...extra];
-    };
-    const body=!sources?'<p class="source-caption">Загружаем страницы тетради…</p>':list.map(part=>`<section class="t-part"><h2 class="t-part-title">${e(part.name)}</h2>${part.pages.flatMap(sheets).map(b=>`<article class="t-sheet">${ctx.renderBlocks(b)}</article>`).join('')}</section>`).join('');
-    return `${header('РАБОЧАЯ ТЕТРАДЬ УЧЕНИКА','Тетрадь ученика для печати','Все материалы для работы ребёнка в классе. Каждая страница печатается на отдельном листе.')}<div class="t-print-bar t-noprint"><button type="button" class="button primary" data-t-print>Печать / сохранить в PDF</button><a class="text-link" href="./materials/workbook.docx" download>Скачать оригинал DOCX ↓</a></div><p class="local-explainer t-noprint">Текст страниц совпадает с оригиналом тетради; оформление упрощено для печати. Для точного макета используйте оригинальный DOCX.</p>${chips}<div id="t-student-pages">${body}</div>`;
+    const chips=`<nav class="t-chips t-noprint" aria-label="Выбрать этап тетради"><a href="#workbook" class="${sel?'':'active'}">Вся тетрадь</a>${parts.map(p=>`<a href="#workbook/${p.id}" class="${sel===p?'active':''}">${e(p.name)}</a>`).join('')}</nav>`;
+    const body=!sources?'<p class="source-caption">Загружаем страницы тетради…</p>':list.map(part=>`<section class="t-part"><h2 class="t-part-title">${e(part.name)}</h2>${part.pages.flatMap(p=>sheets(sources,p)).map(b=>`<article class="t-sheet">${ctx.renderBlocks(b)}</article>`).join('')}</section>`).join('');
+    return `${header('ПОДГОТОВКА · П5','Сводная рабочая тетрадь','Эталонная тетрадь комплекта целиком. Педагог проходит её задания сам, как ученик.')}<div class="t-print-bar t-noprint"><button type="button" class="button primary" data-t-print>Печать / сохранить в PDF</button><a class="text-link" href="./materials/workbook.docx" download>Скачать оригинал DOCX ↓</a></div><p class="local-explainer t-noprint">Текст страниц совпадает с оригиналом тетради; оформление упрощено для экрана и печати.</p>${chips}<div id="t-student-pages">${body}</div>`;
+  }
+
+  // ——— Рабочая тетрадь ученика (для класса, печать) ———
+  function renderStudent(route){
+    const sources=ctx.getSources(),parts=T.classWorkbook,sel=parts.find(p=>p.id===route.sub)||null,list=sel?[sel]:parts;
+    const chips=`<nav class="t-chips t-noprint" aria-label="Выбрать этап"><a href="#student" class="${sel?'':'active'}">Вся тетрадь</a>${parts.map(p=>`<a href="#student/${p.id}" class="${sel===p?'active':''}">${e(p.stage)}</a>`).join('')}</nav>`;
+    const count=parts.reduce((n,p)=>n+p.items.reduce((m,x)=>m+x[2].length,0),0);
+    const contents=`<section class="t-contents"><h2>Содержание</h2><ol>${parts.map(p=>`<li><b>${e(p.stage)}</b><span>${p.items.map(x=>e(x[0])).join(' · ')}</span></li>`).join('')}</ol></section>`;
+    const sheet=(part,item,blocks)=>`<article class="t-sheet"><div class="t-sheet-meta">${e(part.stage)} · ${e(item[0])}${item[1]?' · '+e(item[1]):''}</div>${ctx.renderBlocks(blocks)}</article>`;
+    const body=!sources?'<p class="source-caption">Загружаем листы тетради…</p>':list.map(part=>`<section class="t-part"><h2 class="t-part-title">${e(part.stage)}</h2>${part.items.flatMap(item=>item[2].map(p=>sheet(part,item,sheets(sources,p)[0]))).join('')}</section>`).join('');
+    return `${header('ДЛЯ РЕБЁНКА · В КЛАССЕ','Рабочая тетрадь ученика','Все листы, с которыми ребёнок работает на киноуроке, по порядку этапов. Каждый лист печатается отдельно.')}<div class="t-print-bar t-noprint"><button type="button" class="button primary" data-t-print>Печать / сохранить в PDF</button><a class="text-link" href="./materials/student-workbook.pdf" target="_blank" rel="noopener">Готовый PDF для печати ↗</a></div><div class="t-pending-note t-noprint"><strong>Черновик состава · ${count} листов · на согласование</strong><span>Листы отобраны по «ключевым блокам» паспорта для каждого этапа. Тексты листов взяты из сводной тетради без изменений. Домашние задания и страницы с правилами для самостоятельного чтения не включены.</span></div>${chips}${sel?'':contents}<div id="t-student-pages">${body}</div>`;
   }
 
   // ——— Итоги ———
@@ -225,7 +254,8 @@ window.TeacherUI = function(ctx){
       if(route.tab==='practice')return {text:'Проверьте себя на заданиях и решите педагогический кейс. Попытки не ограничены.',href:null};
       return {text:'Запишите свой план этапа и сверьте его с критериями. После урока вернитесь в «Итоги».',href:'#outcomes',label:'Итоги'};
     }
-    if(route.view==='student')return {text:'Выберите этап и нажмите «Печать». Каждая страница выйдет на отдельном листе.',href:null};
+    if(route.view==='student')return {text:'Это тетрадь для детей. Выберите этап и нажмите «Печать» — каждый лист выйдет отдельно.',href:null};
+    if(route.view==='workbook')return {text:'Проходите эти задания сами, как ученик. Отмечать выполненное удобнее на этапах «Старта».',href:'#stage/0/read',label:'К этапу 1'};
     if(route.view==='outcomes')return {text:'Запишите по каждому этапу: что прошло, что заметили у детей, что изменить.',href:null};
     if(route.view==='happiness')return {text:'Этот раздел наполнится, когда появится текст энциклопедии.',href:'#map',label:'К карте'};
     return {text:'Не теряйтесь: вся последовательность — на маршрутной карте.',href:'#map',label:'Маршрутная карта'};
@@ -252,7 +282,7 @@ window.TeacherUI = function(ctx){
     if(readOnly()&&d.tInput!==undefined)return true;
     if(d.tAnswer!==undefined){const q=T.exam.find(x=>x.id===d.tAnswer);if(!q)return true;t.exam.answers[q.id]=Number(el.value);delete t.exam.checked[q.id];save();ctx.render();return true;}
     if(d.tStudent!==undefined){const p=String(d.tStudent);if(!pageKeys.has(p))return true;if(el.checked)t.studentDone[p]=true;else delete t.studentDone[p];save();ctx.render();return true;}
-    if(d.tPrep!==undefined){if(!['intro','print'].includes(d.tPrep))return true;t.prep[d.tPrep]=el.checked===true;save();ctx.render();return true;}
+    if(d.tPrep!==undefined){if(!['intro','workbook','print'].includes(d.tPrep))return true;t.prep[d.tPrep]=el.checked===true;save();ctx.render();return true;}
     return false;
   }
   function input(el){
@@ -265,10 +295,10 @@ window.TeacherUI = function(ctx){
   }
   function afterSources(route){
     if(route.view==='stage'&&route.tab==='read'){const notes=document.getElementById('t-teacher-notes');if(notes)notes.innerHTML=teacherNotes(route.stage);const list=document.getElementById('t-student-list');if(list)list.innerHTML=studentList(route.stage);}
-    if(route.view==='student'){const pages=document.getElementById('t-student-pages');if(pages)ctx.render();}
+    if(route.view==='student'||route.view==='workbook'){const pages=document.getElementById('t-student-pages');if(pages)ctx.render();}
   }
   function render(route){
-    return route.view==='map'?renderMap():route.view==='prep'?renderPrep(route):route.view==='student'?renderStudent(route):route.view==='outcomes'?renderOutcomes():renderHappiness();
+    return route.view==='map'?renderMap():route.view==='prep'?renderPrep(route):route.view==='student'?renderStudent(route):route.view==='workbook'?renderWorkbook(route):route.view==='outcomes'?renderOutcomes():renderHappiness();
   }
   return {views,render,sidebar,startPanel,stageBlock,teacherNotes,guide,click,change,input,afterSources,state:()=>t,examPassed,prepReady};
 };

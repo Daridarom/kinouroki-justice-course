@@ -161,3 +161,12 @@ dialog{border:1px solid var(--line);border-radius:12px;padding:0;width:min(960px
   .t-outcome textarea{display:none}
   .t-print-value{display:block;padding:4px 0 10px;white-space:pre-wrap}
 }
+
+.t-sheet-meta{font-size:12px;font-weight:650;letter-spacing:.6px;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+.t-contents{border:1px solid var(--line);border-radius:var(--radius);background:#fff;padding:20px 24px;margin:0 0 18px}
+.t-contents h2{margin:0 0 8px;font-size:20px}
+.t-contents ol{margin:0;padding-left:22px;display:grid;gap:8px}
+.t-contents li b{display:block}
+.t-contents li span{font-size:14px;color:var(--muted)}
+.t-class-link{margin-top:14px}
+@media print{.t-sheet-meta{color:#555;font-size:8pt}.t-contents{border:0;padding:0;break-after:page}}

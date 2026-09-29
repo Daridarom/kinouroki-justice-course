@@ -16,7 +16,7 @@ const T=JSON.parse(JSON.stringify(ctx.window.TEACHER));
 for(const text of [T.quality.definition,T.quality.antipode,...T.quality.concepts])assert(allText.includes(simplify(text)),'Quality text must be verbatim: '+text);
 for(const item of T.exam.find(q=>q.id==='exam-path').items)assert(allText.includes(simplify(item)),'Path step must be verbatim: '+item);
 assert.equal(T.studentPages.length,8,'Student pages for each of eight stages');
-for(const p of [...T.studentPages.flat(),...T.workbookParts.flatMap(x=>x.pages)])assert(source.pages[String(p)]?.length,'Workbook page exists: '+p);
+for(const p of [...T.studentPages.flat(),...T.workbookParts.flatMap(x=>x.pages),...T.classWorkbook.flatMap(x=>x.items.flatMap(i=>i[2]))])assert(source.pages[String(p)]?.length,'Workbook page exists: '+p);
 for(const q of T.exam){
   if(q.type==='single')assert(q.answer>=0&&q.answer<q.options.length);
   else{assert.deepEqual([...q.initial].sort(),q.answer.map((_,i)=>i));assert.notDeepEqual(q.initial,q.answer);}
@@ -36,7 +36,7 @@ assert(html.includes('Подготовка → Старт → Итоги'));asse
 
 h.navigate('#prep');html=h.get('app').innerHTML;
 assert(html.includes('Энциклопедии прикладной этики')&&html.includes('Ожидает материала'),'Pending sources are shown honestly');
-assert(html.includes('2 из 5'),'Film and kit checkboxes are shared with the course');
+assert(html.includes('2 из 6'),'Film and kit checkboxes are shared with the course');
 for(const q of T.exam){
   if(q.type==='single')await h.emit('change',{dataset:{tInput:'',tAnswer:q.id},value:String(q.answer)});
   else{
@@ -49,7 +49,8 @@ await h.emit('change',{dataset:{tInput:'',tPrep:'intro'},checked:true});
 await h.emit('change',{dataset:{tInput:'',tPrep:'print'},checked:true});
 html=h.get('app').innerHTML;
 assert(html.includes('Верных ответов: <b>7 из 7</b>'),'Exam passes with source answers');
-assert(html.includes('5 из 5'),'All available preparation steps done');
+assert(html.includes('5 из 6'),'Workbook step still open');
+await h.emit('change',{dataset:{tInput:'',tPrep:'workbook'},checked:true});assert(h.get('app').innerHTML.includes('6 из 6'),'All available preparation steps done');
 const teacherState=JSON.parse(h.local.get('kinouroki.justice.teacher.v1'));
 assert.equal(Object.keys(teacherState.exam.checked).length,T.exam.length);
 
@@ -61,11 +62,16 @@ await h.emit('change',{dataset:{tInput:'',tStudent:'16'},checked:true});
 assert(h.get('app').innerHTML.includes('1 из 9'));
 h.navigate('#stage/1/read');assert(h.get('app').innerHTML.includes('Отдельного раздела этого этапа в исходном паспорте нет'));
 
-h.navigate('#student/feel');html=h.get('app').innerHTML;
+h.navigate('#workbook/feel');html=h.get('app').innerHTML;
 assert(html.includes('СТРАНИЦА 24.')&&html.includes('СТРАНИЦА 3. ТЕРМОМЕТР ЧУВСТВ'),'Feeling appendix printed with its stage');
-h.navigate('#student/intro');html=h.get('app').innerHTML;
+h.navigate('#workbook/intro');html=h.get('app').innerHTML;
 assert(html.includes('СТРАНИЦА 3. ЧЕТВЁРТЫЙ ЛИШНИЙ')&&!html.includes('СТРАНИЦА 3. ТЕРМОМЕТР ЧУВСТВ'),'Introduction print excludes the appendix');
 
+h.navigate('#student');html=h.get('app').innerHTML;
+assert(html.includes('Рабочая тетрадь ученика')&&html.includes('Черновик состава')&&html.includes('Содержание'));
+assert(!html.includes('СТРАНИЦА 12. ДОМАШНЕЕ ЗАДАНИЕ'),'Homework is not part of the class workbook');
+assert(html.includes('СТРАНИЦА 5. ВЕСЫ СОЛОМОНА')&&html.includes('СТРАНИЦА 60. ПАСПОРТ ПРОЕКТА'));
+h.navigate('#student/intro');html=h.get('app').innerHTML;assert(!html.includes('СТРАНИЦА 3. ТЕРМОМЕТР ЧУВСТВ'));
 h.navigate('#outcomes');
 await h.emit('input',{dataset:{tInput:'',tOutcome:'s0-kids'},value:'<img src=x onerror=1> Дети спорили о весах'});
 await h.emit('input',{dataset:{tInput:'',tOutcome:'forged'},value:'x'});
