@@ -181,3 +181,28 @@ dialog{border:1px solid var(--line);border-radius:12px;padding:0;width:min(960px
 .t-two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:800px){.t-two{grid-template-columns:1fr}}
 .t-prep-step .source-caption{display:block;margin:4px 0 18px}
+
+.t-soc-attitude{margin:6px 0 18px;padding:20px 22px;border-radius:var(--radius);background:var(--navy);color:#fff}
+.t-soc-attitude .eyebrow{color:var(--gold)}
+.t-soc-attitude p{margin:6px 0 0;font:500 22px/1.35 Georgia,"Times New Roman",serif}
+.t-soc-intro{color:var(--muted);margin:0 0 14px}
+.t-chips button{padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--navy);font:inherit;font-size:14px;cursor:pointer}
+.t-chips button.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.t-soc-steps{list-style:none;padding:0;margin:0 0 16px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.t-soc-steps button{width:100%;height:100%;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:12px;line-height:1.3;text-align:left;cursor:pointer}
+.t-soc-steps button b{font-size:15px;color:var(--blue)}
+.t-soc-steps button.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.t-soc-steps button.active b{color:var(--gold)}
+.t-soc-answer{margin-top:16px;padding:16px 18px;border-left:3px solid var(--green);background:var(--green-light);border-radius:0 8px 8px 0}
+.t-soc-chain .t-list li{margin:8px 0}
+.t-soc-step .button{margin-top:8px}
+.t-soc-checks{list-style:none;padding:0}
+.t-soc-checks li{padding:8px 0;border-top:1px solid var(--line)}
+.t-soc-checks label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.t-soc-checks input{margin-top:5px;flex-shrink:0}
+.t-soc-list{display:grid}
+.step-navigation button.button{cursor:pointer}
+@media(max-width:800px){.t-soc-steps{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.t-soc-steps button span{display:none}.t-soc-steps button{align-items:center}.t-soc-attitude p{font-size:19px}}
+.t-side-steps{grid-template-columns:1fr;gap:4px}
+.t-side-steps a{flex-direction:row;justify-content:space-between;align-items:baseline;padding:8px 12px}
+.t-side-steps a b{overflow-wrap:normal}
