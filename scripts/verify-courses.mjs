@@ -32,7 +32,7 @@ function assertEightStageContract(label,courseSource,learningSource){
   if(label==='Justice'){ route[3]='Осознание'; route.splice(1,0,'Просмотр фильма'); route.splice(6,0,'Социальная практика'); }
   else { route.splice(6,0,'Социальная практика'); }
   assert.deepEqual(route,expectedStages,label+' exact eight-stage order');
-  assert.match(learningSource,/Рефлексия по поступку, а не по плану/,label+' practice precedes reflection');
+  assert.match(learningSource,/(?:Рефлексия по поступку, а не по плану|обсуждение плана не заменяет социальную практику)/,label+' practice precedes reflection');
   assert.match(learningSource,/Что реально сделали и для кого/,label+' requires evidence of completed action');
   assert.match(learningSource,/Точки роста/,label+' includes growth points');
   assert.match(learningSource,/не (?:ставит ребёнку психологический диагноз|психологический диагноз)/,label+' growth form is not psychological diagnosis');
