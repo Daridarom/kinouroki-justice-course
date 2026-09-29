@@ -6,7 +6,7 @@ import {makeHarness} from './harness.mjs';
 const base=new URL('../',import.meta.url);
 const read=p=>fs.readFileSync(new URL(p,base),'utf8');
 const names=['Введение','Просмотр фильма','Чувство','Мысль','Осознание','Воображение','Социальная практика','Воодушевление'];
-const version='20260929-v92';
+const version='20260929-v93';
 const gitBlob=p=>{const b=fs.readFileSync(new URL(p,base));return crypto.createHash('sha1').update(`blob ${b.length}\0`).update(b).digest('hex');};
 // Approved content at 5d79b50: changes belong to the learning adapter, not the source model.
 assert.equal(gitBlob('dist/course.js'),'fe933efe5c9e3d2f7adc6d4ff065bf6a083a1cff','Justice source content stays untouched');
