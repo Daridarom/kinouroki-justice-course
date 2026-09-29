@@ -67,7 +67,7 @@ window.TEACHER = {
 window.TeacherUI = function(ctx){
   const T=window.TEACHER, C=ctx.C, e=ctx.e, N=C.stages.length;
   const views=['map','prep','student','workbook','encyclopedia','socrat','outcomes','happiness'];
-  const blank=()=>({version:1,studentDone:{},exam:{answers:{},checked:{}},prep:{intro:false,workbook:false,print:false},outcomes:{},socrat:{},guideHidden:false});
+  const blank=()=>({version:1,studentDone:{},exam:{answers:{},checked:{}},prep:{intro:false,workbook:false,print:false,course:false},outcomes:{},socrat:{},guideHidden:false});
   const startHref=()=>{const s=ctx.getState(),i=C.stages.findIndex((_,n)=>!s.completed.includes(n));return '#stage/'+(i<0?0:i)+'/read';};
   const pageKeys=new Set(T.studentPages.flat().map(String));
   const outcomeKeys=new Set(['lesson','summary',...C.stages.flatMap((_,i)=>T.outcomeFields.map(f=>'s'+i+'-'+f.id))]);
@@ -80,7 +80,7 @@ window.TeacherUI = function(ctx){
       if(q.type==='order'&&Array.isArray(a)&&a.length===q.items.length&&a.every(v=>Number.isInteger(v)&&v>=0&&v<q.items.length)&&new Set(a).size===a.length)s.exam.answers[q.id]=a;
       if(input.exam?.checked?.[q.id]===true&&q.id in s.exam.answers)s.exam.checked[q.id]=true;
     }
-    s.prep.intro=input.prep?.intro===true;s.prep.workbook=input.prep?.workbook===true;s.prep.print=input.prep?.print===true;
+    s.prep.intro=input.prep?.intro===true;s.prep.workbook=input.prep?.workbook===true;s.prep.print=input.prep?.print===true;s.prep.course=input.prep?.course===true;
     for(const k of Object.keys(input.outcomes||{}))if(outcomeKeys.has(k)&&typeof input.outcomes[k]==='string')s.outcomes[k]=input.outcomes[k].slice(0,5000);
     const S=window.SOCRATIC;
     for(const item of S?.items||[]){
@@ -114,8 +114,7 @@ window.TeacherUI = function(ctx){
       {n:'П3',title:'Введение в качество',done:t.prep.intro,href:'#prep/intro'},
       {n:'П4',title:'Экзамен на понимание качества',done:examPassed(),href:'#prep/exam'},
       {n:'П5',title:'Сводная рабочая тетрадь — пройти самому',done:t.prep.workbook,href:'#prep/workbook-step'},
-      {n:'П6',title:'Курс обучения методике',pending:true,href:'#prep/method'},
-      {n:'П7',title:'Рабочая тетрадь ученика — распечатать',done:t.prep.print,href:'#prep/print-step'}
+      {n:'П6',title:'Рабочая тетрадь ученика — распечатать',done:t.prep.print,href:'#prep/print-step'}
     ];
   };
   const prepReady=()=>prepSteps().filter(x=>!x.pending).every(x=>x.done);
@@ -157,7 +156,7 @@ window.TeacherUI = function(ctx){
     const group=(title,note,from,to)=>`<div class="t-map-group"><div class="t-map-group-head"><b>${title}</b><small>${note}</small></div>${C.stages.slice(from,to).map((st,k)=>stageRow(st,from+k)).join('')}</div>`;
     return `${header('МАРШРУТНАЯ КАРТА','Весь киноурок на одной карте','Три раздела: подготовка педагога, проведение урока по восьми этапам и фиксация результатов.',['#start','Главная страница курса'])}${segmented('')}
       <ol class="t-map">
-        <li class="t-map-block"><div class="t-map-num">01</div><div class="t-map-body"><div class="t-map-title"><h2>Подготовка</h2><span>${prepCount()}</span></div><p>Педагог один, до урока. Смысл качества, экзамен, фильм, комплект и тетради.</p>${steps.map(x=>`<a class="t-map-stage" href="${x.href}">${x.pending?'<span class="t-dot wait" aria-hidden="true">…</span>':check(x.done)}<span><strong>${x.n} · ${e(x.title)}</strong><small>${x.pending?'ожидает материала':x.done?'готово':'не выполнено'}</small></span></a>`).join('')}<a class="button primary" href="#prep">Открыть подготовку →</a></div></li>
+        <li class="t-map-block"><div class="t-map-num">01</div><div class="t-map-body"><div class="t-map-title"><h2>Подготовка</h2><span>${prepCount()}</span></div><p>Педагог один, до урока. Смысл качества, экзамен, фильм, комплект и тетради.</p><a class="t-map-stage t-map-foundation" href="#prep/method">${check(t.prep.course)}<span><strong>Основа · курс обучения методике</strong><small>один раз для всех киноуроков · kinouroki.org</small></span></a>${steps.map(x=>`<a class="t-map-stage" href="${x.href}">${x.pending?'<span class="t-dot wait" aria-hidden="true">…</span>':check(x.done)}<span><strong>${x.n} · ${e(x.title)}</strong><small>${x.pending?'ожидает материала':x.done?'готово':'не выполнено'}</small></span></a>`).join('')}<a class="button primary" href="#prep">Открыть подготовку →</a></div></li>
         <li class="t-map-block"><div class="t-map-num">02</div><div class="t-map-body"><div class="t-map-title"><h2>Старт</h2><span>${s.completed.length} из ${N}</span></div><p>Урок с классом. На каждом этапе вы сначала выполняете задания ученика, затем читаете пояснения педагогу.</p>${group('На уроке','этапы 1–6 — в классе',0,6)}${group('Общее дело','вне урока, по срокам выбранного дела',6,7)}${group('Праздник успехов','после выполненного дела',7,8)}<a class="button primary" href="${startHref()}">${s.completed.length?'Продолжить урок →':'Старт: этап 1 →'}</a></div></li>
         <li class="t-map-block"><div class="t-map-num">03</div><div class="t-map-body"><div class="t-map-title"><h2>Итоги</h2><span>${outcomeFilled()} записей</span></div><p>После урока и общего дела: что прошло по плану, что заметили у детей, что изменить. По каждому этапу.</p><a class="button primary" href="#outcomes">Зафиксировать итоги →</a></div></li>
       </ol>`;
@@ -172,19 +171,23 @@ window.TeacherUI = function(ctx){
     if(q.type==='order')controls=`<ol class="order-list">${value.map((v,j)=>`<li><span class="order-index">${j+1}</span><strong>${e(q.items[v])}</strong><span class="order-controls"><button type="button" class="icon-button" data-t-input data-t-move="${q.id}" data-from="${j}" data-delta="-1" ${j===0?'disabled':''} aria-label="Поднять ${e(q.items[v])}">↑</button><button type="button" class="icon-button" data-t-input data-t-move="${q.id}" data-from="${j}" data-delta="1" ${j===value.length-1?'disabled':''} aria-label="Опустить ${e(q.items[v])}">↓</button></span></li>`).join('')}</ol>`;
     return `<section class="quiz" id="t-quiz-${q.id}" tabindex="-1"><div class="quiz-top"><span class="eyebrow">ВОПРОС ${String(num+1).padStart(2,'0')} ИЗ ${String(T.exam.length).padStart(2,'0')}</span>${passed?'<span class="success-label">'+(review?'Разбор':'✓ Верно')+'</span>':''}</div><h2>${e(q.title)}</h2>${q.prompt?'<p>'+e(q.prompt)+'</p>':''}${controls}<div class="quiz-actions">${review?'<span class="review-key">Показан ответ и разбор</span>':`<button type="button" class="button ${passed?'ghost':'primary'}" data-t-check="${q.id}">${checked?'Проверить ещё раз':'Проверить ответ'}</button>`}<span class="source-caption">${e(q.ref)}</span></div>${checked?`<div class="feedback ${passed?'positive':'retry'}" role="status"><strong>${passed?'Верно':'Пока не совпало'}</strong><p>${e(q.explanation)}</p>${!passed?'<span>Измените ответ и проверьте снова.</span>':''}</div>`:''}</section>`;
   }
+  // Основа методики: общий курс проекта. Проходится один раз, а не перед каждым фильмом, поэтому не входит в шаги подготовки.
+  function foundation(box){
+    return `<section class="t-foundation" id="method"><div class="eyebrow">ОСНОВА · ОДИН РАЗ ДЛЯ ВСЕХ КИНОУРОКОВ</div><h2>Курс обучения методике</h2><p>Общий курс проекта о системе этического воспитания через киноуроки. Его проходят один раз — он даёт основу для работы с любым фильмом. Подготовка ниже — уже к конкретному уроку «${e(ctx.M.film)}».</p><ul class="t-list"><li><a href="https://kinouroki.org/povishenkvalif" target="_blank" rel="noopener noreferrer">Курс повышения квалификации «Система этического воспитания» ↗</a></li><li><a href="https://kinouroki.org/metodica" target="_blank" rel="noopener noreferrer">Методические материалы проекта ↗</a></li></ul>${box('course','Я прошёл(ла) курс методики или изучаю его',t.prep.course)}<p class="source-caption">Не обязательное условие для этой подготовки: можно готовиться к уроку и параллельно проходить курс.</p></section>`;
+  }
   function renderPrep(route){
     const s=app(),steps=prepSteps(),Q=T.quality;
-    const card=(x,body)=>`<section class="t-prep-step ${x.done?'done':''} ${x.pending?'pending':''}" id="${({'П1':'step-film','П2':'step-kit','П3':'intro','П4':'exam','П5':'workbook-step','П6':'method','П7':'print-step'})[x.n]}"><div class="t-prep-head">${x.pending?'<span class="t-dot wait" aria-hidden="true">…</span>':check(x.done)}<span class="eyebrow">${x.n}</span><h2>${e(x.title)}</h2>${x.pending?pendingBadge:''}</div>${body}</section>`;
+    const card=(x,body)=>`<section class="t-prep-step ${x.done?'done':''} ${x.pending?'pending':''}" id="${({'П1':'step-film','П2':'step-kit','П3':'intro','П4':'exam','П5':'workbook-step','П6':'print-step'})[x.n]}"><div class="t-prep-head">${x.pending?'<span class="t-dot wait" aria-hidden="true">…</span>':check(x.done)}<span class="eyebrow">${x.n}</span><h2>${e(x.title)}</h2>${x.pending?pendingBadge:''}</div>${body}</section>`;
     const box=(key,label,checked)=>`<label class="read-check"><input type="checkbox" ${key.startsWith('app:')?'data-preparation="'+key.slice(4)+'"':'data-t-input data-t-prep="'+key+'"'} ${checked?'checked':''}><span>${label}</span></label>`;
     return `${header('РАЗДЕЛ 01 · ДО УРОКА','Подготовка','Вы проходите подготовку один. Отметки сохраняются в этом браузере.')}${segmented('prep')}
       <div class="t-prep-progress"><b>${prepCount()}</b><span>шагов подготовки выполнено</span>${prepReady()?'<a class="button primary" href="#stage/0/read">Готово — перейти к старту →</a>':''}</div>
+      ${foundation(box)}
       ${card(steps[0],`<p>${e(ctx.M.filmPrepText)}</p><a class="text-link" href="#film">${e(ctx.M.filmNavLabel)} · ${e(ctx.M.filmDuration)} →</a>${box('app:film','Я посмотрел(а) полный фильм',s.preparation.film)}`)}
       ${card(steps[1],'<p>Паспорт задаёт структуру; обоснование раскрывает логику; тетрадь содержит задания и формы.</p><a class="text-link" href="#materials">Открыть материалы →</a>'+box('app:sources','Я ознакомился(ась) с назначением трёх документов',s.preparation.sources))}
       ${card(steps[2],`${encBadge()}${enc()?`<div class="definition"><h3>Справедливость · энциклопедия</h3>${encText('spravedlivost','1.3.')}${encRef('spravedlivost','1.3.')}</div><h3>Чем отличается от сходного поведения</h3>${encText('spravedlivost','2.').split('</p>').filter(x=>!/2\.[1234]\.|нравственное \+|ядро\]|вектор не требуется/.test(x)).join('</p>')}${encRef('spravedlivost','2.4.')}<h3>Формула качества</h3>${encSec('spravedlivost','4.').slice(1,2).map(t=>'<p><strong>'+e(t)+'</strong></p>').join('')}${encRef('spravedlivost','4.')}<h3>Антипод: ${e(encSec('spravedlivost','5.4.')[0]||'')}</h3>${encText('spravedlivost','5.5.')}${encRef('spravedlivost','5.5.')}<h3>Возможные искажения качества</h3><ul class="t-list">${encSec('spravedlivost','6.').map(t=>'<li>'+e(t)+'</li>').join('')}</ul>${encRef('spravedlivost','6.')}<blockquote><div class="eyebrow">ФОРМУЛА-АФОРИЗМ</div><p>${e(encSec('spravedlivost','7.6.')[0]||'')}</p><cite>Энциклопедия · «Справедливость» · 7.6</cite></blockquote><a class="text-link" href="#encyclopedia">Открыть статью энциклопедии целиком →</a>`:''}<h3>В паспорте пособия</h3><div class="definition"><h3>Определение качества</h3><p>${e(Q.definition)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><div class="definition"><h3>Определение антипода</h3><p>${e(Q.antipode)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><h3>Ключевые понятия этапа «Введение»</h3><ul class="t-list">${Q.concepts.map(c=>'<li>'+e(c)+'</li>').join('')}</ul>${ctx.sourceButton('Паспорт · этап «Введение»','passport',null,'5.1.')}${ctx.sourceButton('Обоснование · задача «Введения»','rationale',null,'2.2.2.')}${box('intro','Я изучил(а) введение в качество',t.prep.intro)}`)}
       ${card(steps[3],`<p>Экзамен проверяет понимание качества перед уроком: ${T.exam.length} вопросов по энциклопедии, паспорту и обоснованию. Попытки не ограничены.</p><p class="t-score">Верных ответов: <b>${examScore()} из ${T.exam.length}</b></p>${T.exam.map(renderExamQuestion).join('')}`)}
       ${card(steps[4],`<p>Сводная рабочая тетрадь комплекта становится вашим разделом подготовки: вы проходите её задания сами, как ученик. На каждом этапе «Старта» задания этого этапа собраны в «Шаг 1». Здесь — вся тетрадь целиком.</p><p class="t-score">Пройдено как ученик: <b>${Object.keys(t.studentDone).length} из ${pageKeys.size}</b> страниц</p><a class="text-link" href="#workbook">Открыть сводную тетрадь целиком →</a>${box('workbook','Я прошёл(ла) задания тетради как ученик',t.prep.workbook)}`)}
-      ${card(steps[5],'<p>Ссылка на курс обучения методике киноуроков будет добавлена, когда команда её передаст.</p>')}
-      ${card(steps[6],`<p>Отдельная тетрадь для ребёнка: только листы, с которыми дети работают в классе, по порядку этапов. Её можно распечатать целиком или по этапам.</p><a class="text-link" href="#student">Открыть рабочую тетрадь ученика →</a>${box('print','Тетрадь ученика распечатана к уроку',t.prep.print)}`)}
+      ${card(steps[5],`<p>Отдельная тетрадь для ребёнка: только листы, с которыми дети работают в классе, по порядку этапов. Её можно распечатать целиком или по этапам.</p><a class="text-link" href="#student">Открыть рабочую тетрадь ученика →</a>${box('print','Тетрадь ученика распечатана к уроку',t.prep.print)}`)}
       <div class="actions wrap"><a class="button primary" href="#stage/0/read">Перейти к старту →</a><a class="text-link" href="#map">Маршрутная карта</a></div>`;
   }
 
@@ -376,7 +379,7 @@ window.TeacherUI = function(ctx){
     if(d.tAnswer!==undefined){const q=T.exam.find(x=>x.id===d.tAnswer);if(!q)return true;t.exam.answers[q.id]=Number(el.value);delete t.exam.checked[q.id];save();ctx.render();return true;}
     if(d.tStudent!==undefined){const p=String(d.tStudent);if(!pageKeys.has(p))return true;if(el.checked)t.studentDone[p]=true;else delete t.studentDone[p];save();ctx.render();return true;}
     if(d.tSocCheck!==undefined){const [id,k]=String(d.tSocCheck).split('|');if(!socItem(id)||!/^v\d+-s6-\d{1,3}$/.test(k||''))return true;const st=socState(id);if(el.checked)st.checks[k]=true;else delete st.checks[k];save();return true;}
-    if(d.tPrep!==undefined){if(!['intro','workbook','print'].includes(d.tPrep))return true;t.prep[d.tPrep]=el.checked===true;save();ctx.render();return true;}
+    if(d.tPrep!==undefined){if(!['intro','workbook','print','course'].includes(d.tPrep))return true;t.prep[d.tPrep]=el.checked===true;save();ctx.render();return true;}
     return false;
   }
   function input(el){

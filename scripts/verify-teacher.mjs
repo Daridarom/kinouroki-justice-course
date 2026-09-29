@@ -43,7 +43,7 @@ h.navigate('#start');html=h.get('app').innerHTML;
 assert(html.includes('Подготовка → Старт → Итоги'));assert(html.includes('Восемь этапов'),'Existing start page is kept');
 
 h.navigate('#prep');html=h.get('app').innerHTML;
-assert(html.includes('Энциклопедия прикладной этики')&&html.includes('Рабочая редакция')&&html.includes('Ожидает материала'),'Pending sources are shown honestly');
+assert(html.includes('Энциклопедия прикладной этики')&&html.includes('Рабочая редакция')&&html.includes('kinouroki.org/povishenkvalif')&&html.includes('ОДИН РАЗ ДЛЯ ВСЕХ КИНОУРОКОВ'),'Encyclopedia status and one-time methodology course are shown');
 assert(html.includes('2 из 6'),'Film and kit checkboxes are shared with the course');
 for(const q of T.exam){
   if(q.type==='single')await h.emit('change',{dataset:{tInput:'',tAnswer:q.id},value:String(q.answer)});
