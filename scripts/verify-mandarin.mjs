@@ -62,7 +62,7 @@ const makeHarness=(initial={},failStorage=false)=>makeSharedHarness(files,initia
 const h=makeHarness();
 assert(h.get('app').innerHTML.includes('Восемь этапов'));
 assert(h.get('app').innerHTML.includes('Радость за другого'));
-assert(h.get('app').innerHTML.includes('Предложение · 28.09.2026'),'Public course must disclose its proposal status');
+assert(h.get('app').innerHTML.includes('Предложение · 29.09.2026'),'Public course must disclose its proposal status');
 assert(h.get('app').innerHTML.includes('0 из 8'));
 for(const key of ['film','sources'])await h.emit('change',{match:'[data-preparation]',dataset:{preparation:key},checked:true});
 for(let i=0;i<N;i++){
