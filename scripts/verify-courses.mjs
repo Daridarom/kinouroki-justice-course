@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const app=read('dist/app.js'),great=read('dist/index.html'),mandarin=read('dist/mandarin/index.html'),learning=read('dist/mandarin/learning.js');
-assert.match(app,/href="\.\/mandarin\/\?v=20260928-standard-r1"/,'Justice course links to the Mandarin course');
-assert.match(learning,/href="\.\.\/\?v=20260928-standard-r1#start"/,'Mandarin course links back to the Justice course');
+assert.match(app,/href="\.\/mandarin\/\?v=20260929-v81"/,'Justice course links to the Mandarin course');
+assert.match(learning,/href="\.\.\/\?v=20260929-v81#start"/,'Mandarin course links back to the Justice course');
 assert.match(mandarin,/href="\.\.\/styles\.css/,'Both courses must use the shared design');
 assert.match(mandarin,/src="\.\.\/app\.js/,'Both courses must run on the shared engine');
 assert.doesNotMatch(mandarin,/drive\.google\.com\/file\/d\//);
@@ -32,7 +32,7 @@ function assertEightStageContract(label,courseSource,learningSource){
   if(label==='Justice'){ route[3]='Осознание'; route.splice(1,0,'Просмотр фильма'); route.splice(6,0,'Социальная практика'); }
   else { route.splice(6,0,'Социальная практика'); }
   assert.deepEqual(route,expectedStages,label+' exact eight-stage order');
-  assert.match(learningSource,/Рефлексия по поступку, а не по плану/,label+' practice precedes reflection');
+  assert.match(learningSource,/(?:Рефлексия по поступку, а не по плану|обсуждение плана не заменяет социальную практику)/,label+' practice precedes reflection');
   assert.match(learningSource,/Что реально сделали и для кого/,label+' requires evidence of completed action');
   assert.match(learningSource,/Точки роста/,label+' includes growth points');
   assert.match(learningSource,/не (?:ставит ребёнку психологический диагноз|психологический диагноз)/,label+' growth form is not psychological diagnosis');

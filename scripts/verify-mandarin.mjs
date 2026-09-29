@@ -47,9 +47,9 @@ assert.equal(course.scenes.length,7,'Seven film scenes per the episode map');
 for(let i=1;i<course.scenes.length;i++)assert(course.scenes[i-1].end<=course.scenes[i].start,'Scene ranges must not overlap');
 assert.equal(course.scenes[0].start,12);assert.equal(course.scenes[6].end,878);
 assert.equal(course.filmEmbedURL,'https://vkvideo.ru/video_ext.php?oid=-69614724&id=456240051&hd=2&autoplay=0');
-for(let i=1;i<=7;i++)assert(source.sections.passport['5.'+i+'.']?.length,'Passport section 5.'+i);
-for(let i=2;i<=8;i++)assert(source.sections.rationale['2.2.'+i+'.']?.length,'Rationale section 2.2.'+i);
-assert.equal(Object.keys(source.pages).length,70);
+for(let i=1;i<=8;i++)assert(source.sections.passport['5.'+i+'.']?.length,'Passport section 5.'+i);
+for(let i=2;i<=9;i++)assert(source.sections.rationale['2.2.'+i+'.']?.length,'Rationale section 2.2.'+i);
+assert.equal(Object.keys(source.pages).length,71);
 const html=read('dist/mandarin/index.html');
 for(const asset of ['../styles.css','./course.js','./learning.js','../core.js','../app.js'])assert(html.includes(asset),'Shared engine asset: '+asset);
 for(const file of ['passport.docx','rationale.docx','workbook.docx','standard-manual.pdf','standard-manual.docx','guide.pdf','original-workbook.pdf','slides.pdf','story.pdf'])assert(fs.existsSync(new URL('dist/mandarin/materials/'+file,base)),'Missing material '+file);
@@ -62,7 +62,7 @@ const makeHarness=(initial={},failStorage=false)=>makeSharedHarness(files,initia
 const h=makeHarness();
 assert(h.get('app').innerHTML.includes('Восемь этапов'));
 assert(h.get('app').innerHTML.includes('Радость за другого'));
-assert(h.get('app').innerHTML.includes('Предложение · 28.09.2026'),'Public course must disclose its proposal status');
+assert(h.get('app').innerHTML.includes('Предложение · 29.09.2026'),'Public course must disclose its proposal status');
 assert(h.get('app').innerHTML.includes('0 из 8'));
 for(const key of ['film','sources'])await h.emit('change',{match:'[data-preparation]',dataset:{preparation:key},checked:true});
 for(let i=0;i<N;i++){
@@ -107,7 +107,7 @@ nav.navigate('#film/teacher');assert.equal(nav.get('app').innerHTML,filmMarkup,'
 nav.navigate('#stage/7/read');assert(nav.get('app').innerHTML.includes('ЭТАП 08 / 08'));assert(nav.get('app').innerHTML.includes('Воодушевление'));
 nav.navigate('#materials');assert(nav.get('app').innerHTML.includes('standard-manual.pdf'));assert(nav.get('app').innerHTML.includes('Паспорт методического пособия'));
 await nav.emit('click',{dataset:{source:'workbook',pages:'48'}});assert(nav.get('source-dialog').open);assert(nav.get('source-content').innerHTML.includes('ПАСПОРТ ОБЩЕГО ДЕЛА'));
-await nav.emit('click',{dataset:{source:'passport',section:'5.7.'}});assert(nav.get('source-content').innerHTML.includes('ВООДУШЕВЛЕНИЕ'));
+await nav.emit('click',{dataset:{source:'passport',section:'5.8.'}});assert(nav.get('source-content').innerHTML.includes('ВООДУШЕВЛЕНИЕ'));
 nav.navigate('#glossary');assert(nav.get('app').innerHTML.includes('Радость за другого'));
 const roundtrip=core.importProgress(core.exportProgress(finalState,course),course);assert.equal(roundtrip.completed.length,8);
 const forged=core.normalize({version:1,read:[0,8,99],completed:[0,8],notes:{},answers:{},checked:{},lastRoute:'stage/7/plan',lessonReturn:'stage/7/read'},course);

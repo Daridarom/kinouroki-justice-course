@@ -1,11 +1,7 @@
 {
- "slides.pptx": {
-  "bytes": 13125166,
-  "sha256": "002563a8ea35b67b7838861f0f081205bbe1337f4d96f6bc251f83c5b2a3696e"
- },
  "README.md": {
-  "bytes": 2433,
-  "sha256": "0665681d2b14ebdf4549ac9e9dccc4c86914890e9154bf06f9ceda77d1dfa45f"
+  "bytes": 2422,
+  "sha256": "80fd7efa224c213f3039a5287538fb176d6a4c6f2dd20de4ee53a2ca0abb688f"
  },
  "guide.pdf": {
   "bytes": 354198,
@@ -24,35 +20,35 @@
   "sha256": "4488293c6c6867410c5281d30ae6ff94736b5925c90bf97f44ca484bae0a1b05"
  },
  "passport.docx": {
-  "bytes": 44358,
-  "sha256": "575de26222c3368116fb56e4326ce18737ecd7712072b50216af5cb35b64095f"
+  "bytes": 46180,
+  "sha256": "bc96189851229b85dbfde71ed55fad0949eaa64e9558f775cbe351c4650e0d70"
  },
  "rationale.docx": {
-  "bytes": 44578,
-  "sha256": "a773ce7161dfeabe11301aee306959fcc0bd22e4c1e55274dd69b6e4b3e6ac2e"
+  "bytes": 46619,
+  "sha256": "ca8403c88c2969fba1bec309ac304d14001f7f49cef0970f50e1e930c7e4d739"
  },
  "workbook.docx": {
-  "bytes": 32311,
-  "sha256": "b31bf9d5502b7f3838247e731cc3946e25d28fd9466ebad352ac293d6fbbaad6"
+  "bytes": 33603,
+  "sha256": "c40fe2a61035c6b5001d7eeaf88c0cc3a375d2d59dae7ecb0444050868a290f9"
  },
  "standard-manual.docx": {
-  "bytes": 57807,
-  "sha256": "e65c781d91ea24901b96849cb068d95ec23ce003d09a21d433c68c60ab9dda0f"
+  "bytes": 58341,
+  "sha256": "ced1a03b724779acaf7a4a22d705f8090e374d23240fbfdad0e3a0a03bab0573"
  },
  "standard-manual.pdf": {
-  "bytes": 494611,
-  "sha256": "e1e9702a6a13e424854261a5a3de459db193145cd49b8ad14af8284295e2450e"
+  "bytes": 526288,
+  "sha256": "7e3c9c9f6fcb366c7372e3825a4660e87c65ca5c0f09c8d9867d7745cfa381de"
  },
  "standard-passport.pdf": {
-  "bytes": 482110,
-  "sha256": "90f16f307266d8b3eb63f83d9bbed7af4512a5ba426c775b734294855d48db1a"
+  "bytes": 522445,
+  "sha256": "7040b96597ce4156881cd1fb914d7bb68a1b3701424efbb1bb41321188373c2e"
  },
  "standard-rationale.pdf": {
-  "bytes": 393504,
-  "sha256": "ac34a205612d657d2316261b04b50e1872dad225c2ae5842d57cc6b240827dd3"
+  "bytes": 442081,
+  "sha256": "7a184354df1ed58c5fe2f7e6f89a133b27af2906de63f8a554831968d84ccfe0"
  },
  "standard-workbook.pdf": {
-  "bytes": 336156,
-  "sha256": "ee62337dda518c49b8f23cb8987320a68a8560df18307ed786890042444bea02"
+  "bytes": 351504,
+  "sha256": "abf61073830289b4bad51ddf78e8fe98bb731185f2d4e178134d55f9e4738622"
  }
 }
