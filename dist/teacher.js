@@ -140,7 +140,7 @@ window.TeacherUI = function(ctx){
   // ——— Боковое меню и старт ———
   function sidebar(route){
     const on=v=>route.view===v?'active':'';
-    return `<div class="t-sidebar"><div class="course-label">МАРШРУТНАЯ КАРТА</div><a class="t-side-link ${on('map')}" href="#map">Вся карта урока</a><div class="t-side-steps"><a class="${on('prep')}" href="#prep"><b>Подготовка</b><small>${prepCount()}</small></a><a class="${route.view==='stage'?'active':''}" href="${startHref()}"><b>Старт</b><small>${app().completed.length} из ${N}</small></a><a class="${on('outcomes')}" href="#outcomes"><b>Итоги</b><small>${outcomeFilled()?'записи есть':'после урока'}</small></a></div><a class="t-side-link ${on('student')}" href="#student">Рабочая тетрадь ученика</a><a class="t-side-link ${on('workbook')}" href="#workbook">Сводная тетрадь (эталон)</a><a class="t-side-link ${on('encyclopedia')}" href="#encyclopedia">Энциклопедия качеств</a><a class="t-side-link ${on('happiness')}" href="#happiness">Раздел «Счастье»</a></div>`;
+    return `<div class="t-sidebar"><div class="course-label">МАРШРУТНАЯ КАРТА</div><a class="t-side-link ${on('map')}" href="#map">Вся карта урока</a><div class="t-side-steps"><a class="${on('prep')}" href="#prep"><b>Подготовка</b><small>${prepCount()}</small></a><a class="${route.view==='stage'?'active':''}" href="${startHref()}"><b>Старт</b><small>${app().completed.length} из ${N}</small></a><a class="${on('outcomes')}" href="#outcomes"><b>Итоги</b><small>${outcomeFilled()?'записи есть':'после урока'}</small></a></div><a class="t-side-link ${on('student')}" href="#student">Рабочая тетрадь ученика</a><a class="t-side-link ${on('workbook')}" href="#workbook">Сводная тетрадь (эталон)</a><a class="t-side-link ${on('encyclopedia')}" href="#encyclopedia">Энциклопедия качеств</a><a class="t-side-link ${route.view==='happiness'||route.view==='socrat'?'active':''}" href="#happiness">Раздел «Счастье» · разбор установок</a></div>`;
   }
   function segmented(active){
     return `<nav class="t-segments" aria-label="Разделы маршрутной карты"><a href="#prep" class="${active==='prep'?'active':''}"><span>01</span>Подготовка</a><a href="${startHref()}" class="${active==='start'?'active':''}"><span>02</span>Старт</a><a href="#outcomes" class="${active==='outcomes'?'active':''}"><span>03</span>Итоги</a></nav>`;
@@ -272,10 +272,12 @@ window.TeacherUI = function(ctx){
   const soc=()=>window.SOCRATIC||null;
   const socItem=id=>soc()?.items.find(x=>x.id===id)||null;
   const socState=id=>{if(!t.socrat[id]){const it=socItem(id);t.socrat[id]={variant:it?.variants[0].variant||1,step:1,shown:{},notes:{},open:{},checks:{}};}return t.socrat[id];};
-  const blocksHTML=list=>{let out='',ul=[];const flush=()=>{if(ul.length){out+='<ul class="t-list">'+ul.join('')+'</ul>';ul=[];}};for(const b of list){if(b.type==='li')ul.push('<li>'+e(b.text)+'</li>');else{flush();out+='<p>'+e(b.text)+'</p>';}}flush();return out;};
+  const blocksHTML=list=>{let out='',ul=[];const flush=()=>{if(ul.length){out+='<ul class="t-list">'+ul.join('')+'</ul>';ul=[];}};for(const b of list){if(b.type==='li')ul.push('<li>'+e(b.text)+'</li>');else{flush();out+=b.type==='h'?'<h3>'+e(b.text)+'</h3>':'<p>'+e(b.text)+'</p>';}}flush();return out;};
   function socNote(id,key,label,hint){const st=socState(id);return `<div class="note-field"><label for="t-soc-${key}">${e(label)}</label>${hint?'<p>'+e(hint)+'</p>':''}<textarea id="t-soc-${key}" data-t-input data-t-soc-note="${id}|${key}" maxlength="5000" rows="3" placeholder="Ваша запись…">${e(st.notes[key]||'')}</textarea></div>`;}
+  const item6=(id,v)=>{const o=socItem(id)?.variants.find(x=>x!==v&&!x.steps[5].missing);return o?` — он есть в варианте ${o.variant}`:'';};
   function socStep(id,v,step){
     const st=socState(id),k='v'+v.variant+'-s'+step.n,b=step.blocks,review=readOnly();
+    if(step.missing)return `<p>В этом разборе шага «${e(step.title)}» нет${item6(id,v)}. Сформулируйте критерий сами: по каким вопросам вы узнаете, что установка снова взяла верх?</p>${socNote(id,k,'Мой практический критерий','')}`;
     const reveal=(label)=>st.open[k]||review?`<div class="t-soc-answer"><div class="eyebrow">РАЗБОР</div>${blocksHTML(b)}</div>`:`<button type="button" class="button primary" data-t-soc-open="${id}|${k}">${e(label)}</button>`;
     if(step.n===1)return `<p>Прочитайте установку и попробуйте сами развести понятия, которые в ней смешаны: что здесь может быть правдой, что — обобщение, что — метафора, какая есть альтернатива?</p>${socNote(id,k,'Какие понятия здесь смешаны','')}${reveal('Показать разбор понятий')}`;
     if(step.n===2||step.n===3){
@@ -288,24 +290,38 @@ window.TeacherUI = function(ctx){
     return `${socNote(id,k,'Моя созидательная формула','Запишите формулу, которая заменит разрушительную установку.')}${reveal('Показать итоговую формулу')}`;
   }
   const socDone=id=>{const st=t.socrat[id];return Boolean(st&&Object.keys(st.notes).some(k=>/-s7$/.test(k)&&st.notes[k].trim())&&Object.keys(st.open).some(k=>/-s7$/.test(k)));};
+  // Раздел «Счастье» — две вкладки: понятие счастья и разбор деструктивных установок.
+  function happinessTabs(active){
+    return `<nav class="t-segments t-happy-tabs" aria-label="Вкладки раздела «Счастье»"><a href="#happiness" class="${active==='about'?'active':''}" ${active==='about'?'aria-current="page"':''}><span>1</span>О счастье</a><a href="#socrat" class="${active==='socrat'?'active':''}" ${active==='socrat'?'aria-current="page"':''}><span>2</span>Разбор установок · ${(soc()?.items||[]).length}</a></nav>`;
+  }
+  // Библиотека: все разборы деструктивных установок педагога на одной странице.
+  function renderSocratLibrary(){
+    const S=soc(),done=S.items.filter(it=>socDone(it.id)).length;
+    return `${header('РАЗДЕЛ «СЧАСТЬЕ» · СОКРАТОВСКИЙ МЕТОД','Разбор деструктивных установок','Мысли, которые отнимают у педагога силы и смысл, и их разбор вопросами — до созидательной формулы.')}${happinessTabs('socrat')}
+      <section class="t-foundation"><div class="eyebrow">КАК УСТРОЕН РАЗБОР</div><p>Установку не опровергают готовым ответом. Её проходят вопросами, пока противоречие не станет видно самому человеку. Семь шагов:</p><ol class="t-list">${S.steps.map(x=>'<li>'+e(x)+'</li>').join('')}</ol><p class="source-caption">Тот же ход мысли дети проходят на уроке в «Операции Антидот»: разрушительная установка → созидательная установка → действие.</p></section>
+      <div class="t-soc-libbar"><label for="t-soc-filter">Найти установку</label><input id="t-soc-filter" type="search" data-t-soc-filter placeholder="Например: ценят, будущее, система" autocomplete="off"><span>${S.items.length} установок · разобрано вами: ${done}</span></div>
+      <div class="t-soc-list">${S.items.map(it=>{const st=t.socrat[it.id];return `<a class="t-map-stage" data-t-soc-row="${e(it.attitude.toLocaleLowerCase('ru'))}" href="#socrat/${it.id}">${check(socDone(it.id))}<span><strong>${e(it.number)}. ${e(it.attitude)}</strong><small>${it.variants.length} варианта разбора${st?' · вы на шаге '+st.step+' из 7':''}</small></span></a>`;}).join('')}</div>
+      <p class="source-caption">${e(S.source)}. Тексты разборов приведены дословно.</p>`;
+  }
   function renderSocrat(route){
     const S=soc();if(!S)return header('СОКРАТОВСКИЙ МЕТОД','Сократовский метод','Разборы не загружены.');
-    const id=socItem(route.sub)?route.sub:S.items[0].id,item=socItem(id),st=socState(id),v=item.variants.find(x=>x.variant===st.variant)||item.variants[0],step=v.steps[st.step-1];
-    const variants=item.variants.length>1?`<nav class="t-chips" aria-label="Вариант разбора">${item.variants.map(x=>`<button type="button" class="${x===v?'active':''}" data-t-soc-variant="${id}|${x.variant}">Вариант ${x.variant}${x.variant===1?' · базовый':' · с уровнями'}</button>`).join('')}</nav>`:'';
+    if(!socItem(route.sub))return renderSocratLibrary();
+    const id=route.sub,nx=S.items[S.items.findIndex(x=>x.id===route.sub)+1],item=socItem(id),st=socState(id),v=item.variants.find(x=>x.variant===st.variant)||item.variants[0],step=v.steps[st.step-1];
+    const variants=item.variants.length>1?`<nav class="t-chips" aria-label="Вариант разбора">${item.variants.map(x=>`<button type="button" class="${x===v?'active':''}" data-t-soc-variant="${id}|${x.variant}">Вариант ${x.variant}${x.label?' · '+e(x.label):''}</button>`).join('')}</nav>`:'';
     const tabs=`<ol class="t-soc-steps">${v.steps.map(x=>`<li><button type="button" class="${x===step?'active':''}" data-t-soc-step="${id}|${x.n}"><b>${x.n}</b><span>${e(S.steps[x.n-1])}</span></button></li>`).join('')}</ol>`;
-    return `${header('СОКРАТОВСКИЙ МЕТОД · РАЗДЕЛ «СЧАСТЬЕ»','Разрушить установку','Семь шагов: от смешанных понятий — к противоречию — к созидательной формуле.',['#happiness','Раздел «Счастье»'])}
+    return `${header('РАЗДЕЛ «СЧАСТЬЕ» · СОКРАТОВСКИЙ МЕТОД','Разрушить установку','Семь шагов: от смешанных понятий — к противоречию — к созидательной формуле.',['#socrat','Все установки'])}${happinessTabs('socrat')}
       <section class="t-soc-attitude"><div class="eyebrow">ДЕСТРУКТИВНАЯ УСТАНОВКА ${e(item.number)}</div><p>${e(item.attitude)}</p></section>${variants}${v.intro.length>1&&v.variant!==1?'<div class="t-soc-intro">'+v.intro.map(x=>'<p>'+e(x)+'</p>').join('')+'</div>':''}${tabs}
       <section class="t-prep-step t-soc-step"><div class="t-prep-head"><span class="eyebrow">ШАГ ${step.n} ИЗ 7</span><h2>${e(step.title)}</h2></div>${socStep(id,v,step)}</section>
-      <nav class="step-navigation">${step.n>1?`<button type="button" class="button ghost" data-t-soc-step="${id}|${step.n-1}">← Шаг ${step.n-1}</button>`:'<a class="button ghost" href="#happiness">← К разделу «Счастье»</a>'}${step.n<7?`<button type="button" class="button primary" data-t-soc-step="${id}|${step.n+1}">Шаг ${step.n+1}: ${e(S.steps[step.n])} →</button>`:'<a class="button primary" href="#happiness">Готово · к разделу «Счастье» →</a>'}</nav>
+      <nav class="step-navigation">${step.n>1?`<button type="button" class="button ghost" data-t-soc-step="${id}|${step.n-1}">← Шаг ${step.n-1}</button>`:'<a class="button ghost" href="#socrat">← Все установки</a>'}${step.n<7?`<button type="button" class="button primary" data-t-soc-step="${id}|${step.n+1}">Шаг ${step.n+1}: ${e(S.steps[step.n])} →</button>`:(nx?`<a class="button primary" href="#socrat/${nx.id}">Следующая установка ${nx.number} →</a>`:'<a class="button primary" href="#socrat">Готово · ко всем установкам →</a>')}</nav>
       <p class="source-caption">${e(S.source)}. Тексты разбора приведены дословно.</p>`;
   }
 
   // ——— Счастье ———
   function renderHappiness(){
-    if(enc()?.articles?.schastye)return `${header('ДОПОЛНИТЕЛЬНЫЙ РАЗДЕЛ','Счастье','Понятие счастья по энциклопедии и работа с заблуждениями о нём.')}${encBadge()}
+    if(enc()?.articles?.schastye)return `${header('ДОПОЛНИТЕЛЬНЫЙ РАЗДЕЛ','Счастье','Понятие счастья по энциклопедии и работа с заблуждениями о нём.')}${happinessTabs('about')}${encBadge()}
       <section class="t-prep-step"><h2>Что такое счастье</h2>${encText('schastye','1.3.')}${encRef('schastye','1.3.')}<h3>Чем счастье отличается</h3>${encSec('schastye','2.').filter(x=>/^от |^Счастье/.test(x)).map(t=>'<p>'+e(t)+'</p>').join('')}${encRef('schastye','2.4.')}<h3>Формула</h3>${encSec('schastye','4.').slice(1,2).map(t=>'<p><strong>'+e(t)+'</strong></p>').join('')}${encRef('schastye','4.')}</section>
       <section class="t-prep-step"><h2>Заблуждения и созидательные установки</h2><div class="t-two"><div><h3>Разрушительные установки</h3><ul class="t-list">${encSec('schastye','5.3.').filter(x=>x.startsWith('«')).map(t=>'<li>'+e(t)+'</li>').join('')}</ul></div><div><h3>Конструктивные установки</h3><ul class="t-list">${encSec('schastye','5.9.').filter(x=>x.startsWith('«')).map(t=>'<li>'+e(t)+'</li>').join('')}</ul></div></div>${encRef('schastye','5.3.')}<h3>Антипод: ${e(encSec('schastye','5.4.')[0]||'')}</h3>${encText('schastye','5.5.')}${encRef('schastye','5.5.')}<p><a class="text-link" href="#encyclopedia/schastye">Статья «Счастье» целиком →</a></p></section>
-      <section class="t-prep-step"><h2>Сократовский метод</h2><p>Заблуждение не опровергают готовым ответом: его разбирают вопросами, пока человек сам не увидит противоречие и не сформулирует созидательную установку. Разбор идёт в семь шагов:</p><ol class="t-list">${(soc()?.steps||[]).map(x=>'<li>'+e(x)+'</li>').join('')}</ol><h3>Разборы из библиотеки проекта</h3><div class="t-soc-list">${(soc()?.items||[]).map(it=>`<a class="t-map-stage" href="#socrat/${it.id}">${check(socDone(it.id))}<span><strong>Установка ${e(it.number)}: ${e(it.attitude)}</strong><small>${it.variants.length>1?it.variants.length+' варианта разбора · ':''}шаг ${socState(it.id).step} из 7</small></span></a>`).join('')}</div><p class="source-caption">Библиотека пополняется: новые разборы добавляются тем же способом.</p></section><div class="actions"><a class="button ghost" href="#map">← Маршрутная карта</a></div>`;
+      <section class="t-prep-step"><h2>Сократовский метод</h2><p>Заблуждение не опровергают готовым ответом: его разбирают вопросами, пока человек сам не увидит противоречие и не сформулирует созидательную установку. Разбор идёт в семь шагов:</p><ol class="t-list">${(soc()?.steps||[]).map(x=>'<li>'+e(x)+'</li>').join('')}</ol><a class="t-map-stage" href="#socrat"><span class="t-dot" aria-hidden="true">→</span><span><strong>Библиотека: ${(soc()?.items||[]).length} деструктивных установок педагога</strong><small>разбор каждой за семь шагов · вопросы, противоречие, созидательная формула</small></span></a></section><div class="actions"><a class="button ghost" href="#map">← Маршрутная карта</a></div>`;
     return `${header('ДОПОЛНИТЕЛЬНЫЙ РАЗДЕЛ','Счастье','Раздел готовится вместе с командой проекта.')}<section class="t-prep-step pending"><div class="t-prep-head"><span class="t-dot wait" aria-hidden="true">…</span><h2>Что здесь будет</h2>${pendingBadge}</div><ul class="t-list"><li>Понятие счастья по «Энциклопедии прикладной этики».</li><li>Сократовский метод: разрушение заблуждений и формирование созидательных установок — по формулировке энциклопедии.</li><li>Интерактивные задания для педагога и учеников.</li></ul><p class="source-caption">Содержание появится после получения исходного текста энциклопедии. До этого раздел не заполняется догадками.</p></section><div class="actions"><a class="button ghost" href="#map">← Маршрутная карта</a></div>`;
   }
 
@@ -326,8 +342,8 @@ window.TeacherUI = function(ctx){
     if(route.view==='student')return {text:'Это тетрадь для детей. Выберите этап и нажмите «Печать» — каждый лист выйдет отдельно.',href:null};
     if(route.view==='workbook')return {text:'Проходите эти задания сами, как ученик. Отмечать выполненное удобнее на этапах «Старта».',href:'#stage/0/read',label:'К этапу 1'};
     if(route.view==='outcomes')return {text:'Запишите по каждому этапу: что прошло, что заметили у детей, что изменить.',href:null};
-    if(route.view==='happiness')return {text:'Сравните заблуждения о счастье с созидательными установками. Сократовский метод добавим, когда придёт текст.',href:'#encyclopedia/schastye',label:'Статья «Счастье»'};
-    if(route.view==='socrat')return {text:'Не торопитесь к разбору: сначала ответьте сами, потом сравните. Так метод работает и с детьми.',href:null};
+    if(route.view==='happiness')return {text:'Сравните заблуждения о счастье с созидательными установками. Во второй вкладке — разбор 21 установки педагога.',href:'#socrat',label:'Разбор установок'};
+    if(route.view==='socrat')return socItem(route.sub)?{text:'Не торопитесь к разбору: сначала ответьте сами, потом сравните. Так метод работает и с детьми.',href:'#socrat',label:'Все установки'}:{text:'Выберите мысль, которая звучит знакомо, — с неё и начните. Остальные можно проходить в любом порядке.',href:null};
     if(route.view==='encyclopedia')return {text:'Энциклопедия — рабочая редакция. Опирайтесь на определение, антипод и установки; пустые места ещё дорабатываются.',href:'#prep/exam',label:'К экзамену'};
     if(route.view==='film')return s.preparation.film?{text:'Фильм отмечен как просмотренный. Эпизоды справа помогают на этапах «Чувство» и дальше.',href:'#prep',label:'К подготовке'}:{text:'Посмотрите фильм целиком, включая титры, и отметьте это галочкой под плеером.',href:null};
     if(route.view==='materials')return {text:'Здесь три документа комплекта: паспорт, обоснование и тетрадь. Отметьте знакомство с ними в подготовке.',href:'#prep',label:'К подготовке'};
@@ -347,7 +363,7 @@ window.TeacherUI = function(ctx){
       if(route.tab==='plan')return guides.lantern;
       return [1].includes(route.stage)?guides.clapper:[0,2,3,4].includes(route.stage)?guides.scales:guides.lantern;
     }
-    if(route.view==='encyclopedia'||route.view==='socrat')return guides.scales;
+    if(['encyclopedia','socrat','happiness'].includes(route.view))return guides.scales;
     if(['student','workbook','outcomes','happiness'].includes(route.view))return guides.lantern;
     return guides.clapper;
   }
@@ -384,6 +400,7 @@ window.TeacherUI = function(ctx){
   }
   function input(el){
     const d=el.dataset||{};
+    if(d.tSocFilter!==undefined){const q=String(el.value).trim().toLocaleLowerCase('ru');document.querySelectorAll?.('[data-t-soc-row]').forEach(r=>{r.hidden=Boolean(q)&&!r.dataset.tSocRow.includes(q);});return true;}
     if(d.tSocNote!==undefined){if(readOnly())return true;const [id,k]=String(d.tSocNote).split('|');if(!socItem(id)||!/^v\d+-s[1-7]$/.test(k||''))return true;socState(id).notes[k]=String(el.value).slice(0,5000);save();return true;}
     if(d.tOutcome===undefined)return false;
     if(readOnly()||!outcomeKeys.has(d.tOutcome))return true;
