@@ -6,7 +6,7 @@ import {makeHarness} from './harness.mjs';
 const base=new URL('../',import.meta.url);
 const read=p=>fs.readFileSync(new URL(p,base),'utf8');
 const names=['Введение','Просмотр фильма','Чувство','Мысль','Осознание','Воображение','Социальная практика','Воодушевление'];
-const version='20260929-v92';
+const version='20260929-v93';
 const gitBlob=p=>{const b=fs.readFileSync(new URL(p,base));return crypto.createHash('sha1').update(`blob ${b.length}\0`).update(b).digest('hex');};
 // Approved content at 5d79b50: changes belong to the learning adapter, not the source model.
 assert.equal(gitBlob('dist/course.js'),'fe933efe5c9e3d2f7adc6d4ff065bf6a083a1cff','Justice source content stays untouched');
@@ -92,7 +92,7 @@ for(const cfg of [
   const html=read(dir+'index.html');
   assert.match(html,/<meta name="description" content="[^"]*восемь этапов/);
   const assets=[...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)\?[^"]*)"/g)].map(m=>m[1]);
-  assert.equal(assets.length,dir.includes('mandarin')?5:8,'Justice adds the teacher route, encyclopedia and Socratic modules; Mandarin keeps five assets');
+  assert.equal(assets.length,9,'Both courses load the teacher route, encyclopedia and Socratic modules');
   assert(assets.every(url=>url.endsWith('?v='+version)),'All asset versions match');
 }
 assert(!read('dist/app.js').includes('20260928-canon'));

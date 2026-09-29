@@ -218,3 +218,9 @@ dialog{border:1px solid var(--line);border-radius:12px;padding:0;width:min(960px
 .t-soc-libbar input{min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;color:var(--ink)}
 .t-soc-libbar span{font-size:13px;color:var(--muted)}
 .t-happy-tabs{grid-template-columns:repeat(2,minmax(0,1fr));margin:14px 0 20px}
+
+.t-how{margin:0 0 12px;padding:10px 12px;border-radius:8px;background:var(--bg);font-size:14px}
+.t-prep-step.done .t-how{background:var(--green-light)}
+.t-step-nav{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.t-step-nav .button{margin:0}
+@media(max-width:800px){.t-step-nav .button{width:100%}}
