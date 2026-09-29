@@ -6,7 +6,6 @@
 // пояснения выводятся из паспорта и обоснования без пересказа.
 window.TEACHER = {
   storageKey: 'kinouroki.justice.teacher.v1',
-  guideName: 'Проводник',
   // Страницы исходной рабочей тетради, которые ученик выполняет на каждом этапе маршрута из восьми этапов.
   studentPages: [
     [0,1,2,3,4,5,6,7,8,9,10,12,13,14],
@@ -260,11 +259,26 @@ window.TeacherUI = function(ctx){
     if(route.view==='happiness')return {text:'Этот раздел наполнится, когда появится текст энциклопедии.',href:'#map',label:'К карте'};
     return {text:'Не теряйтесь: вся последовательность — на маршрутной карте.',href:'#map',label:'Маршрутная карта'};
   }
-  const face='<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#efb466"/><path d="M17 9h14l-2 5H19z" fill="#122e46"/><rect x="14" y="14" width="20" height="22" rx="7" fill="#fff4dd"/><circle cx="20" cy="24" r="2" fill="#122e46"/><circle cx="28" cy="24" r="2" fill="#122e46"/><path d="M20 29c2 2 6 2 8 0" stroke="#122e46" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M19 36h10v3H19z" fill="#122e46"/></svg>';
+  // Три сопровождающих, каждый в своём моменте маршрута:
+  // Хлопушка — ведёт по маршруту и фильму; Весовщик — смысл качества, экзамен, этапы с Весами; Фонарик — класс, тетради, итоги, праздник.
+  const guides={
+    clapper:{name:'Хлопушка',role:'ведёт по маршруту',svg:'<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" fill="#122e46"/><g transform="rotate(-12 40 34)"><rect x="22" y="26" width="76" height="14" rx="3" fill="#fff"/><path d="M34 26l-6 14M52 26l-6 14M70 26l-6 14M88 26l-6 14" stroke="#122e46" stroke-width="5"/></g><rect x="22" y="44" width="76" height="46" rx="8" fill="#fff"/><circle cx="46" cy="64" r="5" fill="#122e46"/><circle cx="74" cy="64" r="5" fill="#122e46"/><path d="M48 76c7 6 17 6 24 0" stroke="#122e46" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="98" cy="88" r="15" fill="#efb466"/><path d="M89 86h18M98 82v12M91 86l-3 6h6zM105 86l-3 6h6z" stroke="#122e46" stroke-width="2" fill="none"/></svg>'},
+    scales:{name:'Весовщик',role:'хранит смысл качества',svg:'<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" fill="#eaf0fb"/><path d="M60 28v62" stroke="#122e46" stroke-width="5"/><path d="M24 44h72" stroke="#122e46" stroke-width="5" stroke-linecap="round"/><path d="M24 44l-10 24h20zM96 44l-10 24h20z" fill="none" stroke="#122e46" stroke-width="3"/><path d="M12 68a12 6 0 0 0 24 0zM84 68a12 6 0 0 0 24 0z" fill="#efb466"/><circle cx="60" cy="30" r="15" fill="#fff4dd" stroke="#122e46" stroke-width="3"/><circle cx="55" cy="29" r="2.5" fill="#122e46"/><circle cx="65" cy="29" r="2.5" fill="#122e46"/><path d="M55 35c3 3 7 3 10 0" stroke="#122e46" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M42 92h36" stroke="#122e46" stroke-width="6" stroke-linecap="round"/></svg>'},
+    lantern:{name:'Фонарик',role:'помогает в классе',svg:'<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" fill="#efb466"/><path d="M42 22h36l-5 12H47z" fill="#122e46"/><rect x="36" y="34" width="48" height="54" rx="16" fill="#fff4dd"/><circle cx="50" cy="58" r="5" fill="#122e46"/><circle cx="70" cy="58" r="5" fill="#122e46"/><path d="M49 71c6 6 16 6 22 0" stroke="#122e46" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M46 88h28v8H46z" fill="#122e46"/><path d="M60 10v12" stroke="#122e46" stroke-width="4"/></svg>'}
+  };
+  function guideFor(route){
+    if(route.view==='prep')return ['intro','exam'].includes(route.sub)?guides.scales:guides.clapper;
+    if(route.view==='stage'){
+      if(route.tab==='plan')return guides.lantern;
+      return [1].includes(route.stage)?guides.clapper:[0,2,3,4].includes(route.stage)?guides.scales:guides.lantern;
+    }
+    if(['student','workbook','outcomes','happiness'].includes(route.view))return guides.lantern;
+    return guides.clapper;
+  }
   function guide(route){
-    const g=guideText(route);
-    if(t.guideHidden)return `<button type="button" class="t-guide-min t-noprint" data-t-guide="show" aria-label="Показать подсказки: ${e(T.guideName)}">${face}</button>`;
-    return `<aside class="t-guide t-noprint" aria-label="Подсказка: ${e(T.guideName)}"><div class="t-guide-face">${face}</div><div class="t-guide-body"><strong>${e(T.guideName)}</strong><p>${e(g.text)}</p><div class="t-guide-actions">${g.href?`<a href="${e(g.href)}">${e(g.label)} →</a>`:''}${route.view!=='map'?'<a href="#map">Карта</a>':''}<button type="button" data-t-guide="hide">Свернуть</button></div></div></aside>`;
+    const g=guideText(route),who=guideFor(route);
+    if(t.guideHidden)return `<button type="button" class="t-guide-min t-noprint" data-t-guide="show" aria-label="Показать подсказки: ${e(who.name)}">${who.svg}</button>`;
+    return `<aside class="t-guide t-noprint" aria-label="Подсказка: ${e(who.name)}"><div class="t-guide-face">${who.svg}</div><div class="t-guide-body"><strong>${e(who.name)}</strong> <small>${e(who.role)}</small><p>${e(g.text)}</p><div class="t-guide-actions">${g.href?`<a href="${e(g.href)}">${e(g.label)} →</a>`:''}${route.view!=='map'?'<a href="#map">Карта</a>':''}<button type="button" data-t-guide="hide">Свернуть</button></div></div></aside>`;
   }
 
   // ——— События (вызываются из обработчиков приложения) ———

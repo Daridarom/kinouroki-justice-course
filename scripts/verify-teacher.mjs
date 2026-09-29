@@ -31,6 +31,7 @@ assert(html.includes('Весь киноурок на одной карте'),'Sa
 assert(html.includes('МАРШРУТНАЯ КАРТА'),'Sidebar shows the route map block');
 for(const label of ['Подготовка','Старт','Итоги'])assert(html.includes(label));
 assert(html.includes('class="t-guide'),'Guide character is visible');
+assert(html.includes('<strong>Хлопушка</strong>'),'Clapper leads the route map');
 h.navigate('#start');html=h.get('app').innerHTML;
 assert(html.includes('Подготовка → Старт → Итоги'));assert(html.includes('Восемь этапов'),'Existing start page is kept');
 
@@ -55,6 +56,7 @@ const teacherState=JSON.parse(h.local.get('kinouroki.justice.teacher.v1'));
 assert.equal(Object.keys(teacherState.exam.checked).length,T.exam.length);
 
 h.navigate('#stage/2/read');html=h.get('app').innerHTML;
+assert(html.includes('<strong>Весовщик</strong>'),'Scales keeper accompanies meaning stages');
 assert(html.includes('ПРОЙДИТЕ КАК УЧЕНИК')&&html.includes('ПОЯСНЕНИЯ ПЕДАГОГУ'));
 assert(html.includes('ЗАПРЕЩЁН логический анализ мыслей'),'Scenario hint comes from passport 5.2');
 assert(html.includes('Ценность прожита'),'Expected effect comes from rationale 2.2.8');
@@ -73,6 +75,7 @@ assert(!html.includes('СТРАНИЦА 12. ДОМАШНЕЕ ЗАДАНИЕ'),'H
 assert(html.includes('СТРАНИЦА 5. ВЕСЫ СОЛОМОНА')&&html.includes('СТРАНИЦА 60. ПАСПОРТ ПРОЕКТА'));
 h.navigate('#student/intro');html=h.get('app').innerHTML;assert(!html.includes('СТРАНИЦА 3. ТЕРМОМЕТР ЧУВСТВ'));
 h.navigate('#outcomes');
+assert(h.get('app').innerHTML.includes('<strong>Фонарик</strong>'),'Lantern accompanies outcomes');
 await h.emit('input',{dataset:{tInput:'',tOutcome:'s0-kids'},value:'<img src=x onerror=1> Дети спорили о весах'});
 await h.emit('input',{dataset:{tInput:'',tOutcome:'forged'},value:'x'});
 h.navigate('#outcomes');html=h.get('app').innerHTML;
