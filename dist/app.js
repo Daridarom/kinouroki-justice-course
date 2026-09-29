@@ -199,6 +199,7 @@
   });
   app.addEventListener('click',async event=>{
     if(event.target.closest('a[data-route-home]')){event.preventDefault();const target=isReview()?'review':'start';pagePositions.delete(state.mode+':'+target);go(target);document.getElementById('main').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});return;}
+    const same=event.target.closest('a[href^="#"]');if(same&&same.getAttribute('href')===location.hash){event.preventDefault();const id=location.hash.slice(1).split('/')[1];const el=id&&document.getElementById(id);if(el)el.scrollIntoView({block:'start',behavior:'smooth'});else window.scrollTo({top:0,behavior:'smooth'});return;}
     const caseLink=event.target.closest('a[data-case-link]');if(caseLink){event.preventDefault();focusTarget='teaching-case';go('stage/'+caseLink.dataset.caseLink+'/practice');return;}
     const el=event.target.closest('button');if(!el)return;
     if(T&&T.click(el))return;

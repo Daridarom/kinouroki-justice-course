@@ -58,6 +58,8 @@ window.TeacherUI = function(ctx){
       {n:'П6',title:'Рабочая тетрадь ученика — распечатать',done:t.prep.print,href:'#prep/print-step'}
     ];
   };
+  // Что сделать, чтобы шаг засчитался. Показывается в карточке шага и в подсказке помощника.
+  const prepHow={'П1':'посмотрите фильм и поставьте галочку «Я посмотрел(а) полный фильм»','П2':'откройте материалы и поставьте галочку «Я ознакомился(ась)…»','П3':'прочитайте введение и поставьте галочку «Я изучил(а) введение в качество»','П4':'ответьте верно на все вопросы экзамена — после каждого ответа нажмите «Проверить ответ»','П5':'пройдите задания тетради как ученик и поставьте галочку в конце карточки','П6':'распечатайте тетрадь ученика и поставьте галочку «Тетрадь ученика распечатана к уроку»'};
   const prepReady=()=>prepSteps().filter(x=>!x.pending).every(x=>x.done);
   const prepCount=()=>{const list=prepSteps().filter(x=>!x.pending);return list.filter(x=>x.done).length+' из '+list.length;};
   const stagePages=i=>T.studentPages[i]||[];
@@ -121,7 +123,11 @@ window.TeacherUI = function(ctx){
   }
   function renderPrep(route){
     const s=app(),steps=prepSteps(),Q=T.quality;
-    const card=(x,body)=>`<section class="t-prep-step ${x.done?'done':''} ${x.pending?'pending':''}" id="${({'П1':'step-film','П2':'step-kit','П3':'intro','П4':'exam','П5':'workbook-step','П6':'print-step'})[x.n]}"><div class="t-prep-head">${x.pending?'<span class="t-dot wait" aria-hidden="true">…</span>':check(x.done)}<span class="eyebrow">${x.n}</span><h2>${e(x.title)}</h2>${x.pending?pendingBadge:''}</div>${body}</section>`;
+    const ids={'П1':'step-film','П2':'step-kit','П3':'intro','П4':'exam','П5':'workbook-step','П6':'print-step'};
+    const card=(x,body)=>{const k=steps.indexOf(x),nx=steps[k+1],pv=steps[k-1];
+      const how=`<p class="t-how">${x.done?'<b>✓ Готово.</b> Шаг засчитан.':'<b>Что сделать:</b> '+e(prepHow[x.n]||'')+'.'}</p>`;
+      const foot=`<nav class="t-step-nav" aria-label="Переход между шагами подготовки">${pv?`<a class="text-link" href="#prep/${ids[pv.n]}">← ${e(pv.n)}</a>`:'<span></span>'}${nx?`<a class="button ${x.done?'primary':'ghost'}" href="#prep/${ids[nx.n]}">${x.done?'Дальше':'Пропустить пока'} · ${e(nx.n)} ${e(nx.title)} →</a>`:`<a class="button ${prepReady()?'primary':'ghost'}" href="${startHref()}">${prepReady()?'Подготовка готова · Старт →':'Перейти к старту →'}</a>`}</nav>`;
+      return `<section class="t-prep-step ${x.done?'done':''}" id="${ids[x.n]}"><div class="t-prep-head">${check(x.done)}<span class="eyebrow">${x.n}</span><h2>${e(x.title)}</h2></div>${how}${body}${foot}</section>`;};
     const box=(key,label,checked)=>`<label class="read-check"><input type="checkbox" ${key.startsWith('app:')?'data-preparation="'+key.slice(4)+'"':'data-t-input data-t-prep="'+key+'"'} ${checked?'checked':''}><span>${label}</span></label>`;
     return `${header('РАЗДЕЛ 01 · ДО УРОКА','Подготовка','Вы проходите подготовку один. Отметки сохраняются в этом браузере.')}${segmented('prep')}
       <div class="t-prep-progress"><b>${prepCount()}</b><span>шагов подготовки выполнено</span>${prepReady()?'<a class="button primary" href="#stage/0/read">Готово — перейти к старту →</a>':''}</div>
@@ -273,7 +279,7 @@ window.TeacherUI = function(ctx){
   function guideText(route){
     const s=app();
     if(route.view==='prep'||route.view==='map'||route.view==='start'){
-      if(!prepReady()){const next=prepSteps().find(x=>!x.pending&&!x.done);return {text:'Начнём с подготовки. Следующий шаг — «'+next.title+'».',href:next.href,label:'К шагу '+next.n};}
+      if(!prepReady()){const next=prepSteps().find(x=>!x.pending&&!x.done),here=route.view==='prep'&&next.href==='#prep/'+route.sub;return {text:'Шаг '+next.n+' «'+next.title+'»: '+prepHow[next.n]+'. Когда шаг засчитается, я поведу дальше.',href:here?null:next.href,label:'Открыть шаг '+next.n};}
       const i=C.stages.findIndex((_,n)=>!s.completed.includes(n));
       return i<0?{text:'Все этапы пройдены. Осталось зафиксировать итоги урока.',href:'#outcomes',label:'К итогам'}:{text:'Подготовка готова. Жмите «Старт» — этап '+(i+1)+' «'+C.stages[i].name+'».',href:'#stage/'+i+'/read',label:'Старт'};
     }
