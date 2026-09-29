@@ -206,3 +206,9 @@ dialog{border:1px solid var(--line);border-radius:12px;padding:0;width:min(960px
 .t-side-steps{grid-template-columns:1fr;gap:4px}
 .t-side-steps a{flex-direction:row;justify-content:space-between;align-items:baseline;padding:8px 12px}
 .t-side-steps a b{overflow-wrap:normal}
+
+.t-foundation{margin:0 0 18px;padding:20px 24px;border-radius:var(--radius);border:1px solid #c9d8f3;background:var(--blue-light);scroll-margin-top:20px}
+.t-foundation h2{margin:4px 0 6px;font-size:21px}
+.t-foundation .eyebrow{color:var(--blue)}
+.t-map-foundation{background:var(--blue-light);border-radius:6px;padding-left:8px}
+@media(max-width:800px){.t-foundation{padding:16px}}
