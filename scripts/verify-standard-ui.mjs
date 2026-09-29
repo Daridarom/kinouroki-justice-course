@@ -92,7 +92,7 @@ for(const cfg of [
   const html=read(dir+'index.html');
   assert.match(html,/<meta name="description" content="[^"]*восемь этапов/);
   const assets=[...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)\?[^"]*)"/g)].map(m=>m[1]);
-  assert.equal(assets.length,dir.includes('mandarin')?5:6,'Justice adds the teacher route module; Mandarin keeps five assets');
+  assert.equal(assets.length,dir.includes('mandarin')?5:7,'Justice adds the teacher route and encyclopedia modules; Mandarin keeps five assets');
   assert(assets.every(url=>url.endsWith('?v='+version)),'All asset versions match');
 }
 assert(!read('dist/app.js').includes('20260928-canon'));

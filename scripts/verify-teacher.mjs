@@ -6,17 +6,24 @@ import {makeHarness} from './harness.mjs';
 const base=new URL('../',import.meta.url);
 const read=p=>fs.readFileSync(new URL(p,base),'utf8');
 const source=JSON.parse(read('dist/sources.json'));
-const files=['course.js','learning.js','core.js','teacher.js','app.js'].map(f=>[f,new URL('dist/'+f,base)]);
+const files=['course.js','learning.js','core.js','encyclopedia.js','teacher.js','app.js'].map(f=>[f,new URL('dist/'+f,base)]);
 const flat=blocks=>blocks.map(b=>b.type==='p'?b.text:b.rows.flat().join('\n')).join('\n');
 const simplify=s=>s.toLocaleLowerCase('ru').replace(/\s+/g,' ').trim();
 const allText=simplify(Object.values(source.documents).map(d=>flat(d.blocks)).join('\n'));
 
-const ctx={window:{}};vm.runInNewContext(read('dist/teacher.js'),ctx);
+const ctx={window:{}};vm.runInNewContext(read('dist/encyclopedia.js'),ctx);vm.runInNewContext(read('dist/teacher.js'),ctx);
+const E=JSON.parse(JSON.stringify(ctx.window.ENCYCLOPEDIA));
+const encText=simplify(Object.values(E.articles).flatMap(a=>a.sections.flatMap(x=>[x.title,...x.text])).join('\n'));
+assert.deepEqual(Object.keys(E.articles),['spravedlivost','schastye','soradovanie']);
+assert(!Object.values(E.articles).some(a=>a.sections.some(x=>x.title.startsWith('1.2.'))),'Source cards are not published');
 const T=JSON.parse(JSON.stringify(ctx.window.TEACHER));
 for(const text of [T.quality.definition,T.quality.antipode,...T.quality.concepts])assert(allText.includes(simplify(text)),'Quality text must be verbatim: '+text);
 for(const item of T.exam.find(q=>q.id==='exam-path').items)assert(allText.includes(simplify(item)),'Path step must be verbatim: '+item);
 assert.equal(T.studentPages.length,8,'Student pages for each of eight stages');
 for(const p of [...T.studentPages.flat(),...T.workbookParts.flatMap(x=>x.pages),...T.classWorkbook.flatMap(x=>x.items.flatMap(i=>i[2]))])assert(source.pages[String(p)]?.length,'Workbook page exists: '+p);
+for(const id of ['exam-enc-kindness','exam-enc-indignation','exam-enc-attitude','exam-enc-formula']){
+  const q=T.exam.find(x=>x.id===id);assert(encText.includes(simplify(q.options[q.answer]).replace(/^«|»$/g,'')),'Encyclopedia answer is verbatim: '+id);
+}
 for(const q of T.exam){
   if(q.type==='single')assert(q.answer>=0&&q.answer<q.options.length);
   else{assert.deepEqual([...q.initial].sort(),q.answer.map((_,i)=>i));assert.notDeepEqual(q.initial,q.answer);}
@@ -36,7 +43,7 @@ h.navigate('#start');html=h.get('app').innerHTML;
 assert(html.includes('Подготовка → Старт → Итоги'));assert(html.includes('Восемь этапов'),'Existing start page is kept');
 
 h.navigate('#prep');html=h.get('app').innerHTML;
-assert(html.includes('Энциклопедии прикладной этики')&&html.includes('Ожидает материала'),'Pending sources are shown honestly');
+assert(html.includes('Энциклопедия прикладной этики')&&html.includes('Рабочая редакция')&&html.includes('Ожидает материала'),'Pending sources are shown honestly');
 assert(html.includes('2 из 6'),'Film and kit checkboxes are shared with the course');
 for(const q of T.exam){
   if(q.type==='single')await h.emit('change',{dataset:{tInput:'',tAnswer:q.id},value:String(q.answer)});
@@ -49,12 +56,17 @@ for(const q of T.exam){
 await h.emit('change',{dataset:{tInput:'',tPrep:'intro'},checked:true});
 await h.emit('change',{dataset:{tInput:'',tPrep:'print'},checked:true});
 html=h.get('app').innerHTML;
-assert(html.includes('Верных ответов: <b>7 из 7</b>'),'Exam passes with source answers');
+assert(html.includes('Верных ответов: <b>'+T.exam.length+' из '+T.exam.length+'</b>'),'Exam passes with source answers');
 assert(html.includes('5 из 6'),'Workbook step still open');
 await h.emit('change',{dataset:{tInput:'',tPrep:'workbook'},checked:true});assert(h.get('app').innerHTML.includes('6 из 6'),'All available preparation steps done');
 const teacherState=JSON.parse(h.local.get('kinouroki.justice.teacher.v1'));
 assert.equal(Object.keys(teacherState.exam.checked).length,T.exam.length);
 
+h.navigate('#prep/intro');html=h.get('app').innerHTML;
+assert(html.includes('Произвол (или пристрастность)')&&html.includes('закон не противоречит совести'),'Preparation shows encyclopedia excerpts');
+h.navigate('#encyclopedia');html=h.get('app').innerHTML;assert(html.includes('5.9. Конструктивные установки')&&html.includes('<strong>Весовщик</strong>'));
+h.navigate('#encyclopedia/schastye');assert(h.get('app').innerHTML.includes('Любовь [ядро], Идея [ядро]'));
+h.navigate('#happiness');html=h.get('app').innerHTML;assert(html.includes('«Богатство и статус сделают меня счастливым».')&&html.includes('Сократовский метод')&&html.includes('Ожидает материала'));
 h.navigate('#stage/2/read');html=h.get('app').innerHTML;
 assert(html.includes('<strong>Весовщик</strong>'),'Scales keeper accompanies meaning stages');
 assert(html.includes('ПРОЙДИТЕ КАК УЧЕНИК')&&html.includes('ПОЯСНЕНИЯ ПЕДАГОГУ'));

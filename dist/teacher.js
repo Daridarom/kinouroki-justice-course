@@ -51,6 +51,10 @@ window.TEACHER = {
     {id:'exam-scales',type:'single',title:'Что лежит на чашах «Весов в сердце»?',options:['Левая чаша — оковы-антиподы, правая чаша — гири-качества','Левая чаша — хорошие поступки, правая — плохие','Левая чаша — мысли, правая — чувства'],answer:0,explanation:'Устройство Весов по паспорту: левая чаша — оковы, правая — гири-качества, между ними стрелка. Этот образ — общий язык всего киноурока.',ref:'Паспорт пособия · раздел 5.1; тетрадь · страница 2'},
     {id:'exam-principles',type:'single',title:'Какой пункт НЕ входит в три принципа Эталонных Весов?',options:['Будущее важнее настоящего','Общественные интересы выше личных','Большинство всегда право','Личные качества ценнее материальных благ'],answer:2,explanation:'Три принципа Эталонных Весов: будущее важнее настоящего; общественные интересы выше личных; личные качества ценнее материальных благ. «Большинство всегда право» среди них нет.',ref:'Паспорт пособия · раздел 5.3'},
     {id:'exam-point-a',type:'single',title:'Что такое «Точка А» по методическому обоснованию?',options:['Оценка поведения ребёнка, которую ставит педагог','Стартовая позиция ребёнка, от которой он будет двигаться; это не оценка','Балл за выполнение вводных заданий'],answer:1,explanation:'Обоснование прямо говорит: Точка А — не оценка ребёнка, а стартовая позиция. Она снимает тревожность: начать можно с любой точки.',ref:'Методическое обоснование · раздел 2.2.2'},
+    {id:'exam-enc-kindness',type:'single',title:'Чем справедливость отличается от доброты по энциклопедии?',options:['Справедливость – это максимальная этика, ведущая к преображению общества','Справедливость – это минимальная этика, базовые основы, необходимые для выживания общества','Это одно и то же качество, названное по-разному'],answer:1,explanation:'В энциклопедии: доброта — максимальная этика, ведущая к преображению общества, а справедливость — минимальная этика, базовые основы, необходимые для выживания общества. Без справедливости добро может быть беззащитным, а без добра справедливость может быть жестокой.',ref:'Энциклопедия · «Справедливость» · 2.4'},
+    {id:'exam-enc-indignation',type:'single',title:'Чем возмущение отличается от раздражения?',options:['Возмущение не имеет личного «я» и является нравственной реакцией, раздражение же всегда содержит личную обиду или эгоцентризм','Возмущение сильнее раздражения, но по сути это одно чувство','Раздражение — нравственная реакция, возмущение — личная обида'],answer:0,explanation:'Смешение возмущения и раздражения энциклопедия называет искажением качества. Это же различение есть в паспорте этапа «Чувство»: возмущение — нравственная реакция, раздражение — личная обида.',ref:'Энциклопедия · «Справедливость» · 6'},
+    {id:'exam-enc-attitude',type:'single',title:'Какая установка — конструктивная?',options:['«Моим можно всё, чужим ничего нельзя»','«Что мне выгодно, то и справедливо»','«Прежде чем судить, спрошу себя: это чувство справедливости или обида, симпатия, выгода?»'],answer:2,explanation:'Третья установка — конструктивная (раздел 5.9). Первые две энциклопедия относит к разрушительным: это двойные стандарты и подмена идеи личным интересом (раздел 5.3).',ref:'Энциклопедия · «Справедливость» · 5.3, 5.9'},
+    {id:'exam-enc-formula',type:'single',title:'Какова формула качества в энциклопедии?',options:['Справедливость = Доброта [ядро] + Идея [ядро] + Совесть + Уважение + Честность','Справедливость = Воля [ядро] + Сила + Власть','Справедливость = Равенство + Наказание'],answer:0,explanation:'Формула из раздела 4. Знак «+» означает совместное присутствие компонентов, а не арифметическую зависимость.',ref:'Энциклопедия · «Справедливость» · 4'},
     {id:'exam-path',type:'order',title:'Восстановите путь присвоения ценности',prompt:'Перемещайте шаги стрелками. Порядок должен совпасть с методическим обоснованием.',items:['ВНЕШНЕЕ (герой фильма)','ЭМОЦИОНАЛЬНОЕ (этап «Чувство»)','СМЫСЛОВОЕ (этап «Мысль»)','ЛИЧНОСТНОЕ (этап «Сознание»)','ПРОЕКТНОЕ (этап «Воображение»)','ИСТОРИЧЕСКОЕ (этап «Воодушевление»)','ВНУТРЕННЕЕ (установка-регулятор)'],initial:[2,0,4,1,6,3,5],answer:[0,1,2,3,4,5,6],explanation:'По обоснованию ценность проходит путь от внешнего (герой фильма) через эмоциональное, смысловое, личностное, проектное и историческое к внутреннему — установке-регулятору. Пропуск этапа даёт неполную установку.',ref:'Методическое обоснование · раздел 2.2.1'}
   ],
   outcomeFields: [
@@ -62,7 +66,7 @@ window.TEACHER = {
 
 window.TeacherUI = function(ctx){
   const T=window.TEACHER, C=ctx.C, e=ctx.e, N=C.stages.length;
-  const views=['map','prep','student','workbook','outcomes','happiness'];
+  const views=['map','prep','student','workbook','encyclopedia','outcomes','happiness'];
   const blank=()=>({version:1,studentDone:{},exam:{answers:{},checked:{}},prep:{intro:false,workbook:false,print:false},outcomes:{},guideHidden:false});
   const pageKeys=new Set(T.studentPages.flat().map(String));
   const outcomeKeys=new Set(['lesson','summary',...C.stages.flatMap((_,i)=>T.outcomeFields.map(f=>'s'+i+'-'+f.id))]);
@@ -115,11 +119,17 @@ window.TeacherUI = function(ctx){
   const check=done=>done?'<span class="t-dot done" aria-hidden="true">✓</span>':'<span class="t-dot" aria-hidden="true"></span>';
   const pendingBadge='<span class="t-badge">Ожидает материала</span>';
   const readOnly=()=>ctx.isReview();
+  // Энциклопедия (рабочая редакция): дословные разделы статьи по номеру.
+  const enc=()=>window.ENCYCLOPEDIA||null;
+  const encSec=(key,num)=>enc()?.articles?.[key]?.sections.find(x=>x.title.startsWith(num))?.text||[];
+  const encText=(key,num)=>encSec(key,num).map(t=>'<p>'+e(t)+'</p>').join('');
+  const encRef=(key,num)=>`<span class="source-caption">Энциклопедия · «${e(enc()?.articles?.[key]?.name||'')}» · ${e(num.replace(/\.$/,''))} · редакция ${e(enc()?.edition||'')}</span>`;
+  const encBadge=()=>enc()?`<div class="t-pending-note"><strong>${e(enc().title)} · редакция ${e(enc().edition)}</strong><span>${e(enc().status)}. Тексты приведены дословно; незаполненные места помечены в самой энциклопедии как «не сформировано».</span></div>`:'';
 
   // ——— Боковое меню и старт ———
   function sidebar(route){
     const on=v=>route.view===v?'active':'';
-    return `<div class="t-sidebar"><div class="course-label">МАРШРУТНАЯ КАРТА</div><a class="t-side-link ${on('map')}" href="#map">Вся карта урока</a><div class="t-side-steps"><a class="${on('prep')}" href="#prep"><b>Подготовка</b><small>${prepCount()}</small></a><a class="${route.view==='stage'?'active':''}" href="#stage/0/read"><b>Старт</b><small>${app().completed.length} из ${N}</small></a><a class="${on('outcomes')}" href="#outcomes"><b>Итоги</b><small>${outcomeFilled()?'записи есть':'после урока'}</small></a></div><a class="t-side-link ${on('student')}" href="#student">Рабочая тетрадь ученика</a><a class="t-side-link ${on('workbook')}" href="#workbook">Сводная тетрадь (эталон)</a><a class="t-side-link ${on('happiness')}" href="#happiness">Раздел «Счастье»</a></div>`;
+    return `<div class="t-sidebar"><div class="course-label">МАРШРУТНАЯ КАРТА</div><a class="t-side-link ${on('map')}" href="#map">Вся карта урока</a><div class="t-side-steps"><a class="${on('prep')}" href="#prep"><b>Подготовка</b><small>${prepCount()}</small></a><a class="${route.view==='stage'?'active':''}" href="#stage/0/read"><b>Старт</b><small>${app().completed.length} из ${N}</small></a><a class="${on('outcomes')}" href="#outcomes"><b>Итоги</b><small>${outcomeFilled()?'записи есть':'после урока'}</small></a></div><a class="t-side-link ${on('student')}" href="#student">Рабочая тетрадь ученика</a><a class="t-side-link ${on('workbook')}" href="#workbook">Сводная тетрадь (эталон)</a><a class="t-side-link ${on('encyclopedia')}" href="#encyclopedia">Энциклопедия качеств</a><a class="t-side-link ${on('happiness')}" href="#happiness">Раздел «Счастье»</a></div>`;
   }
   function segmented(active){
     return `<nav class="t-segments" aria-label="Разделы маршрутной карты"><a href="#prep" class="${active==='prep'?'active':''}"><span>01</span>Подготовка</a><a href="#stage/0/read" class="${active==='start'?'active':''}"><span>02</span>Старт</a><a href="#outcomes" class="${active==='outcomes'?'active':''}"><span>03</span>Итоги</a></nav>`;
@@ -158,8 +168,8 @@ window.TeacherUI = function(ctx){
       <div class="t-prep-progress"><b>${prepCount()}</b><span>шагов подготовки выполнено</span>${prepReady()?'<a class="button primary" href="#stage/0/read">Готово — перейти к старту →</a>':''}</div>
       ${card(steps[0],`<p>${e(ctx.M.filmPrepText)}</p><a class="text-link" href="#film">${e(ctx.M.filmNavLabel)} · ${e(ctx.M.filmDuration)} →</a>${box('app:film','Я посмотрел(а) полный фильм',s.preparation.film)}`)}
       ${card(steps[1],'<p>Паспорт задаёт структуру; обоснование раскрывает логику; тетрадь содержит задания и формы.</p><a class="text-link" href="#materials">Открыть материалы →</a>'+box('app:sources','Я ознакомился(ась) с назначением трёх документов',s.preparation.sources))}
-      ${card(steps[2],`<div class="t-pending-note"><strong>Раздел о качестве из «Энциклопедии прикладной этики» будет добавлен.</strong><span>Пока введение построено на паспорте пособия. Формулировки ниже приведены дословно.</span></div><div class="definition"><h3>Определение качества</h3><p>${e(Q.definition)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><div class="definition"><h3>Определение антипода</h3><p>${e(Q.antipode)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><h3>Ключевые понятия этапа «Введение»</h3><ul class="t-list">${Q.concepts.map(c=>'<li>'+e(c)+'</li>').join('')}</ul>${ctx.sourceButton('Паспорт · этап «Введение»','passport',null,'5.1.')}${ctx.sourceButton('Обоснование · задача «Введения»','rationale',null,'2.2.2.')}${box('intro','Я изучил(а) введение в качество',t.prep.intro)}`)}
-      ${card(steps[3],`<p>Экзамен проверяет понимание качества перед уроком: ${T.exam.length} вопросов по паспорту и обоснованию. Попытки не ограничены. Когда будет добавлен раздел энциклопедии, вопросы дополнятся.</p><p class="t-score">Верных ответов: <b>${examScore()} из ${T.exam.length}</b></p>${T.exam.map(renderExamQuestion).join('')}`)}
+      ${card(steps[2],`${encBadge()}${enc()?`<div class="definition"><h3>Справедливость · энциклопедия</h3>${encText('spravedlivost','1.3.')}${encRef('spravedlivost','1.3.')}</div><h3>Чем отличается от сходного поведения</h3>${encText('spravedlivost','2.').split('</p>').filter(x=>!/2\.[1234]\.|нравственное \+|ядро\]|вектор не требуется/.test(x)).join('</p>')}${encRef('spravedlivost','2.4.')}<h3>Формула качества</h3>${encSec('spravedlivost','4.').slice(1,2).map(t=>'<p><strong>'+e(t)+'</strong></p>').join('')}${encRef('spravedlivost','4.')}<h3>Антипод: ${e(encSec('spravedlivost','5.4.')[0]||'')}</h3>${encText('spravedlivost','5.5.')}${encRef('spravedlivost','5.5.')}<h3>Возможные искажения качества</h3><ul class="t-list">${encSec('spravedlivost','6.').map(t=>'<li>'+e(t)+'</li>').join('')}</ul>${encRef('spravedlivost','6.')}<blockquote><div class="eyebrow">ФОРМУЛА-АФОРИЗМ</div><p>${e(encSec('spravedlivost','7.6.')[0]||'')}</p><cite>Энциклопедия · «Справедливость» · 7.6</cite></blockquote><a class="text-link" href="#encyclopedia">Открыть статью энциклопедии целиком →</a>`:''}<h3>В паспорте пособия</h3><div class="definition"><h3>Определение качества</h3><p>${e(Q.definition)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><div class="definition"><h3>Определение антипода</h3><p>${e(Q.antipode)}</p><span class="source-caption">Паспорт пособия · раздел 5.1</span></div><h3>Ключевые понятия этапа «Введение»</h3><ul class="t-list">${Q.concepts.map(c=>'<li>'+e(c)+'</li>').join('')}</ul>${ctx.sourceButton('Паспорт · этап «Введение»','passport',null,'5.1.')}${ctx.sourceButton('Обоснование · задача «Введения»','rationale',null,'2.2.2.')}${box('intro','Я изучил(а) введение в качество',t.prep.intro)}`)}
+      ${card(steps[3],`<p>Экзамен проверяет понимание качества перед уроком: ${T.exam.length} вопросов по энциклопедии, паспорту и обоснованию. Попытки не ограничены.</p><p class="t-score">Верных ответов: <b>${examScore()} из ${T.exam.length}</b></p>${T.exam.map(renderExamQuestion).join('')}`)}
       ${card(steps[4],`<p>Сводная рабочая тетрадь комплекта становится вашим разделом подготовки: вы проходите её задания сами, как ученик. На каждом этапе «Старта» задания этого этапа собраны в «Шаг 1». Здесь — вся тетрадь целиком.</p><p class="t-score">Пройдено как ученик: <b>${Object.keys(t.studentDone).length} из ${pageKeys.size}</b> страниц</p><a class="text-link" href="#workbook">Открыть сводную тетрадь целиком →</a>${box('workbook','Я прошёл(ла) задания тетради как ученик',t.prep.workbook)}`)}
       ${card(steps[5],'<p>Ссылка на курс обучения методике киноуроков будет добавлена, когда команда её передаст.</p>')}
       ${card(steps[6],`<p>Отдельная тетрадь для ребёнка: только листы, с которыми дети работают в классе, по порядку этапов. Её можно распечатать целиком или по этапам.</p><a class="text-link" href="#student">Открыть рабочую тетрадь ученика →</a>${box('print','Тетрадь ученика распечатана к уроку',t.prep.print)}`)}
@@ -174,7 +184,7 @@ window.TeacherUI = function(ctx){
   function stageBlock(i){
     const total=stagePages(i).length,done=stageStudentDone(i);
     return `<section class="t-as-student"><div class="t-block-head"><span class="eyebrow">ШАГ 1 · ПРОЙДИТЕ КАК УЧЕНИК</span><span class="t-count" data-t-count="${i}">${done} из ${total}</span></div><h2>Задания ученика на этом этапе</h2><p>Откройте каждую страницу тетради и выполните задание сами — так, как его будут выполнять дети. Отметьте выполненное.</p><div id="t-student-list">${studentList(i)}</div>${classLink(i)}</section>
-      <section class="t-for-teacher"><span class="eyebrow">ШАГ 2 · ПОЯСНЕНИЯ ПЕДАГОГУ</span><h2>Как провести этот этап</h2><div id="t-teacher-notes">${teacherNotes(i)}</div><p class="source-caption">Тексты в пояснениях приведены из паспорта и обоснования без пересказа. После урока запишите, как прошёл этап, в разделе <a href="#outcomes">«Итоги»</a>.</p></section>`;
+      <section class="t-for-teacher"><span class="eyebrow">ШАГ 2 · ПОЯСНЕНИЯ ПЕДАГОГУ</span><h2>Как провести этот этап</h2>${i===0&&enc()?'<p class="t-class-link"><a href="#encyclopedia">Статья «Справедливость» в энциклопедии качеств →</a></p>':''}<div id="t-teacher-notes">${teacherNotes(i)}</div><p class="source-caption">Тексты в пояснениях приведены из паспорта и обоснования без пересказа. После урока запишите, как прошёл этап, в разделе <a href="#outcomes">«Итоги»</a>.</p></section>`;
   }
   function classLink(i){
     const part=T.classWorkbook.find(p=>p.stage===(C.stages[i].sourceStage===4?'Сознание':C.stages[i].name));
@@ -234,8 +244,21 @@ window.TeacherUI = function(ctx){
       <section class="t-outcome-general">${outcomeField('summary','Общий итог и следующий шаг','Что получилось в целом, что сделать до следующего киноурока.')}</section><p class="local-explainer">Это педагогические наблюдения, а не оценка детей и не психологический диагноз.</p>`;
   }
 
+  // ——— Энциклопедия: статья целиком ———
+  function renderEncyclopedia(route){
+    const key=['spravedlivost','schastye'].includes(route.sub)?route.sub:'spravedlivost',a=enc()?.articles?.[key];
+    if(!a)return `${header('ЭНЦИКЛОПЕДИЯ','Энциклопедия качеств','Статья не загружена.')}`;
+    const tabs=`<nav class="t-chips" aria-label="Статьи энциклопедии"><a href="#encyclopedia" class="${key==='spravedlivost'?'active':''}">Справедливость</a><a href="#encyclopedia/schastye" class="${key==='schastye'?'active':''}">Счастье</a></nav>`;
+    const body=a.sections.map(sec=>sec.level===2?`<h2 class="t-enc-h2">${e(sec.title)}</h2>${sec.text.map(t=>'<p>'+e(t)+'</p>').join('')}`:`<section class="t-enc-sec"><h3>${e(sec.title)}</h3>${sec.text.map(t=>'<p>'+e(t)+'</p>').join('')}</section>`).join('');
+    return `${header('ЭНЦИКЛОПЕДИЯ ПРИКЛАДНОЙ ЭТИКИ',a.name,'Статья целиком. Раздел 1.2 с карточками источников здесь не показан.')}${encBadge()}${tabs}<article class="t-enc">${body}</article>`;
+  }
+
   // ——— Счастье ———
   function renderHappiness(){
+    if(enc()?.articles?.schastye)return `${header('ДОПОЛНИТЕЛЬНЫЙ РАЗДЕЛ','Счастье','Понятие счастья по энциклопедии и работа с заблуждениями о нём.')}${encBadge()}
+      <section class="t-prep-step"><h2>Что такое счастье</h2>${encText('schastye','1.3.')}${encRef('schastye','1.3.')}<h3>Чем счастье отличается</h3>${encSec('schastye','2.').filter(x=>/^от |^Счастье/.test(x)).map(t=>'<p>'+e(t)+'</p>').join('')}${encRef('schastye','2.4.')}<h3>Формула</h3>${encSec('schastye','4.').slice(1,2).map(t=>'<p><strong>'+e(t)+'</strong></p>').join('')}${encRef('schastye','4.')}</section>
+      <section class="t-prep-step"><h2>Заблуждения и созидательные установки</h2><div class="t-two"><div><h3>Разрушительные установки</h3><ul class="t-list">${encSec('schastye','5.3.').filter(x=>x.startsWith('«')).map(t=>'<li>'+e(t)+'</li>').join('')}</ul></div><div><h3>Конструктивные установки</h3><ul class="t-list">${encSec('schastye','5.9.').filter(x=>x.startsWith('«')).map(t=>'<li>'+e(t)+'</li>').join('')}</ul></div></div>${encRef('schastye','5.3.')}<h3>Антипод: ${e(encSec('schastye','5.4.')[0]||'')}</h3>${encText('schastye','5.5.')}${encRef('schastye','5.5.')}<p><a class="text-link" href="#encyclopedia/schastye">Статья «Счастье» целиком →</a></p></section>
+      <section class="t-prep-step pending"><div class="t-prep-head"><span class="t-dot wait" aria-hidden="true">…</span><h2>Сократовский метод</h2>${pendingBadge}</div><p>Разрушение заблуждений (левый столбец выше) и формирование созидательных установок (правый столбец) через сократовский диалог. В редакции энциклопедии от ${e(enc().edition)} описания метода нет — раздел ждёт текста от команды проекта. Интерактивные задания появятся вместе с ним.</p></section><div class="actions"><a class="button ghost" href="#map">← Маршрутная карта</a></div>`;
     return `${header('ДОПОЛНИТЕЛЬНЫЙ РАЗДЕЛ','Счастье','Раздел готовится вместе с командой проекта.')}<section class="t-prep-step pending"><div class="t-prep-head"><span class="t-dot wait" aria-hidden="true">…</span><h2>Что здесь будет</h2>${pendingBadge}</div><ul class="t-list"><li>Понятие счастья по «Энциклопедии прикладной этики».</li><li>Сократовский метод: разрушение заблуждений и формирование созидательных установок — по формулировке энциклопедии.</li><li>Интерактивные задания для педагога и учеников.</li></ul><p class="source-caption">Содержание появится после получения исходного текста энциклопедии. До этого раздел не заполняется догадками.</p></section><div class="actions"><a class="button ghost" href="#map">← Маршрутная карта</a></div>`;
   }
 
@@ -256,7 +279,8 @@ window.TeacherUI = function(ctx){
     if(route.view==='student')return {text:'Это тетрадь для детей. Выберите этап и нажмите «Печать» — каждый лист выйдет отдельно.',href:null};
     if(route.view==='workbook')return {text:'Проходите эти задания сами, как ученик. Отмечать выполненное удобнее на этапах «Старта».',href:'#stage/0/read',label:'К этапу 1'};
     if(route.view==='outcomes')return {text:'Запишите по каждому этапу: что прошло, что заметили у детей, что изменить.',href:null};
-    if(route.view==='happiness')return {text:'Этот раздел наполнится, когда появится текст энциклопедии.',href:'#map',label:'К карте'};
+    if(route.view==='happiness')return {text:'Сравните заблуждения о счастье с созидательными установками. Сократовский метод добавим, когда придёт текст.',href:'#encyclopedia/schastye',label:'Статья «Счастье»'};
+    if(route.view==='encyclopedia')return {text:'Энциклопедия — рабочая редакция. Опирайтесь на определение, антипод и установки; пустые места ещё дорабатываются.',href:'#prep/exam',label:'К экзамену'};
     return {text:'Не теряйтесь: вся последовательность — на маршрутной карте.',href:'#map',label:'Маршрутная карта'};
   }
   // Три сопровождающих, каждый в своём моменте маршрута:
@@ -272,6 +296,7 @@ window.TeacherUI = function(ctx){
       if(route.tab==='plan')return guides.lantern;
       return [1].includes(route.stage)?guides.clapper:[0,2,3,4].includes(route.stage)?guides.scales:guides.lantern;
     }
+    if(route.view==='encyclopedia')return guides.scales;
     if(['student','workbook','outcomes','happiness'].includes(route.view))return guides.lantern;
     return guides.clapper;
   }
@@ -312,7 +337,7 @@ window.TeacherUI = function(ctx){
     if(route.view==='student'||route.view==='workbook'){const pages=document.getElementById('t-student-pages');if(pages)ctx.render();}
   }
   function render(route){
-    return route.view==='map'?renderMap():route.view==='prep'?renderPrep(route):route.view==='student'?renderStudent(route):route.view==='workbook'?renderWorkbook(route):route.view==='outcomes'?renderOutcomes():renderHappiness();
+    return route.view==='map'?renderMap():route.view==='prep'?renderPrep(route):route.view==='student'?renderStudent(route):route.view==='workbook'?renderWorkbook(route):route.view==='encyclopedia'?renderEncyclopedia(route):route.view==='outcomes'?renderOutcomes():renderHappiness();
   }
   return {views,render,sidebar,startPanel,stageBlock,teacherNotes,guide,click,change,input,afterSources,state:()=>t,examPassed,prepReady};
 };

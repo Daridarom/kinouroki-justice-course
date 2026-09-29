@@ -32,7 +32,7 @@
     s.preparation={film:input.preparation?.film===true,sources:input.preparation?.sources===true};
     s.caseReviewed=Object.fromEntries(course.stages.map((_,i)=>i).filter(i=>input.caseReviewed?.[i]===true).map(i=>[i,true]));
     s.mode=input.mode==='review'?'review':'learn';
-    s.lastRoute=typeof input.lastRoute==='string'&&new RegExp('^(start|learn|film(?:\\/[a-z-]+)?|stage\\/'+R+'\\/(read|practice|plan)|notebook|materials|glossary|result|map|prep(?:\\/[a-z0-9-]+)?|student(?:\\/[a-z0-9-]+)?|workbook(?:\\/[a-z0-9-]+)?|outcomes|happiness)$').test(input.lastRoute)?input.lastRoute:'start';
+    s.lastRoute=typeof input.lastRoute==='string'&&new RegExp('^(start|learn|film(?:\\/[a-z-]+)?|stage\\/'+R+'\\/(read|practice|plan)|notebook|materials|glossary|result|map|prep(?:\\/[a-z0-9-]+)?|student(?:\\/[a-z0-9-]+)?|workbook(?:\\/[a-z0-9-]+)?|encyclopedia(?:\\/[a-z0-9-]+)?|outcomes|happiness)$').test(input.lastRoute)?input.lastRoute:'start';
     s.completed=Array.isArray(input.completed)?[...new Set(input.completed.filter(v=>validStage(v)&&canComplete(course,s,v)))]:[];
     s.filmReturn=typeof input.filmReturn==='string'&&new RegExp('^stage\\/'+R+'\\/(read|practice|plan)$').test(input.filmReturn)?input.filmReturn:null;
     s.lessonReturn=typeof input.lessonReturn==='string'&&new RegExp('^(start|stage\\/'+R+'\\/(read|practice|plan))$').test(input.lessonReturn)?input.lessonReturn:s.filmReturn||'start';
