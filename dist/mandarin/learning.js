@@ -62,7 +62,7 @@
   });
   Object.assign(C.stages[7].quizzes[0],{sourceDoc:'passport',sourceSection:'5.8.'});
   C.meta={
-    storageKey:'kinouroki.mandarin.v2',sharedHappiness:'../#happiness',
+    storageKey:'kinouroki.mandarin.v2',
     quality:'Радость за другого',film:'Мандарин',
     filmSubtitle:'Полная версия · около 15 минут · режиссёр Елена Дубровская',filmDuration:'15:30',filmPlayerTitle:'Фильм Мандарин — плеер VK',
     filmNote:'Семь сцен помогают выполнить задание этапа «Чувство». Сначала посмотрите фильм целиком, затем возвращайтесь к сценам. Границы сцен — ориентир по карте эпизодов.',

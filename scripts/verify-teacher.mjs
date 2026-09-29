@@ -6,13 +6,13 @@ import {makeHarness} from './harness.mjs';
 const base=new URL('../',import.meta.url);
 const read=p=>fs.readFileSync(new URL(p,base),'utf8');
 const source=JSON.parse(read('dist/sources.json'));
-const files=['course.js','learning.js','core.js','encyclopedia.js','socratic.js','teacher.js','app.js'].map(f=>[f,new URL('dist/'+f,base)]);
+const files=['course.js','learning.js','core.js','encyclopedia.js','socratic.js','teacher-data.js','teacher.js','app.js'].map(f=>[f,new URL('dist/'+f,base)]);
 const flat=blocks=>blocks.map(b=>b.type==='p'?b.text:b.rows.flat().join('\n')).join('\n');
 const simplify=s=>s.toLocaleLowerCase('ru').replace(/\s+/g,' ').trim();
 const allText=simplify(Object.values(source.documents).map(d=>flat(d.blocks)).join('\n'));
 
 const ctx2={window:{}};vm.runInNewContext(read('dist/socratic.js'),ctx2);
-const ctx={window:{}};vm.runInNewContext(read('dist/encyclopedia.js'),ctx);vm.runInNewContext(read('dist/teacher.js'),ctx);
+const ctx={window:{}};vm.runInNewContext(read('dist/encyclopedia.js'),ctx);vm.runInNewContext(read('dist/teacher-data.js'),ctx);vm.runInNewContext(read('dist/teacher.js'),ctx);
 const E=JSON.parse(JSON.stringify(ctx.window.ENCYCLOPEDIA));
 const encText=simplify(Object.values(E.articles).flatMap(a=>a.sections.flatMap(x=>[x.title,...x.text])).join('\n'));
 assert.deepEqual(Object.keys(E.articles),['spravedlivost','schastye','soradovanie']);
@@ -128,7 +128,33 @@ const course=JSON.parse(h.local.get('kinouroki.justice.v1'));
 assert.equal(course.notes['intro-definition'],'Старая запись','Existing course notes preserved');
 assert.deepEqual(course.read,[0]);
 
-// Mandarin keeps its engine without the teacher route.
-const m=makeHarness(['course.js','learning.js'].map(f=>[f,new URL('dist/mandarin/'+f,base)]).concat([['core.js',new URL('dist/core.js',base)],['app.js',new URL('dist/app.js',base)]]),{},false,JSON.parse(read('dist/mandarin/sources.json')));
-m.navigate('#map');assert(!m.get('app').innerHTML.includes('t-guide')&&!m.get('app').innerHTML.includes('МАРШРУТНАЯ КАРТА'));
-console.log('PASS: teacher route — map, preparation with exam, teacher-as-student, notes from sources, printable workbook order, outcomes, review guard, legacy progress, Mandarin unaffected');
+// Mandarin runs the same teacher route on its own data and storage.
+const mSource=JSON.parse(read('dist/mandarin/sources.json'));
+const mctx={window:{}};vm.runInNewContext(read('dist/encyclopedia.js'),mctx);vm.runInNewContext(read('dist/mandarin/teacher-data.js'),mctx);
+const MT=JSON.parse(JSON.stringify(mctx.window.TEACHER));
+const mEnc=simplify(E.articles.soradovanie.sections.flatMap(x=>[x.title,...x.text]).join('\n'));
+const mAll=simplify(Object.values(mSource.documents).map(d=>flat(d.blocks)).join('\n'));
+assert.equal(MT.storageKey,'kinouroki.mandarin.teacher.v1');assert.equal(MT.encKey,'soradovanie');
+for(const text of [MT.quality.definition,MT.quality.antipode,...MT.quality.concepts])assert(mAll.includes(simplify(text)),'Mandarin quality text verbatim: '+text.slice(0,40));
+for(const p of [...MT.studentPages.flat(),...MT.workbookParts.flatMap(x=>x.pages),...MT.classWorkbook.flatMap(x=>x.items.flatMap(i=>i[2]))])assert(mSource.pages[String(p)]?.length,'Mandarin page exists: '+p);
+assert.equal(MT.studentPages.length,8);assert.deepEqual(MT.classWorkbook.map(x=>x.stageIndex),[0,1,2,3,4,5,6,7]);
+for(const q of MT.exam){
+  if(q.type==='single'){assert(q.answer>=0&&q.answer<q.options.length);const ans=simplify(q.options[q.answer]).replace(/^«|»\.?$/g,'');if(q.ref.startsWith('Энциклопедия'))assert(mEnc.includes(ans),'Encyclopedia answer verbatim: '+q.id);else if(q.id!=='exam-sails')assert(mAll.includes(ans),'Passport answer verbatim: '+q.id);}
+  else for(const it of q.items)assert(mAll.includes(simplify(it)),'Order item verbatim: '+it);
+}
+const mFiles=[['course.js',new URL('dist/mandarin/course.js',base)],['learning.js',new URL('dist/mandarin/learning.js',base)],['core.js',new URL('dist/core.js',base)],['encyclopedia.js',new URL('dist/encyclopedia.js',base)],['socratic.js',new URL('dist/socratic.js',base)],['teacher-data.js',new URL('dist/mandarin/teacher-data.js',base)],['teacher.js',new URL('dist/teacher.js',base)],['app.js',new URL('dist/app.js',base)]];
+const legacyM={version:1,read:[0],completed:[],answers:{},checked:{},notes:{},project:{},reviews:{},preparation:{film:true,sources:false},caseReviewed:{},mode:'learn',lastRoute:'start'};
+const m=makeHarness(mFiles,{'kinouroki.mandarin.v2':JSON.stringify(legacyM)},false,mSource);
+await new Promise(r=>setImmediate(r));
+m.navigate('#map');html=m.get('app').innerHTML;assert(html.includes('Весь киноурок на одной карте')&&html.includes('<strong>Хлопушка</strong>'),'Mandarin has the route map and guide');
+m.navigate('#prep/intro');html=m.get('app').innerHTML;assert(html.includes('Сорадование · энциклопедия')&&html.includes('корабль «Дружба», три паруса'.replace('корабль','Корабль'))&&html.includes('1 из 6'),'Mandarin preparation uses its own sources and shared film mark');
+assert(!html.includes('духовное + нравственное'),'Only distinguishing lines of 2.4 are shown');
+m.navigate('#stage/2/read');html=m.get('app').innerHTML;assert(html.includes('Стр. 14')&&html.includes('Правило «Буфера»')&&html.includes('Чувство без понимания')===false&&html.includes('Прожитое переживание'),'Mandarin stage notes come from its passport 5.3 and table 2.2.10');
+m.navigate('#stage/6/read');assert(m.get('app').innerHTML.includes('Стр. 55'));
+m.navigate('#student');html=m.get('app').innerHTML;assert(html.includes('СТРАНИЦА 25. СЕКРЕТ КРИСТИНЫ')&&!html.includes('ДОМАШНЕЕ ЗАДАНИЕ'),'Mandarin class workbook');
+m.navigate('#encyclopedia');assert(m.get('app').innerHTML.includes('«Успех другого – это победа общего блага».'));
+m.navigate('#socrat/u3');assert(m.get('app').innerHTML.includes('«Профессию воспитатель не ценят»'));
+await m.emit('change',{dataset:{tInput:'',tPrep:'intro'},checked:true});
+assert(m.local.get('kinouroki.mandarin.teacher.v1')&&!m.local.get('kinouroki.justice.teacher.v1'),'Separate teacher storage per course');
+assert.equal(JSON.parse(m.local.get('kinouroki.mandarin.v2')).read[0],0,'Legacy Mandarin progress kept');
+console.log('PASS: teacher route — map, preparation with exam, teacher-as-student, notes from sources, printable workbook order, outcomes, review guard, legacy progress; same route on Mandarin with its own sources and storage');
