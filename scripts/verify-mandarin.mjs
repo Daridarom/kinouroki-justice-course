@@ -107,7 +107,7 @@ nav.navigate('#film/teacher');assert.equal(nav.get('app').innerHTML,filmMarkup,'
 nav.navigate('#stage/7/read');assert(nav.get('app').innerHTML.includes('ЭТАП 08 / 08'));assert(nav.get('app').innerHTML.includes('Воодушевление'));
 nav.navigate('#materials');assert(nav.get('app').innerHTML.includes('standard-manual.pdf'));assert(nav.get('app').innerHTML.includes('Паспорт методического пособия'));
 await nav.emit('click',{dataset:{source:'workbook',pages:'48'}});assert(nav.get('source-dialog').open);assert(nav.get('source-content').innerHTML.includes('ПАСПОРТ ОБЩЕГО ДЕЛА'));
-await nav.emit('click',{dataset:{source:'passport',section:'5.7.'}});assert(nav.get('source-content').innerHTML.includes('ВООДУШЕВЛЕНИЕ'));
+await nav.emit('click',{dataset:{source:'passport',section:'5.8.'}});assert(nav.get('source-content').innerHTML.includes('ВООДУШЕВЛЕНИЕ'));
 nav.navigate('#glossary');assert(nav.get('app').innerHTML.includes('Радость за другого'));
 const roundtrip=core.importProgress(core.exportProgress(finalState,course),course);assert.equal(roundtrip.completed.length,8);
 const forged=core.normalize({version:1,read:[0,8,99],completed:[0,8],notes:{},answers:{},checked:{},lastRoute:'stage/7/plan',lessonReturn:'stage/7/read'},course);
