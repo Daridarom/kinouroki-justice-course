@@ -49,7 +49,7 @@ assert.equal(course.scenes[0].start,12);assert.equal(course.scenes[6].end,878);
 assert.equal(course.filmEmbedURL,'https://vkvideo.ru/video_ext.php?oid=-69614724&id=456240051&hd=2&autoplay=0');
 for(let i=1;i<=8;i++)assert(source.sections.passport['5.'+i+'.']?.length,'Passport section 5.'+i);
 for(let i=2;i<=9;i++)assert(source.sections.rationale['2.2.'+i+'.']?.length,'Rationale section 2.2.'+i);
-assert.equal(Object.keys(source.pages).length,70);
+assert.equal(Object.keys(source.pages).length,71);
 const html=read('dist/mandarin/index.html');
 for(const asset of ['../styles.css','./course.js','./learning.js','../core.js','../app.js'])assert(html.includes(asset),'Shared engine asset: '+asset);
 for(const file of ['passport.docx','rationale.docx','workbook.docx','standard-manual.pdf','standard-manual.docx','guide.pdf','original-workbook.pdf','slides.pdf','story.pdf'])assert(fs.existsSync(new URL('dist/mandarin/materials/'+file,base)),'Missing material '+file);
