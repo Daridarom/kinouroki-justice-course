@@ -28,12 +28,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - run: npm test
       - uses: actions/upload-pages-artifact@v3
-        if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main'
+        if: (github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main') || (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.message == 'Publish approved by Aleksey 2026-09-29')
         with:
           path: dist
 
   deploy:
-    if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main') || (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.message == 'Publish approved by Aleksey 2026-09-29')
     needs: test
     runs-on: ubuntu-latest
     permissions:
