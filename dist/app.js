@@ -65,7 +65,7 @@
       <details class="course-nav" ${innerWidth>800?'open':''}><summary><span>Маршрут обучения</span><span>${count} / ${N} <b aria-hidden="true">⌄</b></span></summary><div class="nav-inner">
       <div class="course-label">УЧЕБНЫЙ МОДУЛЬ</div><div class="sidebar-title">${e(M.quality)}</div><div class="sidebar-film">На материале фильма «${e(M.film)}»</div>
       <div class="progress-label"><span>Пройдено этапов</span><b data-completed-count>${count} из ${N}</b></div><progress max="${N}" value="${count}" aria-label="Пройдено этапов">${count} из ${N}</progress>
-      ${T?T.sidebar(route):''}<a class="preparation-nav ${route.view==='start'?'active':''}" href="#start">${state.preparation.film&&state.preparation.sources?'✓':'○'} Подготовка и маршрут</a><nav aria-label="Этапы обучения" class="stages">${C.stages.map((s,i)=>`<a href="${stageURL(i)}" class="stage-link ${route.view==='stage'&&route.stage===i?'active':''}" ${route.view==='stage'&&route.stage===i?'aria-current="step"':''}><span class="stage-number ${state.completed.includes(i)?'done':''}">${state.completed.includes(i)?tick:String(i+1).padStart(2,'0')}</span><span>${e(s.name)}<small>${state.completed.includes(i)?'Этап пройден':i===0?'Начало маршрута':'Учебный раздел'}</small></span></a>`).join('')}</nav>
+      ${T?T.sidebar(route):''}<a class="preparation-nav ${route.view==='start'?'active':''}" href="#start">${T?'⌂ Главная страница курса':(state.preparation.film&&state.preparation.sources?'✓':'○')+' Подготовка и маршрут'}</a><nav aria-label="Этапы обучения" class="stages">${C.stages.map((s,i)=>`<a href="${stageURL(i)}" class="stage-link ${route.view==='stage'&&route.stage===i?'active':''}" ${route.view==='stage'&&route.stage===i?'aria-current="step"':''}><span class="stage-number ${state.completed.includes(i)?'done':''}">${state.completed.includes(i)?tick:String(i+1).padStart(2,'0')}</span><span>${e(s.name)}<small>${state.completed.includes(i)?'Этап пройден':i===0?'Начало маршрута':'Учебный раздел'}</small></span></a>`).join('')}</nav>
       <nav class="extra-nav" aria-label="Учебные инструменты">${[['film','file',M.filmNavLabel],['notebook','book','Моя рабочая тетрадь'],['materials','file','Материалы курса'],['glossary','terms','Термины методики']].map(([view,ic,label])=>`<a href="#${view}" class="${route.view===view?'active':''}" ${route.view===view?'aria-current="page"':''}>${icon(ic)}${label}</a>`).join('')}</nav>
       ${M.programLink}<div class="local-note">Прогресс и записи хранятся в этом браузере.</div></div></details><div class="sidebar-bottom">${e(M.sidebarBottom)}</div></aside>
       <div class="workspace"><header class="topbar"><nav class="film-switch" aria-label="Выбрать киноурок">${M.switcher}</nav><button class="mode-switch" data-mode="${isReview()?'learn':'review'}">${isReview()?'Перейти к обучению':'Режим рецензирования'}</button></header>
@@ -93,14 +93,14 @@
   }
   function pageNavigation(){
     if(['film','materials','glossary','notebook','result'].includes(route.view))return `<nav class="context-nav" aria-label="Возврат к занятию">${returnLink()}</nav>`;
-    if(route.view==='stage')return `<nav class="context-nav" aria-label="Возврат к маршруту"><a href="${isReview()?'#review':'#start'}">← ${isReview()?'Обзор рецензирования':'Все этапы курса'}</a></nav>`;
+    if(route.view==='stage')return `<nav class="context-nav" aria-label="Возврат к маршруту"><a href="${isReview()?'#review':T?'#map':'#start'}">← ${isReview()?'Обзор рецензирования':T?'Маршрутная карта':'Все этапы курса'}</a></nav>`;
     return '';
   }
   function stagePager(){
     const i=route.stage,tab=route.tab;
-    const prev=tab==='plan'?stageURL(i,'practice'):tab==='practice'?stageURL(i):i?stageURL(i-1,'plan'):isReview()?'#review':'#start';
+    const prev=tab==='plan'?stageURL(i,'practice'):tab==='practice'?stageURL(i):i?stageURL(i-1,'plan'):isReview()?'#review':T?'#prep':'#start';
     const label=tab==='plan'?'Назад к практикуму':tab==='practice'?'Назад к изучению':i?'Предыдущий этап: '+C.stages[i-1].name:isReview()?'К обзору':'К подготовке';
-    return `<nav class="step-navigation" aria-label="Переходы по курсу"><a class="button ghost" href="${prev}">← ${e(label)}</a><a class="text-link" href="${isReview()?'#review':'#start'}">${isReview()?'Обзор рецензирования':'Все этапы'}</a></nav>`;
+    return `<nav class="step-navigation" aria-label="Переходы по курсу"><a class="button ghost" href="${prev}">← ${e(label)}</a><a class="text-link" href="${isReview()?'#review':T?'#map':'#start'}">${isReview()?'Обзор рецензирования':T?'Маршрутная карта':'Все этапы'}</a></nav>`;
   }
   function renderStage(){
     const i=route.stage,s=C.stages[i];
@@ -176,7 +176,7 @@
     const el=event.target;
     if(T&&T.change(el))return;
     if(isReview())return;
-    if(el.matches('[data-preparation]')){state.preparation[el.dataset.preparation]=el.checked;if(!el.checked)state.completed=[];save();if(route.view==='film'){refreshPlanControls();}else render();return;}
+    if(el.matches('[data-preparation]')){state.preparation[el.dataset.preparation]=el.checked;if(!el.checked)state.completed=[];save();if(route.view==='film'){refreshPlanControls();T?.refreshGuide(route);}else render();return;}
     if(el.matches('[data-review]')){const i=Number(el.dataset.review);state.reviews[i]=el.checked;if(!el.checked)state.completed=state.completed.filter(n=>n!==i);save();render();app.querySelector('[data-review=\"'+i+'\"]')?.focus({preventScroll:true});}
     if(el.matches('[data-read]')){const n=Number(el.dataset.read);state.read=state.read.filter(x=>x!==n);if(el.checked)state.read.push(n);else state.completed=state.completed.filter(x=>x!==n);save();render();const checkbox=app.querySelector('[data-read]');checkbox?.focus({preventScroll:true});}
     if(el.matches('[data-answer]')){const q=getQuiz(el.dataset.answer);if(!q)return;const n=Number(el.value);if(q.type==='single')state.answers[q.id]=n;else{const a=[...quizValue(q)];a[Number(el.dataset.index)]=n;state.answers[q.id]=a;}invalidate(q);save();const selector=el.tagName==='SELECT'?`select[data-answer="${q.id}"][data-index="${el.dataset.index}"]`:`input[data-answer="${q.id}"][value="${el.value}"]`;const scroll=window.scrollY;render();app.querySelector(selector)?.focus({preventScroll:true});window.scrollTo(0,scroll);}
