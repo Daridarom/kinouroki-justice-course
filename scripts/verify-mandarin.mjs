@@ -14,15 +14,15 @@ const flat=blocks=>blocks.map(b=>b.type==='p'?b.text:b.rows.flat().join('\n')).j
 const simplify=s=>s.toLocaleLowerCase('ru').replace(/\s+/g,' ').trim();
 const allText=simplify(Object.values(source.documents).map(d=>flat(d.blocks)).join('\n'));
 const N=course.stages.length;
-assert.equal(N,8,'The course has eight stages in the proposed unified route');
+assert.equal(N,8,'The course has eight stages in the approved unified route');
 assert.deepEqual(course.stages.map(s=>s.name),['Введение','Просмотр фильма','Чувство','Мысль','Осознание','Воображение','Социальная практика','Воодушевление']);
 assert.equal(course.projectStage,5,'The common-deed passport belongs to the Imagination stage');
 assert.equal(course.meta.storageKey,'kinouroki.mandarin.v2');
 assert.notEqual(course.meta.storageKey,'kinouroki.justice.v1','Courses must not share browser progress');
 assert(allText.includes(simplify(course.definition)),'Definition must be an exact passport excerpt');
 for(const s of course.stages){
-  if(!s.proposed){assert(allText.includes(simplify(s.goal)),`Goal differs from passport: ${s.name}`);assert(allText.includes(simplify(s.quote)),`Quotation differs from passport: ${s.name}`);}
-  if(!s.proposed)assert.equal(s.paragraphs.length,4);assert.equal(s.reviewCriteria.length,3);
+  if(s.goalSource==='passport'){assert(allText.includes(simplify(s.goal)),`Goal differs from passport: ${s.name}`);assert(allText.includes(simplify(s.quote)),`Quotation differs from passport: ${s.name}`);}
+  if(s.goalSource==='passport')assert.equal(s.paragraphs.length,4);assert.equal(s.reviewCriteria.length,3);
   for(const r of s.refs)for(const p of r.pages)assert(source.pages[String(p)]?.length,`Missing workbook page ${p} (${s.name})`);
   assert(source.pages[String(s.case.page)]?.length,`Missing case page ${s.case.page}`);
   if(s.case.scene)assert(course.scenes.some(x=>x.id===s.case.scene),`Unknown case scene ${s.case.scene}`);

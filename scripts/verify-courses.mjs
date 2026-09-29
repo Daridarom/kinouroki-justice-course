@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const app=read('dist/app.js'),great=read('dist/index.html'),mandarin=read('dist/mandarin/index.html'),learning=read('dist/mandarin/learning.js');
-assert.match(app,/href="\.\/mandarin\/\?v=20260928-canon"/,'Justice course links to the Mandarin course');
-assert.match(learning,/href="\.\.\/\?v=20260928-canon#start"/,'Mandarin course links back to the Justice course');
+assert.match(app,/href="\.\/mandarin\/\?v=20260928-standard-r1"/,'Justice course links to the Mandarin course');
+assert.match(learning,/href="\.\.\/\?v=20260928-standard-r1#start"/,'Mandarin course links back to the Justice course');
 assert.match(mandarin,/href="\.\.\/styles\.css/,'Both courses must use the shared design');
 assert.match(mandarin,/src="\.\.\/app\.js/,'Both courses must run on the shared engine');
 assert.doesNotMatch(mandarin,/drive\.google\.com\/file\/d\//);
@@ -42,3 +42,5 @@ assertEightStageContract('Mandarin',read('dist/mandarin/course.js'),mandarinLear
 for(const legacy of ['app.js','canon.js','curriculum.js','lessons.js','review.js','styles.css'])
   assert(!fs.existsSync(new URL('../dist/mandarin/'+legacy,import.meta.url)),'No stale Mandarin file: '+legacy);
 console.log('PASS: exact 8-stage order, practice gate semantics, growth-point safeguards, no stale Mandarin engine files');
+
+await import('./verify-standard-ui.mjs');
