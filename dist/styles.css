@@ -212,3 +212,8 @@ dialog{border:1px solid var(--line);border-radius:12px;padding:0;width:min(960px
 .t-foundation .eyebrow{color:var(--blue)}
 .t-map-foundation{background:var(--blue-light);border-radius:6px;padding-left:8px}
 @media(max-width:800px){.t-foundation{padding:16px}}
+
+.t-soc-libbar{display:grid;gap:6px;margin:6px 0 10px}
+.t-soc-libbar label{font-weight:650;font-size:14px}
+.t-soc-libbar input{min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;color:var(--ink)}
+.t-soc-libbar span{font-size:13px;color:var(--muted)}

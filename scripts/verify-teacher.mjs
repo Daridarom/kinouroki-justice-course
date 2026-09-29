@@ -11,6 +11,7 @@ const flat=blocks=>blocks.map(b=>b.type==='p'?b.text:b.rows.flat().join('\n')).j
 const simplify=s=>s.toLocaleLowerCase('ru').replace(/\s+/g,' ').trim();
 const allText=simplify(Object.values(source.documents).map(d=>flat(d.blocks)).join('\n'));
 
+const ctx2={window:{}};vm.runInNewContext(read('dist/socratic.js'),ctx2);
 const ctx={window:{}};vm.runInNewContext(read('dist/encyclopedia.js'),ctx);vm.runInNewContext(read('dist/teacher.js'),ctx);
 const E=JSON.parse(JSON.stringify(ctx.window.ENCYCLOPEDIA));
 const encText=simplify(Object.values(E.articles).flatMap(a=>a.sections.flatMap(x=>[x.title,...x.text])).join('\n'));
@@ -66,7 +67,7 @@ h.navigate('#prep/intro');html=h.get('app').innerHTML;
 assert(html.includes('Произвол (или пристрастность)')&&html.includes('закон не противоречит совести'),'Preparation shows encyclopedia excerpts');
 h.navigate('#encyclopedia');html=h.get('app').innerHTML;assert(html.includes('5.9. Конструктивные установки')&&html.includes('<strong>Весовщик</strong>'));
 h.navigate('#encyclopedia/schastye');assert(h.get('app').innerHTML.includes('Любовь [ядро], Идея [ядро]'));
-h.navigate('#happiness');html=h.get('app').innerHTML;assert(html.includes('«Богатство и статус сделают меня счастливым».')&&html.includes('Сократовский метод')&&html.includes('#socrat/u10'));
+h.navigate('#happiness');html=h.get('app').innerHTML;assert(html.includes('«Богатство и статус сделают меня счастливым».')&&html.includes('Сократовский метод')&&html.includes('деструктивных установок педагога'));
 h.navigate('#socrat/u10');html=h.get('app').innerHTML;
 assert(html.includes('«Система прогнила целиком, я в ней — просто винтик»')&&html.includes('ШАГ 1 ИЗ 7'),'Socratic trainer opens');
 assert(!html.includes('Бюрократия, несправедливая оплата'),'Step 1 analysis is hidden until the teacher answers');
@@ -79,7 +80,16 @@ await h.emit('click',{dataset:{tSocStep:'u10|7'}});await h.emit('click',{dataset
 await h.emit('click',{dataset:{tSocOpen:'u10|v2-s2'}});await h.emit('click',{dataset:{tSocStep:'u10|99'}});
 const soc=JSON.parse(h.local.get('kinouroki.justice.teacher.v1')).socrat.u10;
 assert.equal(soc.notes['v1-s1'],'Моё различение');assert.equal(soc.variant,2);assert.equal(soc.step,7);assert(!soc.open['v2-s2'],'Only answer steps can be revealed');
-h.navigate('#happiness');assert(h.get('app').innerHTML.includes('Разборы из библиотеки проекта'));
+h.navigate('#socrat');html=h.get('app').innerHTML;assert(html.includes('Разбор деструктивных установок')&&html.includes('#socrat/u21')&&html.includes('вы на шаге 7 из 7'),'Library lists all attitudes with progress');
+const SOC=JSON.parse(JSON.stringify(ctx2.window.SOCRATIC));
+assert.deepEqual(SOC.items.map(x=>x.number),Array.from({length:21},(_,i)=>i+1),'All 21 attitudes from the project library');
+for(const it of SOC.items){assert(it.attitude.startsWith('«'),it.id);for(const v of it.variants){assert.equal(v.steps.length,7,it.id);assert(v.steps.every(s=>s.missing?s.n===6:s.blocks.length),it.id+' v'+v.variant);}}
+assert(!JSON.stringify(SOC).includes('Ask Qwen'),'Chat UI remnants are stripped');
+assert.equal(SOC.items.find(x=>x.id==='u13').variants.length,3,'Attitude 13 has the 13.1 variant');
+h.navigate('#happiness');assert(h.get('app').innerHTML.includes('href="#socrat"'));
+h.navigate('#socrat/u1');await h.emit('click',{dataset:{tSocStep:'u1|6'}});html=h.get('app').innerHTML;
+assert(html.includes('«Меня не ценят → я ничего не стою»')&&html.includes('Мой практический критерий'),'Missing step 6 invites own criterion');
+h.navigate('#socrat/u18');await h.emit('click',{dataset:{tSocStep:'u18|4'}});await h.emit('click',{dataset:{tSocOpen:'u18|v1-s4'}});assert(h.get('app').innerHTML.includes('<h3>Важное различение</h3>'),'Distinction is a subheading of step 4');
 h.navigate('#stage/2/read');html=h.get('app').innerHTML;
 assert(html.includes('<strong>Весовщик</strong>'),'Scales keeper accompanies meaning stages');
 assert(html.includes('ПРОЙДИТЕ КАК УЧЕНИК')&&html.includes('ПОЯСНЕНИЯ ПЕДАГОГУ'));
