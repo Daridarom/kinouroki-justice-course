@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Практикум педагога · От фильма к действию</title>
+<meta name="description" content="Рабочий прототип подготовки педагога к киноуроку «Великий»: быстрый маршрут и глубокий методический слой.">
+<style>
+:root{
+  --bg:#f4f1ea;--paper:#fffdf8;--ink:#202824;--muted:#66706a;--line:#ded8cd;
+  --accent:#294f41;--accent-soft:#e3ece7;--warm:#efe5d5;--danger:#7f443d;
+  --shadow:0 18px 50px rgba(32,40,36,.09);--r:22px
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:linear-gradient(180deg,#f7f4ef,#eee9df);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.5}
+button,textarea{font:inherit}
+button{cursor:pointer}
+a{color:inherit}
+.app{min-height:100vh;display:grid;grid-template-columns:280px minmax(0,1fr)}
+aside{position:sticky;top:0;height:100vh;padding:26px 18px;border-right:1px solid var(--line);background:rgba(255,253,248,.88);backdrop-filter:blur(10px);display:flex;flex-direction:column;gap:18px}
+.brand{font-size:20px;font-weight:800;letter-spacing:-.02em}.brand small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:3px}
+.mode{background:var(--accent-soft);border-radius:15px;padding:13px 14px;font-size:13px;color:#33473f}
+.nav{display:grid;gap:5px;overflow:auto}
+.nav button{border:0;background:transparent;padding:10px 11px;border-radius:11px;text-align:left;display:flex;gap:9px;align-items:flex-start;color:var(--muted)}
+.nav button.active{background:var(--accent);color:white}
+.num{width:22px;height:22px;border:1px solid currentColor;border-radius:50%;display:grid;place-items:center;font-size:11px;flex:0 0 auto}
+.side-bottom{margin-top:auto;display:grid;gap:8px}
+main{width:100%;max-width:1120px;margin:0 auto;padding:28px min(5vw,64px) 96px}
+.top{display:flex;align-items:center;gap:18px;justify-content:space-between;margin-bottom:26px}
+.progressbox{flex:1;max-width:560px}
+.progresslabel{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:7px}
+.progress{height:7px;background:#dedbd4;border-radius:50px;overflow:hidden}.progress span{display:block;height:100%;background:var(--accent);transition:.2s}
+.screen{display:none}.screen.active{display:block}
+.hero,.card,.sheet,.case,.stage{background:var(--paper);border:1px solid var(--line);box-shadow:0 7px 25px rgba(32,40,36,.05)}
+.hero{border-radius:28px;padding:44px 46px;box-shadow:var(--shadow)}
+.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800;color:var(--accent)}
+h1{font-family:Georgia,"Times New Roman",serif;letter-spacing:-.035em;line-height:1.04;font-size:clamp(36px,5vw,61px);margin:12px 0 16px}
+h2{font-family:Georgia,"Times New Roman",serif;font-size:32px;letter-spacing:-.02em;margin:0 0 12px}
+h3{margin:0 0 8px;font-size:18px}
+.lead{font-size:18px;color:#4c5751;max-width:780px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}.chip{padding:7px 10px;border:1px solid var(--line);background:#faf8f3;border-radius:999px;font-size:12px}
+.callout{background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:0 14px 14px 0;padding:16px 18px;margin:20px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:24px}
+button.primary,button.secondary,button.ghost{border-radius:13px;padding:12px 15px;font-weight:750}
+.primary{border:1px solid var(--accent);background:var(--accent);color:white}
+.secondary{border:1px solid #dac7ab;background:var(--warm);color:var(--ink)}
+.ghost{border:1px solid var(--line);background:transparent;color:var(--ink)}
+.small{font-size:12px;color:var(--muted)}
+.head{margin-bottom:22px}.head p{max-width:780px;color:var(--muted);font-size:17px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{border-radius:20px;padding:20px}.choice{cursor:pointer;transition:.15s}.choice:hover{transform:translateY(-2px)}.choice.selected{outline:3px solid var(--accent);outline-offset:-3px}
+.question{font-family:Georgia,"Times New Roman",serif;font-size:26px;line-height:1.25;margin:12px 0 18px}
+.answers{display:grid;gap:9px}.answer{width:100%;text-align:left;border:1px solid var(--line);background:var(--paper);border-radius:13px;padding:13px 15px}.answer.correct{background:var(--accent-soft);border-color:var(--accent)}.answer.wrong{background:#f2e4e1;border-color:#caa39d}
+.feedback{display:none;margin-top:12px;background:#f3f0ea;border-radius:13px;padding:13px 15px}.feedback.show{display:block}
+textarea{width:100%;min-height:110px;border:1px solid var(--line);background:var(--paper);border-radius:13px;padding:13px;resize:vertical}
+.route{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.route .block{background:var(--paper);border:1px solid var(--line);border-radius:17px;padding:17px}.block b{display:block;color:var(--accent);font-size:11px;letter-spacing:.09em;margin-bottom:8px}.block span{display:block;margin:5px 0;font-size:14px}
+.stage{border-radius:16px;margin:9px 0;overflow:hidden}.stage button{width:100%;border:0;background:transparent;text-align:left;padding:16px 18px;display:flex;justify-content:space-between;font-weight:800}.stage .body{display:none;padding:0 18px 18px}.stage.open .body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.mini{background:#f7f4ee;border-radius:12px;padding:13px}.mini b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px}.dont{color:var(--danger)}
+.case{border-radius:20px;padding:21px;margin-bottom:14px}.case .tag{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:800}.case h3{font-size:22px;margin:8px 0 13px}
+.sheet{border-radius:22px;padding:26px;background:white}.sheet-head{display:flex;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding-bottom:17px;margin-bottom:16px}.sheet-title{font-family:Georgia,"Times New Roman",serif;font-size:32px}.sheet-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.sheet-item{background:#f7f4ee;border-radius:13px;padding:13px}.sheet-item b{display:block;color:var(--accent);margin-bottom:4px}
+.depth{margin-top:13px}.depth summary{cursor:pointer;color:var(--accent);font-weight:750}.depth .inside{margin-top:10px;border-left:3px solid #b8c9c0;padding:11px 14px;background:#f7faf8;border-radius:0 12px 12px 0}.source{font-size:11px;color:var(--muted);margin-top:8px}
+.drawer{position:fixed;inset:0;z-index:40;display:none}.drawer.open{display:block}.scrim{position:absolute;inset:0;background:rgba(24,31,27,.38)}.panel{position:absolute;right:0;top:0;height:100%;width:min(620px,94vw);background:var(--paper);padding:26px;overflow:auto;box-shadow:-18px 0 55px rgba(0,0,0,.15)}.panelhead{position:sticky;top:-26px;background:var(--paper);padding:18px 0 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);z-index:2}.depthcard{padding:18px 0;border-bottom:1px solid var(--line)}.close{border:0;background:#eeeae2;border-radius:50%;width:40px;height:40px;font-size:24px}
+.mobile-nav{display:none}
+.hidden{display:none!important}
+@media(max-width:850px){
+ .app{display:block}aside{display:none}main{padding:18px 16px 90px}.hero{padding:28px 22px}.top{margin-bottom:18px}.grid2,.grid3,.route,.sheet-grid{grid-template-columns:1fr}.stage.open .body{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;bottom:0;left:0;right:0;padding:9px;background:rgba(255,253,248,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:20}.mobile-nav button{padding:11px 8px}.sheet-head{display:block}.sheet-head button{margin-top:10px}
+}
+@media print{
+ body{background:white}.app{display:block}aside,.top,.mobile-nav,.row,.depth,.no-print{display:none!important}main{padding:0;max-width:none}.screen{display:none!important}#s8{display:block!important}.sheet{border:0;box-shadow:none;padding:0}.sheet-item{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">Практикум педагога<small>От фильма к действию · «Великий»</small></div>
+  <div class="mode"><b>Быстрый маршрут</b><br>15–20 минут, если фильм уже просмотрен. Глубина открывается по запросу.</div>
+  <div class="nav" id="nav"></div>
+  <div class="side-bottom">
+    <button class="secondary" onclick="openDepth()">Методическая глубина</button>
+    <button class="ghost" onclick="resetProgress()">Начать заново</button>
+  </div>
+</aside>
+
+<main>
+  <div class="top">
+    <div class="progressbox">
+      <div class="progresslabel"><span id="progressText">Шаг 1 из 8</span><span id="timeText">2 минуты</span></div>
+      <div class="progress"><span id="bar"></span></div>
+    </div>
+    <button class="ghost no-print" onclick="openDepth()">Глубина</button>
+  </div>
+
+  <section class="screen active" id="s1">
+    <div class="hero">
+      <div class="eyebrow">рабочий прототип · v1</div>
+      <h1>От фильма к действию</h1>
+      <p class="lead">Практикум помогает подготовиться к киноуроку без необходимости сначала освоить всю методическую базу. Вы пройдёте короткий маршрут, потренируетесь на педагогических ситуациях и получите готовую карту ведущего.</p>
+      <div class="chips"><span class="chip">Фильм: «Великий»</span><span class="chip">Качество: справедливость</span><span class="chip">5–6 классы</span><span class="chip">8 этапов сохранены</span></div>
+      <div class="callout"><b>Главный принцип</b> Основной экран показывает только то, что нужно для следующего действия. Паспорт, обоснование, энциклопедия, тетради и сократовские разборы не исчезают: они находятся во втором слое.</div>
+      <div class="row"><button class="primary" onclick="go(1)">Начать подготовку</button><button class="secondary" onclick="openDepth('architecture')">Как устроена глубина</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="s2">
+    <div class="head"><div class="eyebrow">шаг 2</div><h1>Сначала почувствовать</h1><p>Не начинаем с определения. Педагог сначала замечает собственную реакцию на ситуацию.</p></div>
+    <div class="grid2">
+      <div class="card choice" onclick="pick(this)"><h3>Ситуация 1</h3><p>Два ученика получили одинаковую похвалу. Один сделал большую часть общей работы, второй почти не участвовал.</p></div>
+      <div class="card choice" onclick="pick(this)"><h3>Ситуация 2</h3><p>Ребёнок обидел другого. Одноклассники считают справедливым «сделать ему в ответ то же самое».</p></div>
+    </div>
+    <p class="question">Что в этих ситуациях вызывает у вас внутренний вопрос о справедливости?</p>
+    <textarea id="feelNote" placeholder="Коротко, своими словами. Это заметка для себя."></textarea>
+    <details class="depth"><summary>Почему мы начинаем не с определения?</summary><div class="inside">Так понятие опирается на уже возникшее переживание и различение. Полное определение остаётся доступным дальше и в глубоком слое.<div class="source">Опора: текущий педагогический контур курса, этапы «Введение» и «Чувство».</div></div></details>
+    <div class="row"><button class="ghost" onclick="go(0)">Назад</button><button class="primary" onclick="saveNote('feelNote');go(2)">Дальше</button></div>
+  </section>
+
+  <section class="screen" id="s3">
+    <div class="head"><div class="eyebrow">шаг 3</div><h1>Посмотреть фильм целиком</h1><p>Первый просмотр не превращаем в лекцию. Сначала история должна сработать как история.</p></div>
+    <div class="card">
+      <h3>Задача педагога при просмотре</h3>
+      <p>Не искать «правильный ответ», а заметить: где вы почувствовали несправедливость, сомнение, возмущение или внутренний конфликт.</p>
+      <div class="callout"><b>Если фильм уже просмотрен</b> Не пересматривайте его ради галочки. Вспомните один эпизод, который остался с вами сильнее других.</div>
+      <textarea id="filmNote" placeholder="Какой момент фильма задел сильнее всего и почему?"></textarea>
+    </div>
+    <details class="depth"><summary>Почему разбор не идёт во время первого просмотра?</summary><div class="inside">В утверждённом маршруте просмотр фильма выделен отдельным этапом до «Чувства» и «Мысли». Прототип сохраняет целостное восприятие, а к эпизодам возвращается позже.<div class="source">Опора: восьмиэтапный маршрут текущего курса.</div></div></details>
+    <div class="row"><button class="ghost" onclick="go(1)">Назад</button><button class="primary" onclick="saveNote('filmNote');go(3)">Фильм осмыслен · дальше</button></div>
+  </section>
+
+  <section class="screen" id="s4">
+    <div class="head"><div class="eyebrow">шаг 4</div><h1>Разобраться в качестве</h1><p>Теперь определение появляется не в пустоте, а после собственного отклика.</p></div>
+    <div class="callout"><b>Если совсем просто</b> Справедливость помогает замечать нарушенный должный порядок и стремиться его восстановить.</div>
+    <div class="card">
+      <h3>Полное рабочее определение</h3>
+      <p>«Справедливость — это способность остро ощущать дисбаланс между поступками, заслугами и их оценкой, и стремление восстановить должный порядок».</p>
+    </div>
+    <div class="grid3" style="margin-top:14px">
+      <div class="card"><h3>Не месть</h3><p>Ответное причинение вреда может маскироваться под справедливость.</p></div>
+      <div class="card"><h3>Не уравниловка</h3><p>«Всем одинаково» не всегда означает справедливо.</p></div>
+      <div class="card"><h3>Не пристрастность</h3><p>Личная выгода, обида или симпатия искажают решение.</p></div>
+    </div>
+    <div class="case" style="margin-top:16px">
+      <div class="tag">мини-проверка</div>
+      <div class="question">Класс требует наказать ребёнка «точно так же, как он поступил с другим». С чего лучше начать?</div>
+      <div class="answers">
+        <button class="answer" onclick="answer(this,false,'fb1')">Поддержать: одинаковый ответ — самый справедливый</button>
+        <button class="answer" onclick="answer(this,true,'fb1')">Спросить, какую цель должно восстановить наше решение: порядок, безопасность, отношения?</button>
+        <button class="answer" onclick="answer(this,false,'fb1')">Прекратить обсуждение и самому назвать правильное наказание</button>
+      </div>
+      <div class="feedback" id="fb1">Лучше сначала вернуть разговор к основанию решения. Это помогает отличить восстановление справедливости от мести.</div>
+    </div>
+    <details class="depth"><summary>Открыть глубокий слой качества</summary><div class="inside">В полной базе остаются: определение и антипод из паспорта, статья «Справедливость» из «Энциклопедии качеств», три принципа «Эталонных Весов», экзамен на понимание качества и связанные задания тетради.<div class="source">Опора: teacher-data.js, курс «Великий», энциклопедический слой.</div></div></details>
+    <div class="row"><button class="ghost" onclick="go(2)">Назад</button><button class="primary" onclick="go(4)">Я различаю смысл · дальше</button></div>
+  </section>
+
+  <section class="screen" id="s5">
+    <div class="head"><div class="eyebrow">шаг 5</div><h1>Увидеть весь путь одной картиной</h1><p>Методически восемь этапов сохранены полностью. Для памяти педагога они собраны в четыре понятных движения.</p></div>
+    <div class="route">
+      <div class="block"><b>УВИДЕТЬ</b><span>1. Введение</span><span>2. Просмотр фильма</span></div>
+      <div class="block"><b>ПРОЖИТЬ</b><span>3. Чувство</span><span>4. Мысль</span></div>
+      <div class="block"><b>ПОНЯТЬ</b><span>5. Осознание</span><span>6. Воображение</span></div>
+      <div class="block"><b>СДЕЛАТЬ</b><span>7. Социальная практика</span><span>8. Воодушевление</span></div>
+    </div>
+    <div class="callout"><b>Формула маршрута</b> Фильм → чувство → мысль → понимание → образ возможного → действие → осмысление опыта.</div>
+    <details class="depth"><summary>Почему четыре блока не заменяют восемь этапов?</summary><div class="inside">Это только интерфейсная группировка, уменьшающая нагрузку на память. Названия, порядок и смысл восьми этапов не меняются.<div class="source">Опора: утверждённый восьмиэтапный маршрут проекта.</div></div></details>
+    <div class="row"><button class="ghost" onclick="go(3)">Назад</button><button class="primary" onclick="go(5)">Покажите, как вести</button></div>
+  </section>
+
+  <section class="screen" id="s6">
+    <div class="head"><div class="eyebrow">шаг 6</div><h1>Как вести: только нужное</h1><p>На каждый этап — четыре вещи: что происходит с ребёнком, что делает педагог, один рабочий вопрос и чего лучше не делать.</p></div>
+    <div id="stages"></div>
+    <details class="depth"><summary>Где здесь паспорт, тетради и методическое обоснование?</summary><div class="inside">В рабочем продукте каждый раскрытый этап сможет содержать ссылки на конкретные страницы тетради, раздел паспорта, обоснование и эпизоды фильма. В быстром пути они не занимают экран до тех пор, пока педагог не запросит основание.<div class="source">Архитектурный принцип прототипа: глубина по месту действия, а не отдельным обязательным курсом.</div></div></details>
+    <div class="row"><button class="ghost" onclick="go(4)">Назад</button><button class="primary" onclick="go(6)">Перейти к репетиции</button></div>
+  </section>
+
+  <section class="screen" id="s7">
+    <div class="head"><div class="eyebrow">шаг 7</div><h1>Репетиция перед классом</h1><p>Проверяем не память определений, а педагогическое действие.</p></div>
+    <div class="case">
+      <div class="tag">ситуация 1</div><h3>«Я не согласен. Вадик всё сделал правильно»</h3>
+      <div class="answers">
+        <button class="answer" onclick="answer(this,false,'c1')">Объяснить ребёнку, почему он неправ</button>
+        <button class="answer" onclick="answer(this,true,'c1')">Спросить: «Что именно в его поступке кажется тебе правильным?»</button>
+        <button class="answer" onclick="answer(this,false,'c1')">Перейти к следующему вопросу, чтобы не спорить</button>
+      </div><div class="feedback" id="c1">Сначала раскрываем основание позиции. Задача не победить ребёнка в споре, а помочь ему мыслить и различать.</div>
+    </div>
+    <div class="case">
+      <div class="tag">ситуация 2</div><h3>Дети начинают спорить друг с другом</h3>
+      <div class="answers">
+        <button class="answer" onclick="answer(this,true,'c2')">Вернуть разговор к поступку и аргументам, не оценивать личности</button>
+        <button class="answer" onclick="answer(this,false,'c2')">Быстро выбрать, кто прав, чтобы сохранить темп</button>
+        <button class="answer" onclick="answer(this,false,'c2')">Запретить несогласие</button>
+      </div><div class="feedback" id="c2">Разногласие может быть учебным материалом, если рамка остаётся безопасной и разговор идёт о действиях и основаниях.</div>
+    </div>
+    <div class="case">
+      <div class="tag">ситуация 3</div><h3>Никто не предлагает идею социальной практики</h3>
+      <div class="answers">
+        <button class="answer" onclick="answer(this,false,'c3')">Сразу дать готовый проект</button>
+        <button class="answer" onclick="answer(this,true,'c3')">Сузить поле вопросами: «Что вокруг нас можно сделать справедливее? Кому это поможет? Что реально можем мы?»</button>
+        <button class="answer" onclick="answer(this,false,'c3')">Отменить практику</button>
+      </div><div class="feedback" id="c3">Педагог даёт опору, но не отнимает инициативу. Идея должна стать детским решением настолько, насколько это возможно.</div>
+    </div>
+    <details class="depth"><summary>А если трудность не про урок, а про самого педагога?</summary><div class="inside">Здесь подключается библиотека сократовских разборов: 21 установка не изучается заранее. Практикум предлагает конкретный разбор, когда обнаружена соответствующая трудность или установка.<div class="source">Опора: существующая библиотека сократовских разборов курса.</div></div></details>
+    <div class="row"><button class="ghost" onclick="go(5)">Назад</button><button class="primary" onclick="go(7)">Получить карту ведущего</button></div>
+  </section>
+
+  <section class="screen" id="s8">
+    <div class="head no-print"><div class="eyebrow">шаг 8</div><h1>Вы готовы провести киноурок</h1><p>Результат практикума — не процент прохождения, а компактная рабочая опора для реального занятия.</p></div>
+    <div class="sheet" id="sheet">
+      <div class="sheet-head"><div><div class="sheet-title">Карта ведущего</div><div class="small">«Великий» · качество «Справедливость»</div></div><button class="ghost no-print" onclick="window.print()">Печать / PDF</button></div>
+      <div class="sheet-grid">
+        <div class="sheet-item"><b>Главная задача</b>Провести ребёнка от эмоционального отклика на фильм к осмысленному собственному действию.</div>
+        <div class="sheet-item"><b>Помнить</b>Не подменять детское размышление готовым «правильным ответом».</div>
+        <div class="sheet-item"><b>Увидеть</b>Введение → целостный просмотр фильма.</div>
+        <div class="sheet-item"><b>Прожить</b>«Что ты почувствовал?» → «Почему ты так думаешь?»</div>
+        <div class="sheet-item"><b>Понять</b>«Где похожий выбор встречается у нас?» → «Как могло бы быть иначе?»</div>
+        <div class="sheet-item"><b>Сделать</b>«Что реально можем изменить именно мы?» → реальная социальная практика.</div>
+        <div class="sheet-item"><b>После дела</b>Вернуться к фактам: что сделали, что изменилось, что заметили у детей, что стоит поддержать дальше.</div>
+        <div class="sheet-item"><b>Если сложно</b>Открыть глубокий слой: паспорт, обоснование, энциклопедия, тетради или подходящий сократовский разбор.</div>
+      </div>
+    </div>
+
+    <div class="card no-print" style="margin-top:16px">
+      <h3>После реального занятия · 3 минуты</h3>
+      <p class="small">Эта часть не обязательна для подготовки, но превращает практикум в цикл профессионального роста.</p>
+      <textarea id="afterNote" placeholder="1. Где дети включились сильнее всего?
+2. Где разговор не пошёл?
+3. Какое реальное действие они выбрали?"></textarea>
+      <div class="row"><button class="secondary" onclick="saveNote('afterNote')">Сохранить заметку на этом устройстве</button><button class="ghost" onclick="openDepth('socratic')">Разобрать сложный момент</button></div>
+    </div>
+    <div class="row no-print"><button class="ghost" onclick="go(6)">Назад</button><button class="secondary" onclick="openDepth()">Открыть всю методическую глубину</button></div>
+  </section>
+</main>
+</div>
+
+<div class="mobile-nav">
+  <button class="ghost" onclick="prev()">Назад</button>
+  <button class="secondary" onclick="openDepth()">Глубина</button>
+  <button class="primary" onclick="next()">Дальше</button>
+</div>
+
+<div class="drawer" id="drawer">
+  <div class="scrim" onclick="closeDepth()"></div>
+  <div class="panel">
+    <div class="panelhead"><h2>Методическая глубина</h2><button class="close" onclick="closeDepth()">×</button></div>
+    <div class="depthcard" id="depth-architecture"><h3>Два слоя вместо двух конкурирующих курсов</h3><p><b>Слой 1:</b> быстрый путь «мне нужно провести киноурок». <b>Слой 2:</b> основание каждого действия: первоисточник, полные задания, методическое объяснение, дополнительные тренажёры.</p><p>Глубина не отделяется от практики, а открывается ровно там, где возникает вопрос «почему именно так?».</p></div>
+    <div class="depthcard"><h3>Что сохраняется из текущей базы</h3><p>Паспорт пособия, методическое обоснование, полная рабочая тетрадь, тетрадь ученика, экзамен на понимание качества, «Энциклопедия качеств», все восемь этапов, итоговые поля наблюдений и библиотека сократовских разборов.</p></div>
+    <div class="depthcard"><h3>Качество «Справедливость»</h3><p>Рабочее определение: «Справедливость — это способность остро ощущать дисбаланс между поступками, заслугами и их оценкой, и стремление восстановить должный порядок».</p><p>В материалах антипод обозначен как произвол (пристрастность); отдельно различаются подмены: месть, уравниловка, предвзятость.</p></div>
+    <div class="depthcard"><h3>Восемь этапов</h3><p>Введение → Просмотр фильма → Чувство → Мысль → Осознание → Воображение → Социальная практика → Воодушевление.</p><p>Группы «Увидеть / Прожить / Понять / Сделать» — только интерфейсная память, а не изменение методики.</p></div>
+    <div class="depthcard" id="depth-socratic"><h3>Сократовские разборы</h3><p>21 установка остаётся полноценной библиотекой. Но вместо обязательного предварительного изучения практикум должен находить момент возникновения трудности и предлагать один соответствующий разбор.</p></div>
+    <div class="depthcard"><h3>Что доработать после проверки прототипа</h3><p>1) привязать каждый этап к точным страницам первоисточников; 2) добавить эпизоды фильма и временные ориентиры; 3) сделать реальную выдачу материалов для печати; 4) связать сложные ответы с конкретными сократовскими разборами; 5) протестировать с педагогами с разным уровнем подготовки.</p></div>
+  </div>
+</div>
+
+<script>
+var screens=[
+  ['Старт','2 минуты'],['Почувствовать','2 минуты'],['Фильм','по готовности'],['Разобраться','4 минуты'],
+  ['Маршрут','2 минуты'],['Как вести','5 минут'],['Репетиция','5 минут'],['Карта ведущего','1 минута']
+];
+var current=parseInt(localStorage.getItem('praktikum.current')||'0',10);
+if(isNaN(current)||current<0||current>7)current=0;
+
+var stages=[
+ ['1. Введение','Ребёнок получает безопасную рамку и язык разговора о качестве.','Задать условия разговора и ввести образ качества без морализаторства.','Как понять, что решение действительно справедливое?','Не требовать немедленного «правильного» ответа.'],
+ ['2. Просмотр фильма','Ребёнок воспринимает историю целиком и эмоционально.','Не разбирать каждую сцену во время первого просмотра.','Какой момент остался с тобой после фильма?','Не превращать просмотр в лекцию с остановками.'],
+ ['3. Чувство','Ребёнок замечает собственный нравственный отклик.','Помочь назвать реакцию и связать её с поступком героя.','Где тебе особенно хотелось вмешаться?','Не говорить, что ребёнок «должен» чувствовать.'],
+ ['4. Мысль','Из переживания рождается объяснение и аргумент.','Просить обосновывать, сравнивать, различать подмены.','Почему ты считаешь это справедливым?','Не заменять рассуждение готовым выводом.'],
+ ['5. Осознание','Ребёнок соотносит качество со своими решениями.','Перевести разговор от героя к собственному опыту без давления.','А где похожий выбор встречается у нас?','Не ставить диагноз и не оценивать личность ребёнка.'],
+ ['6. Воображение','Появляется образ того, как может быть иначе.','Помочь детям увидеть варианты изменения ситуации.','Если бы можно было изменить одно, что бы ты изменил?','Не давать готовый проект раньше детских идей.'],
+ ['7. Социальная практика','Качество превращается в реальное общее дело.','Сузить идею до посильного, конкретного действия детей.','Что реально можем сделать именно мы?','Не подменять инициативу детей взрослым поручением.'],
+ ['8. Воодушевление','Ребёнок осмысливает совершённый поступок и последствия.','Вернуться к реальному делу, наблюдаемым проявлениям и точкам роста.','Что изменилось после того, как мы сделали это?','Не обсуждать только красивый план, если дело ещё не состоялось.']
+];
+
+function buildNav(){
+ var n=document.getElementById('nav');n.innerHTML='';
+ screens.forEach(function(s,i){
+  var b=document.createElement('button');b.className=i===current?'active':'';
+  b.innerHTML='<span class="num">'+(i+1)+'</span><span>'+s[0]+'</span>';
+  b.onclick=function(){go(i)};n.appendChild(b);
+ });
+}
+function buildStages(){
+ var w=document.getElementById('stages');w.innerHTML='';
+ stages.forEach(function(s,i){
+  var d=document.createElement('div');d.className='stage'+(i===0?' open':'');
+  d.innerHTML='<button><span>'+s[0]+'</span><span>+</span></button>'+
+   '<div class="body"><div class="mini"><b>Что происходит</b>'+s[1]+'</div>'+
+   '<div class="mini"><b>Что делает педагог</b>'+s[2]+'</div>'+
+   '<div class="mini"><b>Один рабочий вопрос</b>'+s[3]+'</div>'+
+   '<div class="mini dont"><b>Не надо</b>'+s[4]+'</div></div>';
+  d.querySelector('button').onclick=function(){d.classList.toggle('open')};
+  w.appendChild(d);
+ });
+}
+function go(i){
+ current=Math.max(0,Math.min(7,i));localStorage.setItem('praktikum.current',String(current));
+ document.querySelectorAll('.screen').forEach(function(e,j){e.classList.toggle('active',j===current)});
+ document.getElementById('progressText').textContent='Шаг '+(current+1)+' из 8';
+ document.getElementById('timeText').textContent=screens[current][1];
+ document.getElementById('bar').style.width=((current+1)/8*100)+'%';
+ buildNav();window.scrollTo({top:0,behavior:'smooth'});
+}
+function next(){go(current+1)} function prev(){go(current-1)}
+function pick(el){el.parentElement.querySelectorAll('.card').forEach(function(x){x.classList.remove('selected')});el.classList.add('selected')}
+function answer(btn,ok,id){
+ btn.parentElement.querySelectorAll('.answer').forEach(function(x){x.classList.remove('correct','wrong')});
+ btn.classList.add(ok?'correct':'wrong');document.getElementById(id).classList.add('show');
+}
+function openDepth(anchor){
+ document.getElementById('drawer').classList.add('open');
+ if(anchor)setTimeout(function(){var el=document.getElementById('depth-'+anchor);if(el)el.scrollIntoView({behavior:'smooth'})},80);
+}
+function closeDepth(){document.getElementById('drawer').classList.remove('open')}
+function saveNote(id){localStorage.setItem('praktikum.'+id,document.getElementById(id).value)}
+function restoreNotes(){
+ ['feelNote','filmNote','afterNote'].forEach(function(id){var v=localStorage.getItem('praktikum.'+id);if(v)document.getElementById(id).value=v});
+}
+function resetProgress(){if(confirm('Сбросить шаг и заметки этого практикума?')){['praktikum.current','praktikum.feelNote','praktikum.filmNote','praktikum.afterNote'].forEach(function(k){localStorage.removeItem(k)});location.reload()}}
+buildStages();restoreNotes();go(current);
+</script>
+</body>
+</html>
