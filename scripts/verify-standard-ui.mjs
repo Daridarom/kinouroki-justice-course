@@ -6,10 +6,10 @@ import {makeHarness} from './harness.mjs';
 const base=new URL('../',import.meta.url);
 const read=p=>fs.readFileSync(new URL(p,base),'utf8');
 const names=['Введение','Просмотр фильма','Чувство','Мысль','Осознание','Воображение','Социальная практика','Воодушевление'];
-const version='20260929-v93';
+const versions={'dist/':'20261001-v94','dist/mandarin/':'20260929-v93'};
 const gitBlob=p=>{const b=fs.readFileSync(new URL(p,base));return crypto.createHash('sha1').update(`blob ${b.length}\0`).update(b).digest('hex');};
-// Approved content at 5d79b50: changes belong to the learning adapter, not the source model.
-assert.equal(gitBlob('dist/course.js'),'fe933efe5c9e3d2f7adc6d4ff065bf6a083a1cff','Justice source content stays untouched');
+// Approved justice content after Viktor's calibration corrections, 01.10.2026.
+assert.equal(gitBlob('dist/course.js'),'777a67aeaeda1322887264c067b713701842502a','Approved Viktor calibration correction remains');
 assert.equal(gitBlob('dist/mandarin/course.js'),'8c3277386f56b1f8013f5d76222b07b53a19f205','Keep the frozen picture, Two Banks and corrected object of envy');
 for(const cfg of [
   {dir:'dist/',standard:[1,6],pages:{1:15,6:60,7:81},sections:[1,null,2,3,4,5,null,6]},
@@ -93,7 +93,7 @@ for(const cfg of [
   assert.match(html,/<meta name="description" content="[^"]*восемь этапов/);
   const assets=[...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)\?[^"]*)"/g)].map(m=>m[1]);
   assert.equal(assets.length,9,'Both courses load the teacher route, encyclopedia and Socratic modules');
-  assert(assets.every(url=>url.endsWith('?v='+version)),'All asset versions match');
+  assert(assets.every(url=>url.endsWith('?v='+versions[dir])),'All asset versions match for '+dir);
 }
 assert(!read('dist/app.js').includes('20260928-canon'));
 assert(!read('dist/mandarin/learning.js').includes('20260928-canon'));
