@@ -34,6 +34,12 @@ for(const s of course.stages){
 }
 const sourceAlgorithm=source.pages['28'].find(b=>b.type==='table').rows.slice(1).map(r=>r[1]);
 assert.deepEqual(course.stages[3].quizzes[0].items,sourceAlgorithm);
+const calibrationText=simplify(flat(source.pages['29']));
+const creativeAlgorithmText=simplify(flat(source.pages['33']));
+assert(calibrationText.includes(simplify('При поиске истины справедливости умножай достоинства людей на 2 и дели недостатки на 7.')),'Viktor calibration formula must be present');
+assert(calibrationText.includes(simplify('Калибратор — тот, кто восстанавливает справедливость.')),'Calibrator role must be explicit');
+assert(!creativeAlgorithmText.includes(simplify('Проблема выбора')),'Page 33 must not contain "Проблема выбора"');
+assert(!creativeAlgorithmText.includes(simplify('Источник энергии')),'Page 33 must not contain "Источник энергии"');
 for(const [id,doc] of Object.entries(source.documents)){
   const bytes=fs.readFileSync(new URL('dist/'+doc.file.replace('./',''),base));
   assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),doc.sha256,`Original changed: ${id}`);
